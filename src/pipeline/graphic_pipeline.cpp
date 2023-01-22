@@ -7,12 +7,12 @@
 #include <stdexcept>
 
 namespace nugiEngine {
-	EnginePipeline::Builder::Builder(EngineDevice& appDevice, VkPipelineLayout pipelineLayout, VkRenderPass renderPass) : appDevice{appDevice} {
+	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, VkPipelineLayout pipelineLayout, VkRenderPass renderPass) : appDevice{appDevice} {
 		this->configInfo.pipelineLayout = pipelineLayout;
 		this->configInfo.renderPass = renderPass;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setDefault(const std::string& vertFilePath, const std::string& fragFilePath) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDefault(const std::string& vertFilePath, const std::string& fragFilePath) {
 		auto msaaSamples = this->appDevice.getMSAASamples();
 
 		this->configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -83,11 +83,11 @@ namespace nugiEngine {
 		VkShaderModule vertShaderModule;
 		VkShaderModule fragShaderModule;
 
-		auto vertCode = EnginePipeline::readFile(vertFilePath);
-		auto fragCode = EnginePipeline::readFile(fragFilePath);
+		auto vertCode = EngineGraphicPipeline::readFile(vertFilePath);
+		auto fragCode = EngineGraphicPipeline::readFile(fragFilePath);
 
-		EnginePipeline::createShaderModule(this->appDevice, vertCode, &vertShaderModule);
-		EnginePipeline::createShaderModule(this->appDevice, fragCode, &fragShaderModule);
+		EngineGraphicPipeline::createShaderModule(this->appDevice, vertCode, &vertShaderModule);
+		EngineGraphicPipeline::createShaderModule(this->appDevice, fragCode, &fragShaderModule);
 
 		VkPipelineShaderStageCreateInfo vertexShaderStageInfo{};
 		vertexShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -113,73 +113,73 @@ namespace nugiEngine {
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setSubpass(uint32_t subpass) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setSubpass(uint32_t subpass) {
 		this->configInfo.subpass = subpass;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setBindingDescriptions(std::vector<VkVertexInputBindingDescription> bindingDescriptions) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setBindingDescriptions(std::vector<VkVertexInputBindingDescription> bindingDescriptions) {
 		this->configInfo.bindingDescriptions = bindingDescriptions;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setAttributeDescriptions (std::vector<VkVertexInputAttributeDescription> attributeDescriptions) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setAttributeDescriptions (std::vector<VkVertexInputAttributeDescription> attributeDescriptions) {
 		this->configInfo.attributeDescriptions = attributeDescriptions;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setInputAssemblyInfo(VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setInputAssemblyInfo(VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo) {
 		this->configInfo.inputAssemblyInfo = inputAssemblyInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setRasterizationInfo(VkPipelineRasterizationStateCreateInfo rasterizationInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setRasterizationInfo(VkPipelineRasterizationStateCreateInfo rasterizationInfo) {
 		this->configInfo.rasterizationInfo = rasterizationInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setMultisampleInfo(VkPipelineMultisampleStateCreateInfo multisampleInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setMultisampleInfo(VkPipelineMultisampleStateCreateInfo multisampleInfo) {
 		this->configInfo.multisampleInfo = multisampleInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment) {
 		this->configInfo.colorBlendAttachment = colorBlendAttachment;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setColorBlendInfo(VkPipelineColorBlendStateCreateInfo colorBlendInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setColorBlendInfo(VkPipelineColorBlendStateCreateInfo colorBlendInfo) {
 		this->configInfo.colorBlendInfo = colorBlendInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setDepthStencilInfo(VkPipelineDepthStencilStateCreateInfo depthStencilInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDepthStencilInfo(VkPipelineDepthStencilStateCreateInfo depthStencilInfo) {
 		this->configInfo.depthStencilInfo = depthStencilInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setDynamicStateInfo(VkPipelineDynamicStateCreateInfo dynamicStateInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDynamicStateInfo(VkPipelineDynamicStateCreateInfo dynamicStateInfo) {
 		this->configInfo.dynamicStateInfo = dynamicStateInfo;
 		return *this;
 	}
 
-	EnginePipeline::Builder EnginePipeline::Builder::setShaderStagesInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo) {
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setShaderStagesInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo) {
 		this->configInfo.shaderStagesInfo = shaderStagesInfo;
 		return *this;
 	}
 
-	std::unique_ptr<EnginePipeline> EnginePipeline::Builder::build() {
-		return std::make_unique<EnginePipeline>(
+	std::unique_ptr<EngineGraphicPipeline> EngineGraphicPipeline::Builder::build() {
+		return std::make_unique<EngineGraphicPipeline>(
 			this->appDevice,
 			this->configInfo
 		);
 	}
 
-	EnginePipeline::EnginePipeline(EngineDevice& device, const PipelineConfigInfo& configInfo) : engineDevice{device} {
+	EngineGraphicPipeline::EngineGraphicPipeline(EngineDevice& device, const PipelineConfigInfo& configInfo) : engineDevice{device} {
 		this->createGraphicPipeline(configInfo);
 	}
 
-	EnginePipeline::~EnginePipeline() {
+	EngineGraphicPipeline::~EngineGraphicPipeline() {
 		for (auto& shaderModule : this->shaderModules) {
 			vkDestroyShaderModule(this->engineDevice.getLogicalDevice(), shaderModule, nullptr);
 		}
@@ -187,7 +187,7 @@ namespace nugiEngine {
 		vkDestroyPipeline(this->engineDevice.getLogicalDevice(), this->graphicPipeline, nullptr);
 	}
 
-	std::vector<char> EnginePipeline::readFile(const std::string& filepath) {
+	std::vector<char> EngineGraphicPipeline::readFile(const std::string& filepath) {
 		std::ifstream file{filepath, std::ios::ate | std::ios::binary};
 
 		if (!file.is_open()) {
@@ -204,7 +204,7 @@ namespace nugiEngine {
 		return buffer;
 	}
 
-	void EnginePipeline::createGraphicPipeline(const PipelineConfigInfo& configInfo) {
+	void EngineGraphicPipeline::createGraphicPipeline(const PipelineConfigInfo& configInfo) {
 		auto bindingDescriptions = configInfo.bindingDescriptions;
 		auto attributeDescriptions = configInfo.attributeDescriptions;
 
@@ -252,7 +252,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EnginePipeline::createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule) {
+	void EngineGraphicPipeline::createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule) {
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
@@ -263,7 +263,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EnginePipeline::bind(VkCommandBuffer commandBuffer) {
+	void EngineGraphicPipeline::bind(VkCommandBuffer commandBuffer) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicPipeline);
 	}
 } // namespace nugiEngine

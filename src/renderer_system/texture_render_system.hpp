@@ -3,7 +3,7 @@
 #include "../command/command_buffer.hpp"
 #include "../camera/camera.hpp"
 #include "../device/device.hpp"
-#include "../pipeline/pipeline.hpp"
+#include "../pipeline/graphic_pipeline.hpp"
 #include "../game_object/game_object.hpp"
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
@@ -34,7 +34,7 @@ namespace nugiEngine {
 			EngineDevice& appDevice;
 			
 			VkPipelineLayout pipelineLayout;
-			std::unique_ptr<EnginePipeline> pipeline;
+			std::unique_ptr<EngineGraphicPipeline> pipeline;
 
 			std::shared_ptr<EngineDescriptorSetLayout> textureDescSetLayout{};
 	};

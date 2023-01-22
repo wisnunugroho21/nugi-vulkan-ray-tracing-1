@@ -25,7 +25,7 @@ namespace nugiEngine {
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo{};
 	};
 	
-	class EnginePipeline {
+	class EngineGraphicPipeline {
 		public:
 			class Builder {
 				public:
@@ -49,7 +49,7 @@ namespace nugiEngine {
 					Builder setDynamicStateInfo(VkPipelineDynamicStateCreateInfo dynamicStateInfo);
 					Builder setShaderStagesInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo);
 
-					std::unique_ptr<EnginePipeline> build();
+					std::unique_ptr<EngineGraphicPipeline> build();
 
 				private:
 					std::vector<VkDynamicState> dynamicStates{};
@@ -59,11 +59,11 @@ namespace nugiEngine {
 					EngineDevice& appDevice;
 			};
 
-			EnginePipeline(EngineDevice& device, const PipelineConfigInfo& configInfo);
-			~EnginePipeline();
+			EngineGraphicPipeline(EngineDevice& device, const PipelineConfigInfo& configInfo);
+			~EngineGraphicPipeline();
 
-			EnginePipeline(const EnginePipeline&) = delete;
-			EnginePipeline& operator =(const EngineDevice&) = delete;
+			EngineGraphicPipeline(const EngineGraphicPipeline&) = delete;
+			EngineGraphicPipeline& operator =(const EngineDevice&) = delete;
 
 			void bind(VkCommandBuffer commandBuffer);
 

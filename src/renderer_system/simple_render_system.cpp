@@ -50,7 +50,7 @@ namespace nugiEngine {
 	void EngineSimpleRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EnginePipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
+		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
 			.setDefault("shader/simple_shader.vert.spv", "shader/simple_shader.frag.spv")
 			.build();
 	}

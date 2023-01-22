@@ -50,7 +50,7 @@ namespace nugiEngine {
 	void EnginePointLightRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EnginePipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
+		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
 			.setDefault("shader/point_light.vert.spv", "shader/point_light.frag.spv")
 			.setBindingDescriptions({})
 			.setAttributeDescriptions({})
