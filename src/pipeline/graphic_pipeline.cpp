@@ -1,4 +1,4 @@
-#include "pipeline.hpp"
+#include "graphic_pipeline.hpp"
 
 #include "../model/model.hpp"
 

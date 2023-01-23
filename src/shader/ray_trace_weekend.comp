@@ -2,7 +2,7 @@
 
 // ------------- layout ------------- 
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
 
@@ -206,12 +206,10 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   rec.faceNormal = setFaceNormal(r, outwardNormal);
 
   rec.materialHit.materialType = obj.materialType;
-  rec.materialHit.materialIndex = obj.materialIndex;
-
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[500], int objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Sphere objList[500], uint objNum, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
   faceNormal.normal = vec3(0, 0, 0);
@@ -299,7 +297,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(spheres, numObj, curRay, 0.001, 10000.0);
+    HitRecord hit = hitSphereList(objects.spheres, objects.numObj, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
