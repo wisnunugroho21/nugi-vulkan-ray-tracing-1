@@ -19,6 +19,10 @@ namespace nugiEngine {
     alignas(16) glm::vec3 lowerLeftCorner;
   };
 
+  struct RayTraceObject {
+    Sphere spheres[500];
+  };
+
   struct RayTracePushConstant {
     int randomSeed;
 	};

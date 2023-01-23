@@ -18,7 +18,7 @@ namespace nugiEngine {
 	class EngineTraceRayRenderSystem {
 		public:
 			EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample);
+				uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, RayTraceObject object);
 			~EngineTraceRayRenderSystem();
 
 			EngineTraceRayRenderSystem(const EngineTraceRayRenderSystem&) = delete;
@@ -29,7 +29,6 @@ namespace nugiEngine {
 			bool getFramesUpdated(uint32_t index) const { return this->isFrameUpdated[index]; }
 
 			void writeGlobalData(uint32_t imageIndex, RayTraceUbo ubo);
-			void writeObjectData(uint32_t imageIndex, Sphere spheres[]);
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, uint32_t randomSeed = 1);
 
 			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);
@@ -42,6 +41,7 @@ namespace nugiEngine {
 			void createPipeline();
 
 			void createUniformBuffer(uint32_t swapChainImageCount);
+			void createObjectBuffer(uint32_t swapChainImageCount, RayTraceObject object);
 			void createImageStorages(uint32_t swapChainImageCount);
 
 			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount);

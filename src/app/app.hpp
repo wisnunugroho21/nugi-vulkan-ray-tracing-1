@@ -29,9 +29,9 @@ namespace nugiEngine {
 			void run();
 
 		private:
-			void loadObjects();
+			RayTraceObject loadObjects();
 			RayTraceUbo updateCamera();
-			void recreateSubRendererAndSubsystem();
+			void recreateSubRendererAndSubsystem(RayTraceObject object);
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
 			EngineDevice device{window};

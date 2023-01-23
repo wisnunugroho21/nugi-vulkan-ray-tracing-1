@@ -21,8 +21,9 @@
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
-		this->recreateSubRendererAndSubsystem();
-		this->loadObjects();
+
+		RayTraceObject object = this->loadObjects();
+		this->recreateSubRendererAndSubsystem(object);
 	}
 
 	EngineApp::~EngineApp() {}
@@ -76,8 +77,8 @@ namespace nugiEngine {
 				this->renderer->submitCommand(commandBuffer);
 
 				if (!this->renderer->presentFrame()) {
-					this->recreateSubRendererAndSubsystem();
-					this->loadObjects();
+					RayTraceObject object = this->loadObjects();
+					this->recreateSubRendererAndSubsystem(object);
 				}
 			}
 		}
@@ -85,26 +86,23 @@ namespace nugiEngine {
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
 
-	void EngineApp::loadObjects() {
-		Sphere spheres[4];
+	RayTraceObject EngineApp::loadObjects() {
+		RayTraceObject objectBuffer{};
 
-		spheres[0].radius = 1000.0f;
-		spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
-		spheres[0].materialType = 0;
-		spheres[1].radius = 0.5f;
-		spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
-		spheres[1].materialType = 0;
-		spheres[2].radius = 0.5f;
-		spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
-		spheres[2].materialType = 2;
-		spheres[3].radius = 0.5f;
-		spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
-		spheres[3].materialType = 1;
+		objectBuffer.spheres[0].radius = 1000.0f;
+		objectBuffer.spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
+		objectBuffer.spheres[0].materialType = 0;
+		objectBuffer.spheres[1].radius = 0.5f;
+		objectBuffer.spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
+		objectBuffer.spheres[1].materialType = 0;
+		objectBuffer.spheres[2].radius = 0.5f;
+		objectBuffer.spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
+		objectBuffer.spheres[2].materialType = 2;
+		objectBuffer.spheres[3].radius = 0.5f;
+		objectBuffer.spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
+		objectBuffer.spheres[3].materialType = 1;
 
-		uint32_t imageCount = this->renderer->getSwapChain()->getswapChainImages().size();
-		for (int i = 0; i < imageCount; i++) {
-			this->traceRayRender->writeObjectData(i, spheres);
-		}
+		return objectBuffer;
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {
@@ -137,7 +135,7 @@ namespace nugiEngine {
 		return ubo;
 	}
 
-	void EngineApp::recreateSubRendererAndSubsystem() {
+	void EngineApp::recreateSubRendererAndSubsystem(RayTraceObject object) {
 		uint32_t nSample = 8;
 		
 		uint32_t width = this->renderer->getSwapChain()->getSwapChainExtent().width;
@@ -146,7 +144,7 @@ namespace nugiEngine {
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample);
+			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, object);
 
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRenderSystem>(this->device, descriptorPool, 
 			this->traceRayRender->getDescSetLayout(), swapChainImages, width, height);
