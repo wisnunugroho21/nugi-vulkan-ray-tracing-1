@@ -94,7 +94,7 @@ namespace nugiEngine {
 		for (uint32_t i = 0; i < swapChainImageCount; i++) {
 			auto objectBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
-				sizeof(RayTraceObject),
+				sizeof(4 * sizeof(Sphere)),
 				1,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
@@ -147,8 +147,8 @@ namespace nugiEngine {
 		this->uniformBuffers[imageIndex]->flush();
 	}
 
-	void EngineTraceRayRenderSystem::writeObjectData(uint32_t imageIndex, RayTraceObject objects) {
-		this->objectBuffers[imageIndex]->writeToBuffer(&objects);
+	void EngineTraceRayRenderSystem::writeObjectData(uint32_t imageIndex, Sphere spheres[]) {
+		this->objectBuffers[imageIndex]->writeToBuffer(&spheres);
 		this->objectBuffers[imageIndex]->flush();
 	}
 

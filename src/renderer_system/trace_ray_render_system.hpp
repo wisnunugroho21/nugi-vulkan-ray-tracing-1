@@ -29,7 +29,7 @@ namespace nugiEngine {
 			bool getFramesUpdated(uint32_t index) const { return this->isFrameUpdated[index]; }
 
 			void writeGlobalData(uint32_t imageIndex, RayTraceUbo ubo);
-			void writeObjectData(uint32_t imageIndex, RayTraceObject objects);
+			void writeObjectData(uint32_t imageIndex, Sphere spheres[]);
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, uint32_t randomSeed = 1);
 
 			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);

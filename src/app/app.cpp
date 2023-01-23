@@ -86,27 +86,24 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		RayTraceObject objects{};
+		Sphere spheres[4];
 
-		objects.spheres[0].radius = 1000.0f;
-		objects.spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
-		objects.spheres[0].materialType = 0;
-
-		objects.spheres[1].radius = 0.5f;
-		objects.spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
-		objects.spheres[1].materialType = 0;
-
-		objects.spheres[2].radius = 0.5f;
-		objects.spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
-		objects.spheres[2].materialType = 2;
-
-		objects.spheres[3].radius = 0.5f;
-		objects.spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
-		objects.spheres[3].materialType = 1;
+		spheres[0].radius = 1000.0f;
+		spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
+		spheres[0].materialType = 0;
+		spheres[1].radius = 0.5f;
+		spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
+		spheres[1].materialType = 0;
+		spheres[2].radius = 0.5f;
+		spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
+		spheres[2].materialType = 2;
+		spheres[3].radius = 0.5f;
+		spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
+		spheres[3].materialType = 1;
 
 		uint32_t imageCount = this->renderer->getSwapChain()->getswapChainImages().size();
 		for (int i = 0; i < imageCount; i++) {
-			this->traceRayRender->writeObjectData(i, objects);
+			this->traceRayRender->writeObjectData(i, spheres);
 		}
 	}
 

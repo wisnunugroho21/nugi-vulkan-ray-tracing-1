@@ -8,21 +8,8 @@
 namespace nugiEngine {
   struct Sphere {
     alignas(16) glm::vec3 center;
-    float radius;
-    uint32_t materialType;
-  };
-
-  struct Lambertian {
-    alignas(16) glm::vec3 colorAlbedo;
-  };
-
-  struct Metal {
-    alignas(16) glm::vec3 colorAlbedo;
-    float fuzziness;
-  };
-
-  struct Dielectric {
-    float indexOfRefraction;
+    alignas(4) float radius;
+    alignas(4) uint32_t materialType;
   };
 
   struct RayTraceUbo {
@@ -30,11 +17,6 @@ namespace nugiEngine {
     alignas(16) glm::vec3 horizontal;
     alignas(16) glm::vec3 vertical;
     alignas(16) glm::vec3 lowerLeftCorner;
-  };
-
-  struct RayTraceObject {
-    Sphere spheres[500];
-    uint32_t numObj;
   };
 
   struct RayTracePushConstant {
