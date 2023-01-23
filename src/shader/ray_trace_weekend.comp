@@ -20,8 +20,8 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectUbo {
-  Sphere spheres[4];
-};
+  Sphere spheres[500];
+} objects;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -207,7 +207,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[4], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Sphere objList[500], uint objNum, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
   faceNormal.normal = vec3(0, 0, 0);
@@ -295,7 +295,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(spheres, 4, curRay, 0.001, 10000.0);
+    HitRecord hit = hitSphereList(objects.spheres, 4, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
