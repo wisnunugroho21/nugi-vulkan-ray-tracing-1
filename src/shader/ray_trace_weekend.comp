@@ -10,20 +10,6 @@ struct Sphere {
   vec3 center;
   float radius;
   uint materialType;
-  uint materialIndex;
-};
-
-struct Lambertian {
-  vec3 colorAlbedo;
-};
-
-struct Metal {
-  vec3 colorAlbedo;
-  float fuzziness;
-};
-
-struct Dielectric {
-  float indexOfRefraction;
 };
 
 layout(set = 0, binding = 1) uniform GlobalUbo {
@@ -34,10 +20,7 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectUbo {
-  Sphere spheres[50];
-  Metal metals[10];
-  Lambertian lambertians[10];
-  Dielectric dielectrics[10];
+  Sphere spheres[500];
   uint numObj;
 } objects;
 
@@ -228,7 +211,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[50], int objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Sphere objList[500], int objNum, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
   faceNormal.normal = vec3(0, 0, 0);
@@ -261,7 +244,7 @@ ScatterRecord scatterLambertian(Ray r, HitRecord hit) {
   scat.raySpecular.direction = scatterDirection;
 
   scat.isScattered = true;
-  scat.colorAttenuation = objects.lambertians[hit.materialHit.materialIndex].colorAlbedo;
+  scat.colorAttenuation = randomVecThree(0);
 
   return scat;
 }
@@ -271,14 +254,14 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
 
   vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
 
-  float fuzziness = objects.metals[hit.materialHit.materialIndex].fuzziness;
+  float fuzziness = 0.0;
   fuzziness = fuzziness < 1.0 ? fuzziness : 1.0;
 
   scat.raySpecular.origin = hit.point;
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
   scat.isScattered = dot(reflected, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = objects.metals[hit.materialHit.materialIndex].colorAlbedo;
+  scat.colorAttenuation = randomVecThree(0);
 
   return scat;
 }
@@ -286,7 +269,7 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
 ScatterRecord scatterDielectric(Ray r, HitRecord hit) {
   ScatterRecord scat;
 
-  float indexOfRefraction = objects.dielectrics[hit.materialHit.materialIndex].indexOfRefraction;
+  float indexOfRefraction = 1.5;
   float refractionRatio = hit.faceNormal.frontFace ? (1.0 / indexOfRefraction) : indexOfRefraction;
 
   vec3 unitDirection = normalize(r.direction);
@@ -316,7 +299,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(objects.spheres, 4, curRay, 0.001, 10000.0);
+    HitRecord hit = hitSphereList(spheres, numObj, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;

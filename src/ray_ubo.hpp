@@ -10,7 +10,6 @@ namespace nugiEngine {
     alignas(16) glm::vec3 center;
     float radius;
     uint32_t materialType;
-    uint32_t materialIndex;
   };
 
   struct Lambertian {
@@ -34,10 +33,7 @@ namespace nugiEngine {
   };
 
   struct RayTraceObject {
-    Sphere spheres[50];
-    Metal metals[10];
-    Lambertian lambertians[10];
-    Dielectric dielectrics[10];
+    Sphere spheres[500];
     uint32_t numObj;
   };
 

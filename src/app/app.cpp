@@ -89,42 +89,49 @@ namespace nugiEngine {
 		RayTraceObject objects{};
 
 		uint32_t numObj = 0;
-		uint32_t materialIndex = 0;
-		uint32_t lambertIndex = 0;
-		uint32_t metalIndex = 0;
-		uint32_t glassIndex = 0;
+		uint32_t materialType = 0;
+
+		for (int i = -11; i < 11; i++) {
+			for (int j = -11; j < 11; j++) {
+				glm::vec3 center = glm::vec3(i, 0.2, j);
+
+				if ((center - glm::vec3(4.0f, 0.2f, 0.0f)).length() > 0.9f) {
+					objects.spheres[numObj].center = center;
+					objects.spheres[numObj].radius = 0.2f;
+					objects.spheres[numObj].materialType = materialType;
+
+					if (materialType >= 2) {
+						materialType = 0;
+					} else {
+						materialType++;
+					}
+
+					numObj++;
+				}
+			}
+		}
 
 		objects.spheres[numObj].radius = 1000.0f;
 		objects.spheres[numObj].center = glm::vec3(0.0f, -1000.0f, 0.0f);
-		objects.lambertians[lambertIndex].colorAlbedo = glm::vec3(0.5f, 0.5f, 0.5f);
 		objects.spheres[numObj].materialType = 0;
-		objects.spheres[numObj].materialIndex = lambertIndex;
 
-		lambertIndex++;
 		numObj++;
 
 		objects.spheres[numObj].radius = 0.5f;
 		objects.spheres[numObj].center = glm::vec3(-4.0f, 1.0f, 0.0f);
-		objects.lambertians[lambertIndex].colorAlbedo = glm::vec3(0.4f, 0.2f, 0.1f);
 		objects.spheres[numObj].materialType = 0;
-		objects.spheres[numObj].materialIndex = lambertIndex;
 
 		numObj++;
 
 		objects.spheres[numObj].radius = 0.5f;
 		objects.spheres[numObj].center = glm::vec3(0.0f, 1.0f, 0.0f);
-		objects.dielectrics[glassIndex].indexOfRefraction = 1.5f;
 		objects.spheres[numObj].materialType = 2;
-		objects.spheres[numObj].materialIndex = glassIndex;
 
 		numObj++;
 
 		objects.spheres[numObj].radius = 0.5f;
 		objects.spheres[numObj].center = glm::vec3(4.0f, 1.0f, 0.0f);
-		objects.metals[metalIndex].colorAlbedo = glm::vec3(0.7f, 0.6f, 0.5f);
-		objects.metals[metalIndex].fuzziness = 0.0f;
 		objects.spheres[numObj].materialType = 1;
-		objects.spheres[numObj].materialIndex = metalIndex;
 
 		numObj++;
 		objects.numObj = numObj;
