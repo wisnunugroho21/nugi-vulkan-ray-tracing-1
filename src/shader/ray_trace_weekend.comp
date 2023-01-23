@@ -2,7 +2,7 @@
 
 // ------------- layout ------------- 
 
-layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
 
@@ -20,8 +20,7 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectUbo {
-  Sphere spheres[500];
-  uint numObj;
+  Sphere spheres[4];
 } objects;
 
 layout(push_constant) uniform Push {
@@ -46,7 +45,6 @@ struct FaceNormal {
 
 struct MaterialHitRecord {
   uint materialType;
-  uint materialIndex;
 };
 
 struct HitRecord {
@@ -209,7 +207,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[500], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Sphere objList[4], uint objNum, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
   faceNormal.normal = vec3(0, 0, 0);
@@ -242,7 +240,7 @@ ScatterRecord scatterLambertian(Ray r, HitRecord hit) {
   scat.raySpecular.direction = scatterDirection;
 
   scat.isScattered = true;
-  scat.colorAttenuation = randomVecThree(0);
+  scat.colorAttenuation = vec3(0.5, 0.4, 0.2);
 
   return scat;
 }
@@ -253,13 +251,13 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
   vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
 
   float fuzziness = 0.0;
-  fuzziness = fuzziness < 1.0 ? fuzziness : 1.0;
+  // fuzziness = fuzziness < 1.0 ? fuzziness : 1.0;
 
   scat.raySpecular.origin = hit.point;
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
   scat.isScattered = dot(reflected, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = randomVecThree(0);
+  scat.colorAttenuation = vec3(0.3, 0.6, 0.3);
 
   return scat;
 }
@@ -297,7 +295,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(objects.spheres, objects.numObj, curRay, 0.001, 10000.0);
+    HitRecord hit = hitSphereList(objects.spheres, 4, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;

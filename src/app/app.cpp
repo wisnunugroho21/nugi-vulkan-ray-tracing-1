@@ -88,53 +88,21 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceObject objects{};
 
-		uint32_t numObj = 0;
-		uint32_t materialType = 0;
+		objects.spheres[0].radius = 1000.0f;
+		objects.spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
+		objects.spheres[0].materialType = 0;
 
-		for (int i = -11; i < 11; i++) {
-			for (int j = -11; j < 11; j++) {
-				glm::vec3 center = glm::vec3(i, 0.2, j);
+		objects.spheres[1].radius = 0.5f;
+		objects.spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
+		objects.spheres[1].materialType = 0;
 
-				if ((center - glm::vec3(4.0f, 0.2f, 0.0f)).length() > 0.9f) {
-					objects.spheres[numObj].center = center;
-					objects.spheres[numObj].radius = 0.2f;
-					objects.spheres[numObj].materialType = materialType;
+		objects.spheres[2].radius = 0.5f;
+		objects.spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
+		objects.spheres[2].materialType = 2;
 
-					if (materialType >= 2) {
-						materialType = 0;
-					} else {
-						materialType++;
-					}
-
-					numObj++;
-				}
-			}
-		}
-
-		objects.spheres[numObj].radius = 1000.0f;
-		objects.spheres[numObj].center = glm::vec3(0.0f, -1000.0f, 0.0f);
-		objects.spheres[numObj].materialType = 0;
-
-		numObj++;
-
-		objects.spheres[numObj].radius = 0.5f;
-		objects.spheres[numObj].center = glm::vec3(-4.0f, 1.0f, 0.0f);
-		objects.spheres[numObj].materialType = 0;
-
-		numObj++;
-
-		objects.spheres[numObj].radius = 0.5f;
-		objects.spheres[numObj].center = glm::vec3(0.0f, 1.0f, 0.0f);
-		objects.spheres[numObj].materialType = 2;
-
-		numObj++;
-
-		objects.spheres[numObj].radius = 0.5f;
-		objects.spheres[numObj].center = glm::vec3(4.0f, 1.0f, 0.0f);
-		objects.spheres[numObj].materialType = 1;
-
-		numObj++;
-		objects.numObj = numObj;
+		objects.spheres[3].radius = 0.5f;
+		objects.spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
+		objects.spheres[3].materialType = 1;
 
 		uint32_t imageCount = this->renderer->getSwapChain()->getswapChainImages().size();
 		for (int i = 0; i < imageCount; i++) {
