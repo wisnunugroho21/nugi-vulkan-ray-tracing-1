@@ -16,6 +16,7 @@ struct Triangle {
   vec3 point1;
   vec3 point2;
   vec3 point3;
+  uint materialType;
 };
 
 layout(set = 0, binding = 1) uniform GlobalUbo {
@@ -169,7 +170,7 @@ FaceNormal setFaceNormal(Ray r, vec3 outwardNormal) {
   return faceNormal;
 }
 
-HitRecord hitTriangle(Sphere obj, Ray r, float tMin, float tMax) {
+HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
   faceNormal.normal = vec3(0, 0, 0);
@@ -202,7 +203,7 @@ HitRecord hitTriangle(Sphere obj, Ray r, float tMin, float tMax) {
   vec3 qvec = cross(tvec, v0v1);
   float v = dot(normalize(r.direction), qvec) * invDet;
   if (v < 0.0f || u + v > 1.0f) {
-    return false;
+    return rec;
   }
   
   float t = dot(v0v2, qvec) * invDet;
@@ -377,7 +378,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(objects.triangles, 36, curRay, 0.001, 10000.0);
+    HitRecord hit = hitTriangleList(objects.triangles, 36, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
