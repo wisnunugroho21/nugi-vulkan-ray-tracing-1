@@ -220,6 +220,18 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
+vec2 getSphereUV(vec3 point) {
+  float pi = 3.1415926535897932385;
+
+  float theta = acos(-1.0 * point.y);
+  float phi = atan(point.x, -1.0 * point.z) + pi; // HLSL atan2(x,y) == GLSL atan(y,x)
+
+  float u = phi / (2.0 * pi);
+  float v = theta / pi;
+
+  return vec2(u, v);
+}
+
 HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
@@ -250,6 +262,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   rec.isHit = true;
   rec.t = root;
   rec.point = rayAt(r, rec.t);
+  rec.uv = getSphereUV(rec.point);
 
   vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
   rec.faceNormal = setFaceNormal(r, outwardNormal);
