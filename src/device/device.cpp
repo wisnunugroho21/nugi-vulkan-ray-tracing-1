@@ -142,7 +142,12 @@ namespace nugiEngine {
     QueueFamilyIndices indices = this->findQueueFamilies(this->physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily, indices.computeFamily};
+    std::set<uint32_t> uniqueQueueFamilies = {
+      indices.graphicsFamily, 
+      indices.presentFamily, 
+      indices.computeFamily,
+      indices.transferFamily
+    };
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -184,6 +189,7 @@ namespace nugiEngine {
     vkGetDeviceQueue(this->device, indices.graphicsFamily, 0, &this->graphicsQueue);
     vkGetDeviceQueue(this->device, indices.presentFamily, 0, &this->presentQueue);
     vkGetDeviceQueue(this->device, indices.computeFamily, 0, &this->computeQueue);
+    vkGetDeviceQueue(this->device, indices.transferFamily, 0, &this->transferQueue);
   }
 
   void EngineDevice::createCommandPool() {
@@ -346,6 +352,11 @@ namespace nugiEngine {
       if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
         indices.computeFamily = i;
         indices.computeFamilyHasValue = true;
+      }
+
+      if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+        indices.transferFamily = i;
+        indices.transferFamilyHasValue = true;
       }
 
       VkBool32 presentSupport = false;

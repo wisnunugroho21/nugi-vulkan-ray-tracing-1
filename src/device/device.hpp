@@ -17,12 +17,14 @@ namespace nugiEngine {
     uint32_t graphicsFamily;
     uint32_t presentFamily;
     uint32_t computeFamily;
+    uint32_t transferFamily;
 
     bool graphicsFamilyHasValue = false;
     bool presentFamilyHasValue = false;
     bool computeFamilyHasValue = false;
+    bool transferFamilyHasValue = false;
 
-    bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue && computeFamilyHasValue; }
+    bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue && computeFamilyHasValue && transferFamilyHasValue; }
   };
 
   class EngineDevice {
@@ -51,6 +53,7 @@ namespace nugiEngine {
       VkQueue getGraphicsQueue() { return this->graphicsQueue; }
       VkQueue getPresentQueue() { return this->presentQueue; }
       VkQueue getComputeQueue() { return this->computeQueue; }
+      VkQueue getTransferQueue() { return this->transferQueue; }
       
       VkPhysicalDeviceProperties getProperties() { return this->properties; }
       VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
@@ -98,6 +101,7 @@ namespace nugiEngine {
       VkQueue graphicsQueue;
       VkQueue presentQueue;
       VkQueue computeQueue;
+      VkQueue transferQueue;
 
       // Anti-aliasing
       VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;

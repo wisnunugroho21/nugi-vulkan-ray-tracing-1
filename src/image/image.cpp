@@ -150,7 +150,7 @@ namespace nugiEngine {
     );
 
     commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->appDevice.getGraphicsQueue());
+    commandBuffer.submitCommand(this->appDevice.getTransferQueue());
   }
 
   void EngineImage::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
@@ -237,7 +237,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getGraphicsQueue());
+      commandBuffer->submitCommand(this->appDevice.getTransferQueue());
     }
   }
 
@@ -285,7 +285,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getGraphicsQueue());
+      commandBuffer->submitCommand(this->appDevice.getTransferQueue());
     }
   }
 
@@ -381,7 +381,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(appDevice->getGraphicsQueue());
+      commandBuffer->submitCommand(appDevice->getTransferQueue());
     }
   }
 
@@ -436,7 +436,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(appDevice->getGraphicsQueue());
+      commandBuffer->submitCommand(appDevice->getTransferQueue());
     }
   }
 
@@ -462,7 +462,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getGraphicsQueue());
+      commandBuffer->submitCommand(this->appDevice.getTransferQueue());
     }
   }
 
@@ -488,7 +488,7 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getGraphicsQueue());
+      commandBuffer->submitCommand(this->appDevice.getTransferQueue());
     }
   }
 
@@ -597,7 +597,7 @@ namespace nugiEngine {
       1, &barrier);
 
     commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->appDevice.getGraphicsQueue());
+    commandBuffer.submitCommand(this->appDevice.getTransferQueue());
   }
 
   VkDescriptorImageInfo EngineImage::getDescriptorInfo(VkImageLayout desiredImageLayout) {
