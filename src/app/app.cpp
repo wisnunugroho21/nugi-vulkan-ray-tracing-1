@@ -89,18 +89,61 @@ namespace nugiEngine {
 	RayTraceObject EngineApp::loadObjects() {
 		RayTraceObject objectBuffer{};
 
-		objectBuffer.spheres[0].radius = 1000.0f;
-		objectBuffer.spheres[0].center = glm::vec3(0.0f, -1000.0f, 0.0f);
-		objectBuffer.spheres[0].materialType = 0;
-		objectBuffer.spheres[1].radius = 0.5f;
-		objectBuffer.spheres[1].center = glm::vec3(-4.0f, 1.0f, 0.0f);
-		objectBuffer.spheres[1].materialType = 0;
-		objectBuffer.spheres[2].radius = 0.5f;
-		objectBuffer.spheres[2].center = glm::vec3(0.0f, 1.0f, 0.0f);
-		objectBuffer.spheres[2].materialType = 2;
-		objectBuffer.spheres[3].radius = 0.5f;
-		objectBuffer.spheres[3].center = glm::vec3(4.0f, 1.0f, 0.0f);
-		objectBuffer.spheres[3].materialType = 1;
+		glm::vec3 vertices[36] {
+			{-.5f, -.5f, -.5f},
+      {-.5f, .5f, .5f},
+      {-.5f, -.5f, .5f},
+      {-.5f, -.5f, -.5f},
+      {-.5f, .5f, -.5f},
+      {-.5f, .5f, .5f},
+ 
+      // right face (yellow)
+      {.5f, -.5f, -.5f},
+      {.5f, .5f, .5f},
+      {.5f, -.5f, .5f},
+      {.5f, -.5f, -.5f},
+      {.5f, .5f, -.5f},
+      {.5f, .5f, .5f},
+ 
+      // top face (orange, remember y axis points down)
+      {-.5f, -.5f, -.5f},
+      {.5f, -.5f, .5f},
+      {-.5f, -.5f, .5f},
+      {-.5f, -.5f, -.5f},
+      {.5f, -.5f, -.5f},
+      {.5f, -.5f, .5f},
+ 
+      // bottom face (red)
+      {-.5f, .5f, -.5f},
+      {.5f, .5f, .5f},
+      {-.5f, .5f, .5f},
+      {-.5f, .5f, -.5f},
+      {.5f, .5f, -.5f},
+      {.5f, .5f, .5f},
+ 
+      // nose face (blue)
+      {-.5f, -.5f, 0.5f},
+      {.5f, .5f, 0.5f},
+      {-.5f, .5f, 0.5f},
+      {-.5f, -.5f, 0.5f},
+      {.5f, -.5f, 0.5f},
+      {.5f, .5f, 0.5f},
+ 
+      // tail face (green)
+      {-.5f, -.5f, -0.5f},
+      {.5f, .5f, -0.5f},
+      {-.5f, .5f, -0.5f},
+      {-.5f, -.5f, -0.5f},
+      {.5f, -.5f, -0.5f},
+      {.5f, .5f, -0.5f},
+		};
+
+		Triangle triangle[12];
+		for (int i = 0; i < 12; i++) {
+			objectBuffer.triangles[i].point1 = vertices[i * 3];
+			objectBuffer.triangles[i].point2 = vertices[i * 3 + 1];
+			objectBuffer.triangles[i].point3 = vertices[i * 3 + 2];
+		}
 
 		return objectBuffer;
 	}

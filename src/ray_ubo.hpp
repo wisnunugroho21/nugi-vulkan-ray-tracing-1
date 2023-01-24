@@ -12,6 +12,12 @@ namespace nugiEngine {
     alignas(4) uint32_t materialType;
   };
 
+  struct Triangle {
+    alignas(16) glm::vec3 point1;
+    alignas(16) glm::vec3 point2;
+    alignas(16) glm::vec3 point3;
+  };
+
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
     alignas(16) glm::vec3 horizontal;
@@ -20,7 +26,7 @@ namespace nugiEngine {
   };
 
   struct RayTraceObject {
-    Sphere spheres[500];
+    Triangle triangles[500];
   };
 
   struct RayTracePushConstant {

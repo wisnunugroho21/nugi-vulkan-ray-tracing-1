@@ -12,6 +12,12 @@ struct Sphere {
   uint materialType;
 };
 
+struct Triangle {
+  vec3 point1;
+  vec3 point2;
+  vec3 point3;
+};
+
 layout(set = 0, binding = 1) uniform GlobalUbo {
   vec3 origin;
   vec3 horizontal;
@@ -20,7 +26,7 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectUbo {
-  Sphere spheres[500];
+  Triangle triangles[500];
 } objects;
 
 layout(push_constant) uniform Push {
@@ -53,6 +59,7 @@ struct HitRecord {
   vec3 point;
   FaceNormal faceNormal;
   MaterialHitRecord materialHit;
+  vec2 uv;
 };
 
 struct ScatterRecord {
@@ -162,6 +169,60 @@ FaceNormal setFaceNormal(Ray r, vec3 outwardNormal) {
   return faceNormal;
 }
 
+HitRecord hitTriangle(Sphere obj, Ray r, float tMin, float tMax) {
+  FaceNormal faceNormal;
+  faceNormal.frontFace = false;
+  faceNormal.normal = vec3(0, 0, 0);
+
+  HitRecord rec;
+  rec.isHit = false;
+  rec.t = 0.0;
+  rec.point = vec3(0, 0, 0);
+  rec.faceNormal = faceNormal;
+
+  float kEpsilon = 0.000001;
+
+  vec3 v0v1 = obj.point2 - obj.point1;
+  vec3 v0v2 = obj.point3 - obj.point1;
+  vec3 pvec = cross(normalize(r.direction), v0v2);
+  float det = dot(v0v1, pvec);
+  
+  if (det < kEpsilon) {
+    return rec;
+  }
+    
+  float invDet = 1.0 / det;
+
+  vec3 tvec = r.origin - obj.point1;
+  float u = dot(tvec, pvec) * invDet;
+  if (u < 0.0f || u > 1.0f) {
+    return rec;
+  }
+
+  vec3 qvec = cross(tvec, v0v1);
+  float v = dot(normalize(r.direction), qvec) * invDet;
+  if (v < 0.0f || u + v > 1.0f) {
+    return false;
+  }
+  
+  float t = dot(v0v2, qvec) * invDet;
+
+  if (t < tMin || t > tMax) {
+    return rec;
+  }
+
+  rec.isHit = true;
+  rec.t = t;
+  rec.point = rayAt(r, rec.t);
+  rec.uv = vec2(u, v);
+
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  rec.faceNormal = setFaceNormal(r, outwardNormal);
+
+  rec.materialHit.materialType = obj.materialType;
+  return rec;
+}
+
 HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   FaceNormal faceNormal;
   faceNormal.frontFace = false;
@@ -189,9 +250,9 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
 
   // Find the nearest root that lies in the acceptable range.
   float root = (-half_b - sqrtd) / a;
-  if (root < tMin || tMax < root) {
+  if (root < tMin || root > tMax) {
     root = (-half_b + sqrtd) / a;
-    if (root < tMin || tMax < root) {
+    if (root < tMin || root > tMax) {
       return rec;
     }
   }
@@ -204,6 +265,27 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   rec.faceNormal = setFaceNormal(r, outwardNormal);
 
   rec.materialHit.materialType = obj.materialType;
+  return rec;
+}
+
+HitRecord hitTriangleList(Triangle objList[500], uint objNum, Ray r, float tMin, float tMax) {
+  FaceNormal faceNormal;
+  faceNormal.frontFace = false;
+  faceNormal.normal = vec3(0, 0, 0);
+  
+  HitRecord rec;
+  rec.isHit = false;
+  rec.point = vec3(0, 0, 0);
+  rec.faceNormal = faceNormal;
+
+  rec.t = tMax;
+  for (int i = 0; i < objNum; i++) {
+    HitRecord tempRec = hitTriangle(objList[i], r, tMin, rec.t);
+    if (tempRec.isHit) {
+      rec = tempRec;
+    }
+  }
+
   return rec;
 }
 
@@ -295,7 +377,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitSphereList(objects.spheres, 4, curRay, 0.001, 10000.0);
+    HitRecord hit = hitSphereList(objects.triangles, 36, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
