@@ -40,7 +40,7 @@ namespace nugiEngine {
 			auto newTime = std::chrono::high_resolution_clock::now();
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 
-			if (t == 1000) {
+			if (t == 10) {
 				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
 				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
 
@@ -91,54 +91,54 @@ namespace nugiEngine {
 
 		glm::vec3 vertices[36] {
 			{-.5f, -.5f, -.5f},
-      {-.5f, .5f, .5f},
-      {-.5f, -.5f, .5f},
-      {-.5f, -.5f, -.5f},
-      {-.5f, .5f, -.5f},
-      {-.5f, .5f, .5f},
+			{-.5f, .5f, .5f},
+			{-.5f, -.5f, .5f},
+			{-.5f, -.5f, -.5f},
+			{-.5f, .5f, -.5f},
+			{-.5f, .5f, .5f},
  
-      // right face (yellow)
-      {.5f, -.5f, -.5f},
-      {.5f, .5f, .5f},
-      {.5f, -.5f, .5f},
-      {.5f, -.5f, -.5f},
-      {.5f, .5f, -.5f},
-      {.5f, .5f, .5f},
+			// right face (yellow)
+			{.5f, -.5f, -.5f},
+			{.5f, .5f, .5f},
+			{.5f, -.5f, .5f},
+			{.5f, -.5f, -.5f},
+			{.5f, .5f, -.5f},
+			{.5f, .5f, .5f},
  
-      // top face (orange, remember y axis points down)
-      {-.5f, -.5f, -.5f},
-      {.5f, -.5f, .5f},
-      {-.5f, -.5f, .5f},
-      {-.5f, -.5f, -.5f},
-      {.5f, -.5f, -.5f},
-      {.5f, -.5f, .5f},
+			// top face (orange, remember y axis points down)
+			{-.5f, -.5f, -.5f},
+			{.5f, -.5f, .5f},
+			{-.5f, -.5f, .5f},
+			{-.5f, -.5f, -.5f},
+			{.5f, -.5f, -.5f},
+			{.5f, -.5f, .5f},
  
-      // bottom face (red)
-      {-.5f, .5f, -.5f},
-      {.5f, .5f, .5f},
-      {-.5f, .5f, .5f},
-      {-.5f, .5f, -.5f},
-      {.5f, .5f, -.5f},
-      {.5f, .5f, .5f},
+			// bottom face (red)
+			{-.5f, .5f, -.5f},
+			{.5f, .5f, .5f},
+			{-.5f, .5f, .5f},
+			{-.5f, .5f, -.5f},
+			{.5f, .5f, -.5f},
+			{.5f, .5f, .5f},
  
-      // nose face (blue)
-      {-.5f, -.5f, 0.5f},
-      {.5f, .5f, 0.5f},
-      {-.5f, .5f, 0.5f},
-      {-.5f, -.5f, 0.5f},
-      {.5f, -.5f, 0.5f},
-      {.5f, .5f, 0.5f},
+			// nose face (blue)
+			{-.5f, -.5f, 0.5f},
+			{.5f, .5f, 0.5f},
+			{-.5f, .5f, 0.5f},
+			{-.5f, -.5f, 0.5f},
+			{.5f, -.5f, 0.5f},
+			{.5f, .5f, 0.5f},
  
-      // tail face (green)
-      {-.5f, -.5f, -0.5f},
-      {.5f, .5f, -0.5f},
-      {-.5f, .5f, -0.5f},
-      {-.5f, -.5f, -0.5f},
-      {.5f, -.5f, -0.5f},
-      {.5f, .5f, -0.5f},
+			// tail face (green)
+			{-.5f, -.5f, -0.5f},
+			{.5f, .5f, -0.5f},
+			{-.5f, .5f, -0.5f},
+			{-.5f, -.5f, -0.5f},
+			{.5f, -.5f, -0.5f},
+			{.5f, .5f, -0.5f},
 		};
 
-		Triangle triangle[12];
+		Triangle triangle[12]{};
 		for (int i = 0; i < 12; i++) {
 			objectBuffer.triangles[i].point1 = vertices[i * 3];
 			objectBuffer.triangles[i].point2 = vertices[i * 3 + 1];
@@ -154,7 +154,7 @@ namespace nugiEngine {
 
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(13.0f, 2.0f, 3.0f);
+		glm::vec3 lookFrom = glm::vec3(3.0f, 10.0f, 3.0f);
 		glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		
