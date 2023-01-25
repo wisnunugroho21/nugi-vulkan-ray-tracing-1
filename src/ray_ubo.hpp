@@ -26,9 +26,9 @@ namespace nugiEngine {
   };
 
   struct BvhNode {
-    uint32_t leftNode;
-    uint32_t rightNode;
-    uint32_t objIndex;
+    int leftNode;
+    int rightNode;
+    int objIndex;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;

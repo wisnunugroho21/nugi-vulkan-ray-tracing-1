@@ -19,9 +19,9 @@ struct Triangle {
 };
 
 struct BvhNode {
-  uint leftNode;
-  uint rightNode;
-  uint objIndex;
+  int leftNode;
+  int rightNode;
+  int objIndex;
 
   vec3 maximum;
   vec3 minimum;
@@ -102,11 +102,11 @@ vec3 rayAt(Ray r, float t) {
   return r.origin + t * r.direction;
 }
 
-FaceNormal setFaceNormal(Ray r, vec3 outwardNormal) {
+FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   FaceNormal faceNormal;
 
-  faceNormal.frontFace = dot(r.direction, outwardNormal) < 0.0;
-  faceNormal.normal = faceNormal.frontFace ? outwardNormal : -outwardNormal;
+  faceNormal.frontFace = dot(r_direction, outwardNormal) < 0.0;
+  faceNormal.normal = faceNormal.frontFace ? outwardNormal : -1.0 * outwardNormal;
 
   return faceNormal;
 }
@@ -155,10 +155,12 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   rec.point = rayAt(r, rec.t);
   rec.uv = vec2(u, v);
 
-  rec.faceNormal.normal = normalize(cross(v0v1, v0v2));
-  rec.faceNormal.frontFace = true;
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  rec.faceNormal = setFaceNormal(normalize(r.direction), outwardNormal);
 
-  rec.materialHit.materialType = 0;
+  // rec.faceNormal.normal = -1.0 * outwardNormal;
+
+  rec.materialHit.materialType = 1;
   return rec;
 }
 
@@ -207,7 +209,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   rec.uv = getSphereUV(rec.point);
 
   vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
-  rec.faceNormal = setFaceNormal(r, outwardNormal);
+  rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
   rec.materialHit.materialType = obj.materialType;
   return rec;
@@ -254,22 +256,22 @@ vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return vec2(tNear, tFar);
 }
 
-#define MAX_NODE_DEPTH 16
+#define MAX_NODE_DEPTH 25
 HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
 
-  uint node[MAX_NODE_DEPTH];
-  uint nodeIndex = 0;
+  int stack[MAX_NODE_DEPTH];
+  int stackIndex = 0;
 
-  node[nodeIndex] = 0;
-  nodeIndex++;
+  stack[stackIndex] = 0;
+  stackIndex++;
 
-  while(nodeIndex > 0 && nodeIndex < MAX_NODE_DEPTH) {
-    nodeIndex--;
-    uint currentNode = node[nodeIndex];
-    if (currentNode <= 0) {
+  while(stackIndex > 0 && stackIndex < MAX_NODE_DEPTH) {
+    stackIndex--;
+    int currentNode = stack[stackIndex];
+    if (currentNode < 0) {
       continue;
     }
 
@@ -278,8 +280,8 @@ HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMa
       continue;
     }
 
-    if (bvhNodes[nodeIndex].objIndex >= 0) {
-      uint objIndex = bvhNodes[nodeIndex].objIndex;
+    if (bvhNodes[currentNode].objIndex > 0) {
+      int objIndex = bvhNodes[currentNode].objIndex;
       HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
@@ -287,11 +289,11 @@ HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMa
       }
     }
 
-    node[nodeIndex] = bvhNodes[currentNode].leftNode;
-    nodeIndex++;
+    stack[stackIndex] = bvhNodes[currentNode].leftNode;
+    stackIndex++;
 
-    node[nodeIndex] = bvhNodes[currentNode].rightNode;
-    nodeIndex++;
+    stack[stackIndex] = bvhNodes[currentNode].rightNode;
+    stackIndex++;
   }
 
   return rec;
@@ -326,7 +328,7 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
   scat.isScattered = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = vec3(0.3, 0.6, 0.3);
+  scat.colorAttenuation = vec3(0.7, 0.6, 0.3);
 
   return scat;
 }
@@ -364,7 +366,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitBvh(bvhNodes, 12, curRay, 0.001, 10000.0);
+    HitRecord hit = hitTriangleList(triangles, 12, curRay, 0.001, 10000.0); // hitBvh(bvhNodes, 23, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
@@ -382,7 +384,7 @@ vec3 rayColor(Ray r) {
         curAttenuation *= scat.colorAttenuation;
         curRay = scat.raySpecular;
       } else {
-        return vec3(0.0, 0.0, 0.0);
+        return vec3(1.0, 0.0, 0.0);
       }
     } else {
       vec3 unit_direction = normalize(curRay.direction);
@@ -393,7 +395,7 @@ vec3 rayColor(Ray r) {
     }
   }
 
-  return vec3(0.0, 0.0, 0.0); // exceeded recursion
+  return vec3(0.0, 0.0, 1.0); // exceeded recursion
 }
 
 void main() {

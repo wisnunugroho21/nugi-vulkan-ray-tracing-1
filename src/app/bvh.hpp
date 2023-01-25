@@ -8,7 +8,7 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001);
+  const glm::vec3 eps(0.0001f);
 
   // Axis-aligned bounding box.
   struct Aabb {
@@ -54,7 +54,7 @@ namespace nugiEngine {
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
 
-      BvhNode node;
+      BvhNode node{};
       node.minimum = box.min;
       node.maximum = box.max;
       node.leftNode = leftNodeIndex;

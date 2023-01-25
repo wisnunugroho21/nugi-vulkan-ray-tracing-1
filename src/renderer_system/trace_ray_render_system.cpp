@@ -80,7 +80,7 @@ namespace nugiEngine {
 		this->bvhBuffers.clear();
 
 		for (uint32_t i = 0; i < swapChainImageCount; i++) {
-			EngineBuffer stagingBuffer {
+			EngineBuffer stagingBuffer1 {
 				this->appDevice,
 				sizeof(RayTraceObject),
 				1,
@@ -88,8 +88,8 @@ namespace nugiEngine {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 			};
 
-			stagingBuffer.map();
-			stagingBuffer.writeToBuffer(&object);
+			stagingBuffer1.map();
+			stagingBuffer1.writeToBuffer(&object);
 
 			auto objectBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
@@ -99,12 +99,12 @@ namespace nugiEngine {
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			objectBuffer->copyBuffer(stagingBuffer.getBuffer(), sizeof(RayTraceObject));
+			objectBuffer->copyBuffer(stagingBuffer1.getBuffer(), sizeof(RayTraceObject));
 			this->objectBuffers.emplace_back(objectBuffer);
 		}
 
 		for (uint32_t i = 0; i < swapChainImageCount; i++) {
-			EngineBuffer stagingBuffer {
+			EngineBuffer stagingBuffer2 {
 				this->appDevice,
 				sizeof(RayTraceObject),
 				1,
@@ -112,8 +112,8 @@ namespace nugiEngine {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 			};
 
-			stagingBuffer.map();
-			stagingBuffer.writeToBuffer(&bvh);
+			stagingBuffer2.map();
+			stagingBuffer2.writeToBuffer(&bvh);
 
 			auto bvhBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
@@ -123,7 +123,7 @@ namespace nugiEngine {
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			bvhBuffer->copyBuffer(stagingBuffer.getBuffer(), sizeof(RayTraceBvh));
+			bvhBuffer->copyBuffer(stagingBuffer2.getBuffer(), sizeof(RayTraceBvh));
 			this->bvhBuffers.emplace_back(bvhBuffer);
 		}
 	}
