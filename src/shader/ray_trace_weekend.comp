@@ -273,24 +273,24 @@ HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMa
       continue;
     }
 
-    vec2 intersect = intersectAABB(r, currentNode[nodeIndex].minimum, currentNode[nodeIndex].maximum);
+    vec2 intersect = intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum);
     if (intersect.x > intersect.y) {
       continue;
     }
 
-    if (node[nodeIndex].objIndex >= 0) {
-      uint objIndex = node[nodeIndex].objIndex;
-      HitRecord tempRec = hitTriangle(objList[objIndex], r, tMin, rec.t);
+    if (bvhNodes[nodeIndex].objIndex >= 0) {
+      uint objIndex = bvhNodes[nodeIndex].objIndex;
+      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;
       }
     }
 
-    node[nodeIndex] = currentNode[nodeIndex].leftNode;
+    node[nodeIndex] = bvhNodes[currentNode].leftNode;
     nodeIndex++;
 
-    node[nodeIndex] = currentNode[nodeIndex].rightNode;
+    node[nodeIndex] = bvhNodes[currentNode].rightNode;
     nodeIndex++;
   }
 
