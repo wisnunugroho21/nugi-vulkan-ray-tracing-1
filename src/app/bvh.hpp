@@ -38,18 +38,18 @@ namespace nugiEngine {
   };
 
   // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
-  struct Object0 {
+  struct TriangleBoundBox {
     uint32_t index;
     Triangle t;
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.
-  struct BvhNode0 {
+  struct BvhItemBuild {
     Aabb box;
     int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     int leftNodeIndex = -1;
     int rightNodeIndex = -1;
-    std::vector<Object0> objects;
+    std::vector<TriangleBoundBox> objects;
 
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
@@ -68,7 +68,7 @@ namespace nugiEngine {
     }
   };
 
-  bool nodeCompare(BvhNode0 &a, BvhNode0 &b) {
+  bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b) {
     return a.index < b.index;
   }
 
@@ -81,7 +81,7 @@ namespace nugiEngine {
     return {glm::min(glm::min(t.point0, t.point1), t.point2) - eps, glm::max(glm::max(t.point0, t.point1), t.point2) + eps};
   }
 
-  Aabb objectListBoundingBox(std::vector<Object0> &objects) {
+  Aabb objectListBoundingBox(std::vector<TriangleBoundBox> &objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;
@@ -102,33 +102,33 @@ namespace nugiEngine {
     return boxA.min[axis] < boxB.min[axis];
   }
 
-  bool boxXCompare(Object0 a, Object0 b) {
+  bool boxXCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 0);
   }
 
-  bool boxYCompare(Object0 a, Object0 b) {
+  bool boxYCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 1);
   }
 
-  bool boxZCompare(Object0 a, Object0 b) {
+  bool boxZCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 2);
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<Object0> &srcObjects) {
-    std::vector<BvhNode0> intermediate;
+  std::vector<BvhNode> createBvh(const std::vector<TriangleBoundBox> &srcObjects) {
+    std::vector<BvhItemBuild> intermediate;
     int nodeCounter = 0;
-    std::stack<BvhNode0> nodeStack;
+    std::stack<BvhItemBuild> nodeStack;
 
-    BvhNode0 root;
+    BvhItemBuild root;
     root.index = nodeCounter;
     root.objects = srcObjects;
     nodeCounter++;
     nodeStack.push(root);
 
     while (!nodeStack.empty()) {
-      BvhNode0 currentNode = nodeStack.top();
+      BvhItemBuild currentNode = nodeStack.top();
       nodeStack.pop();
 
       currentNode.box = objectListBoundingBox(currentNode.objects);
@@ -147,7 +147,7 @@ namespace nugiEngine {
       } else {
         auto mid = objectSpan / 2;
 
-        BvhNode0 leftNode;
+        BvhItemBuild leftNode;
         leftNode.index = nodeCounter;
         for (int i = 0; i < mid; i++) {
           leftNode.objects.push_back(currentNode.objects[i]);
@@ -156,7 +156,7 @@ namespace nugiEngine {
         nodeCounter++;
         nodeStack.push(leftNode);
 
-        BvhNode0 rightNode;
+        BvhItemBuild rightNode;
         rightNode.index = nodeCounter;
         for (int i = mid; i < objectSpan; i++) {
           rightNode.objects.push_back(currentNode.objects[i]);

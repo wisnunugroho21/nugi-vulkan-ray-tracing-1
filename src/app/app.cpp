@@ -152,7 +152,7 @@ namespace nugiEngine {
 	}
 
 	RayTraceBvh buildBvh(Triangle triangles[500]) {
-		std::vector<Object0> objects;
+		std::vector<TriangleBoundBox> objects;
 		for (uint32_t i = 0; i < 12; i++) {
 			Triangle t = triangles[i];
 			objects.push_back({i, t});
