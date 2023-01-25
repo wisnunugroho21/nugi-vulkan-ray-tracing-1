@@ -14,13 +14,12 @@
 
 namespace nugiEngine {
 	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, RayTraceObject object, RayTraceBvh bvh) : appDevice{device}, width{width}, height{height}, nSample{nSample} 
+		uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, VkDescriptorBufferInfo buffersInfo[3]) : appDevice{device}, width{width}, height{height}, nSample{nSample} 
 	{
 		this->createImageStorages(swapChainImageCount);
 		this->createUniformBuffer(swapChainImageCount);
-		this->createObjectBuffer(swapChainImageCount, object, bvh);
 
-		this->createDescriptor(descriptorPool, swapChainImageCount);
+		this->createDescriptor(descriptorPool, swapChainImageCount, buffersInfo);
 
 		this->createPipelineLayout();
 		this->createPipeline();
@@ -75,59 +74,6 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::createObjectBuffer(uint32_t swapChainImageCount, RayTraceObject object, RayTraceBvh bvh) {
-		this->objectBuffers.clear();
-		this->bvhBuffers.clear();
-
-		for (uint32_t i = 0; i < swapChainImageCount; i++) {
-			EngineBuffer stagingBuffer1 {
-				this->appDevice,
-				sizeof(RayTraceObject),
-				1,
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-			};
-
-			stagingBuffer1.map();
-			stagingBuffer1.writeToBuffer(&object);
-
-			auto objectBuffer = std::make_shared<EngineBuffer>(
-				this->appDevice,
-				sizeof(RayTraceObject),
-				1,
-				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
-
-			objectBuffer->copyBuffer(stagingBuffer1.getBuffer(), sizeof(RayTraceObject));
-			this->objectBuffers.emplace_back(objectBuffer);
-		}
-
-		for (uint32_t i = 0; i < swapChainImageCount; i++) {
-			EngineBuffer stagingBuffer2 {
-				this->appDevice,
-				sizeof(RayTraceObject),
-				1,
-				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-			};
-
-			stagingBuffer2.map();
-			stagingBuffer2.writeToBuffer(&bvh);
-
-			auto bvhBuffer = std::make_shared<EngineBuffer>(
-				this->appDevice,
-				sizeof(RayTraceBvh),
-				1,
-				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
-
-			bvhBuffer->copyBuffer(stagingBuffer2.getBuffer(), sizeof(RayTraceBvh));
-			this->bvhBuffers.emplace_back(bvhBuffer);
-		}
-	}
-
 	void EngineTraceRayRenderSystem::createUniformBuffer(uint32_t swapChainImageCount) {
 		this->uniformBuffers.clear();
 
@@ -145,13 +91,14 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount) {
+	void EngineTraceRayRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, VkDescriptorBufferInfo buffersInfo[3]) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, this->nSample)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 
 		this->descriptorSets.clear();
@@ -169,17 +116,12 @@ namespace nugiEngine {
 			auto uniformBuffer = this->uniformBuffers[i];
 			auto uniformBufferInfo = uniformBuffer->descriptorInfo();
 
-			auto objectBuffer = this->objectBuffers[i];
-			auto objectBufferInfo = objectBuffer->descriptorInfo();
-
-			auto bvhBuffer = this->bvhBuffers[i];
-			auto bvhBufferInfo = bvhBuffer->descriptorInfo();
-
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, imageInfos.data(), this->nSample) 
 				.writeBuffer(1, &uniformBufferInfo)
-				.writeBuffer(2, &objectBufferInfo)
-				.writeBuffer(3, &bvhBufferInfo)
+				.writeBuffer(2, &buffersInfo[0])
+				.writeBuffer(3, &buffersInfo[1])
+				.writeBuffer(4, &buffersInfo[2])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

@@ -34,13 +34,18 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
   vec3 lowerLeftCorner;
 } ubo;
 
-layout(set = 0, binding = 2) buffer ObjectUbo {
+layout(set = 0, binding = 2) buffer ObjectSsbo {
   Triangle triangles[500];
 };
 
-layout(set = 0, binding = 3) buffer BvhUbo {
+layout(set = 0, binding = 3) buffer BvhSsbo {
   BvhNode bvhNodes[500];
 };
+
+layout(set = 0, binding = 4) buffer NumSsbo {
+  uint objSize;
+  uint bvhSize;
+} numSsbo;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -366,7 +371,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitTriangleList(triangles, 12, curRay, 0.001, 10000.0); // hitBvh(bvhNodes, 23, curRay, 0.001, 10000.0);
+    HitRecord hit = hitTriangleList(triangles, numSsbo.objSize, curRay, 0.001, 10000.0); // hitBvh(bvhNodes, 23, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;

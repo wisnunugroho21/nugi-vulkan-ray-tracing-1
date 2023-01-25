@@ -1,13 +1,11 @@
 #include "app.hpp"
 
-#include "bvh.hpp"
-
 #include "../camera/camera.hpp"
 #include "../mouse_controller/mouse_controller.hpp"
 #include "../keyboard_controller/keyboard_controller.hpp"
 #include "../buffer/buffer.hpp"
 #include "../frame_info.hpp"
-#include "../ray_ubo.hpp"
+
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -24,9 +22,8 @@ namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
 
-		RayTraceObject object = this->loadObjects();
-
-		this->recreateSubRendererAndSubsystem(object);
+		this->loadObjects();
+		this->recreateSubRendererAndSubsystem();
 	}
 
 	EngineApp::~EngineApp() {}
@@ -80,8 +77,7 @@ namespace nugiEngine {
 				this->renderer->submitCommand(commandBuffer);
 
 				if (!this->renderer->presentFrame()) {
-					RayTraceObject object = this->loadObjects();
-					this->recreateSubRendererAndSubsystem(object);
+					this->recreateSubRendererAndSubsystem();
 				}
 			}
 		}
@@ -89,7 +85,7 @@ namespace nugiEngine {
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
 
-	RayTraceObject EngineApp::loadObjects() {
+	void EngineApp::loadObjects() {
 		RayTraceObject objectBuffer{};
 
 		glm::vec3 vertices[36] {
@@ -141,31 +137,19 @@ namespace nugiEngine {
 			{.5f, .5f, -0.5f},
 		};
 
-		Triangle triangle[12]{};
-		for (int i = 0; i < 12; i++) {
-			objectBuffer.triangles[i].point0 = vertices[i * 3];
-			objectBuffer.triangles[i].point1 = vertices[i * 3 + 1];
-			objectBuffer.triangles[i].point2 = vertices[i * 3 + 2];
+		ModelData modelData{};
+
+		for (int i = 0; i < 36; i++) {
+			Triangle triangle{
+				vertices[i * 3],
+				vertices[i * 3 + 1],
+				vertices[i * 3 + 2]
+			};
+
+			modelData.triangles.emplace_back(triangle);
 		}
 
-		return objectBuffer;
-	}
-
-	RayTraceBvh buildBvh(Triangle triangles[500]) {
-		std::vector<TriangleBoundBox> objects;
-		for (uint32_t i = 0; i < 12; i++) {
-			Triangle t = triangles[i];
-			objects.push_back({i, t});
-		}
-
-		auto bvhNodes = createBvh(objects);
-		RayTraceBvh traceBvh{};
-
-		for (int i = 0; i < bvhNodes.size(); i++) {
-			traceBvh.bvhNodes[i] = bvhNodes[i];
-		}
-
-		return traceBvh;
+		this->models = std::make_unique<EngineRayTraceModel>(this->device, modelData);
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {
@@ -198,7 +182,7 @@ namespace nugiEngine {
 		return ubo;
 	}
 
-	void EngineApp::recreateSubRendererAndSubsystem(RayTraceObject object) {
+	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t nSample = 8;
 		
 		uint32_t width = this->renderer->getSwapChain()->getSwapChainExtent().width;
@@ -206,10 +190,10 @@ namespace nugiEngine {
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		auto x = buildBvh(object.triangles);
+		VkDescriptorBufferInfo buffersInfo[3] { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getNumInfo() };
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, object, x);
+			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, buffersInfo);
 
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRenderSystem>(this->device, descriptorPool, 
 			this->traceRayRender->getDescSetLayout(), swapChainImages, width, height);
