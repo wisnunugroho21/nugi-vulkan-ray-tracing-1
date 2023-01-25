@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+#include "bvh.hpp"
+
 #include "../camera/camera.hpp"
 #include "../mouse_controller/mouse_controller.hpp"
 #include "../keyboard_controller/keyboard_controller.hpp"
@@ -23,6 +25,7 @@ namespace nugiEngine {
 		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
 
 		RayTraceObject object = this->loadObjects();
+
 		this->recreateSubRendererAndSubsystem(object);
 	}
 
@@ -140,12 +143,29 @@ namespace nugiEngine {
 
 		Triangle triangle[12]{};
 		for (int i = 0; i < 12; i++) {
-			objectBuffer.triangles[i].point1 = vertices[i * 3];
-			objectBuffer.triangles[i].point2 = vertices[i * 3 + 1];
-			objectBuffer.triangles[i].point3 = vertices[i * 3 + 2];
+			objectBuffer.triangles[i].point0 = vertices[i * 3];
+			objectBuffer.triangles[i].point1 = vertices[i * 3 + 1];
+			objectBuffer.triangles[i].point2 = vertices[i * 3 + 2];
 		}
 
 		return objectBuffer;
+	}
+
+	RayTraceBvh buildBvh(Triangle triangles[500]) {
+		std::vector<Object0> objects;
+		for (uint32_t i = 0; i < 12; i++) {
+			Triangle t = triangles[i];
+			objects.push_back({i, t});
+		}
+
+		auto bvhNodes = createBvh(objects);
+		RayTraceBvh traceBvh{};
+
+		for (int i = 0; i < bvhNodes.size(); i++) {
+			traceBvh.bvhNodes[i] = bvhNodes[i];
+		}
+
+		return traceBvh;
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {
@@ -186,8 +206,10 @@ namespace nugiEngine {
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
+		auto x = buildBvh(object.triangles);
+
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, object);
+			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, object, x);
 
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRenderSystem>(this->device, descriptorPool, 
 			this->traceRayRender->getDescSetLayout(), swapChainImages, width, height);

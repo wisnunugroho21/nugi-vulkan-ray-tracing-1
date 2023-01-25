@@ -13,9 +13,9 @@ namespace nugiEngine {
   };
 
   struct Triangle {
+    alignas(16) glm::vec3 point0;
     alignas(16) glm::vec3 point1;
     alignas(16) glm::vec3 point2;
-    alignas(16) glm::vec3 point3;
   };
 
   struct RayTraceUbo {
@@ -25,8 +25,21 @@ namespace nugiEngine {
     alignas(16) glm::vec3 lowerLeftCorner;
   };
 
+  struct BvhNode {
+    uint32_t leftNode;
+    uint32_t rightNode;
+    uint32_t objIndex;
+
+    alignas(16) glm::vec3 maximum;
+    alignas(16) glm::vec3 minimum;
+  };
+
   struct RayTraceObject {
     Triangle triangles[500];
+  };
+
+  struct RayTraceBvh {
+    BvhNode bvhNodes[500];
   };
 
   struct RayTracePushConstant {
