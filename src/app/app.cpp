@@ -86,8 +86,6 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		RayTraceObject objectBuffer{};
-
 		glm::vec3 vertices[36] {
 			{-.5f, -.5f, -.5f},
 			{-.5f, .5f, .5f},
@@ -137,7 +135,7 @@ namespace nugiEngine {
 			{.5f, .5f, -0.5f},
 		};
 
-		ModelData modelData{};
+		RayTraceModelData modelData{};
 
 		for (int i = 0; i < 36; i++) {
 			Triangle triangle{

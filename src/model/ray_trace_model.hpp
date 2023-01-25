@@ -3,6 +3,7 @@
 #include "../device/device.hpp"
 #include "../buffer/buffer.hpp"
 #include "../command/command_buffer.hpp"
+#include "../ray_ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -12,25 +13,10 @@
 #include <memory>
 
 namespace nugiEngine {
-	struct Triangle {
-    alignas(16) glm::vec3 point0;
-    alignas(16) glm::vec3 point1;
-    alignas(16) glm::vec3 point2;
-  };
-
-	struct ModelData {
-    std::vector<Triangle> triangles;
+	struct RayTraceModelData {
+        std::vector<Triangle> triangles;
 		void loadModel(const std::string &filePath);
 	};
-
-  struct BvhNode {
-    int leftNode;
-    int rightNode;
-    int objIndex;
-
-    alignas(16) glm::vec3 maximum;
-    alignas(16) glm::vec3 minimum;
-  };
 
   struct TriangleData {
     Triangle triangles[500];
@@ -48,7 +34,7 @@ namespace nugiEngine {
 
 	class EngineRayTraceModel {
 	public:
-		EngineRayTraceModel(EngineDevice &device, ModelData &data);
+		EngineRayTraceModel(EngineDevice &device, RayTraceModelData &data);
 		~EngineRayTraceModel();
 
 		EngineRayTraceModel(const EngineRayTraceModel&) = delete;
@@ -69,7 +55,8 @@ namespace nugiEngine {
 
     NumData numData;
 
-    BvhData createBvhData(const ModelData &data);
-    void createBuffers(ModelData &data, BvhData &bvh);
+	TriangleData createTriangleData(const RayTraceModelData &data);
+    BvhData createBvhData(const RayTraceModelData &data);
+    void createBuffers(TriangleData &data, BvhData &bvh);
 	};
 } // namespace nugiEngine

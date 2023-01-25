@@ -1,7 +1,10 @@
 #pragma once
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
 #include "../utils/sort.hpp"
-#include "../ray_ubo.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -177,7 +180,7 @@ namespace nugiEngine {
     output.reserve(intermediate.size());
 
     for (int i = 0; i < intermediate.size(); i++) {
-      output.push_back(intermediate[i].getGpuModel());
+      output.emplace_back(intermediate[i].getGpuModel());
     }
 
     return output;
