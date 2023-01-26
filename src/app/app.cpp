@@ -109,7 +109,7 @@ namespace nugiEngine {
 
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(3.0f, 10.0f, 3.0f);
+		glm::vec3 lookFrom = glm::vec3(13.0f, 2.0f, 3.0f);
 		glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		

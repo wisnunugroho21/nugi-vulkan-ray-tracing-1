@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
 #define GLM_ENABLE_EXPERIMENTAL

@@ -9,7 +9,6 @@ layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
 struct Sphere {
   vec3 center;
   float radius;
-  uint materialType;
 };
 
 struct Triangle {
@@ -256,7 +255,7 @@ vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return vec2(tNear, tFar);
 }
 
-#define MAX_NODE_DEPTH 200
+#define MAX_NODE_DEPTH 50
 HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
@@ -289,11 +288,15 @@ HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
       }
     } 
 
-    stack[stackIndex] = objList[currentNode].leftNode;
-    stackIndex++;
+    if (objList[currentNode].leftNode != -1) {
+      stack[stackIndex] = objList[currentNode].leftNode;
+      stackIndex++;
+    }
 
-    stack[stackIndex] = objList[currentNode].rightNode;
-    stackIndex++;
+    if (objList[currentNode].rightNode != -1) {
+      stack[stackIndex] = objList[currentNode].rightNode;
+      stackIndex++;
+    }
   }
 
   return rec;

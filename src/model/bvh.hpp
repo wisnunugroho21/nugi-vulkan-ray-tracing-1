@@ -84,9 +84,9 @@ namespace nugiEngine {
     return {glm::min(box0.min, box1.min), glm::max(box0.max, box1.max)};
   }
 
-  Aabb objectBoundingBox(Triangle &t) {
+  Aabb objectBoundingBox(Sphere &t) {
     // Need to add eps to correctly construct an AABB for flat objects like planes.
-    return {glm::min(glm::min(t.point0, t.point1), t.point2) - eps, glm::max(glm::max(t.point0, t.point1), t.point2) + eps};
+    return {t.center - t.radius, t.center + t.radius};
   }
 
   Aabb objectListBoundingBox(std::vector<SphereBoundBox> &objects) {
@@ -103,7 +103,7 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(Triangle &a, Triangle &b, int axis) {
+  inline bool boxCompare(Sphere &a, Sphere &b, int axis) {
     Aabb boxA = objectBoundingBox(a);
     Aabb boxB = objectBoundingBox(b);
 
