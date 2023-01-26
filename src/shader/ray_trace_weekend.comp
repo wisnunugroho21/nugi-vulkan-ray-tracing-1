@@ -2,7 +2,7 @@
 
 // ------------- layout ------------- 
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
 
@@ -159,7 +159,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 
   // rec.faceNormal.normal = 1.0 * outwardNormal;
 
-  rec.materialHit.materialType = 1;
+  rec.materialHit.materialType = 0;
   return rec;
 }
 
@@ -210,7 +210,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
   rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  rec.materialHit.materialType = 0;
+  rec.materialHit.materialType = 2;
   return rec;
 }
 
@@ -229,13 +229,13 @@ HitRecord hitTriangleList(Triangle objList[100], uint objNum, Ray r, float tMin,
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[100], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
   
-  for (int i = 0; i < objNum; i++) {
-    HitRecord tempRec = hitSphere(objList[i], r, tMin, rec.t);
+  for (int i = 0; i < 4; i++) {
+    HitRecord tempRec = hitSphere(spheres[i], r, tMin, rec.t);
     if (tempRec.isHit) {
       rec = tempRec;
     }
@@ -255,32 +255,31 @@ vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return vec2(tNear, tFar);
 }
 
-#define MAX_NODE_DEPTH 50
-HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
+HitRecord hitBvh(Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
 
-  int stack[MAX_NODE_DEPTH];
+  int stack[3];
   int stackIndex = 0;
 
-  stack[stackIndex] = 0;
+  stack[0] = 0;
   stackIndex++;
 
-  while(stackIndex > 0 && stackIndex < MAX_NODE_DEPTH) {
+  while(stackIndex > 0 && stackIndex <= 3) {
     stackIndex--;
     int currentNode = stack[stackIndex];
-    if (currentNode == -1) {
+    if (currentNode < 0) {
       continue;
     }
 
-    vec2 intersect = intersectAABB(r, objList[currentNode].minimum, objList[currentNode].maximum);
+    vec2 intersect = intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum);
     if (intersect.x > intersect.y) {
       continue;
     }
 
-    if (objList[currentNode].objIndex != -1) {
-      int objIndex = objList[currentNode].objIndex;
+    int objIndex = bvhNodes[currentNode].objIndex;
+    if (objIndex >= 0) {
       HitRecord tempRec = hitSphere(spheres[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
@@ -288,13 +287,15 @@ HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
       }
     } 
 
-    if (objList[currentNode].leftNode != -1) {
-      stack[stackIndex] = objList[currentNode].leftNode;
+    int leftNode = bvhNodes[currentNode].leftNode;
+    if (leftNode >= 0) {
+      stack[stackIndex] = leftNode;
       stackIndex++;
     }
 
-    if (objList[currentNode].rightNode != -1) {
-      stack[stackIndex] = objList[currentNode].rightNode;
+    int rightNode = bvhNodes[currentNode].rightNode;
+    if (rightNode >= 0) {
+      stack[stackIndex] = rightNode;
       stackIndex++;
     }
   }
@@ -331,7 +332,7 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
   scat.isScattered = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = vec3(0.7, 0.6, 0.3);
+  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
 
   return scat;
 }
@@ -369,7 +370,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitBvh(bvhNodes, curRay, 0.001, 10000.0);
+    HitRecord hit = hitBvh(curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
