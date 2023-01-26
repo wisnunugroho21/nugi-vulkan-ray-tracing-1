@@ -78,6 +78,7 @@ namespace nugiEngine {
 
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
+					ubo = this->updateCamera();
 				}
 			}
 		}

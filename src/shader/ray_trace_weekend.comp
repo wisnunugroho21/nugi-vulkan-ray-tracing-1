@@ -2,9 +2,9 @@
 
 // ------------- layout ------------- 
 
-layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
-layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[8];
 
 struct Sphere {
   vec3 center;
@@ -27,18 +27,18 @@ struct BvhNode {
   vec3 minimum;
 };
 
-layout(set = 0, binding = 1) uniform GlobalUbo {
+layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
   vec3 lowerLeftCorner;
 } ubo;
 
-layout(set = 0, binding = 2) buffer ObjectSsbo {
+layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
   Sphere spheres[100];
 };
 
-layout(set = 0, binding = 3) buffer BvhSsbo {
+layout(set = 0, binding = 3) buffer readonly BvhSsbo {
   BvhNode bvhNodes[100];
 };
 
