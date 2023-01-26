@@ -88,16 +88,16 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		Sphere sphere1{glm::vec3{0.0, -1000.0, 0.0}, 1000.0};
+		Sphere sphere1{glm::vec3{0.0, -1000.0, 0.0}, 1000.0, 0};
 		modeldata.spheres.emplace_back(sphere1);
 
-		Sphere sphere2{glm::vec3{0.0, 1.0, 0.0}, 1.0};
+		Sphere sphere2{glm::vec3{0.0, 1.0, 0.0}, 1.0, 2 };
 		modeldata.spheres.emplace_back(sphere2);
 
-		Sphere sphere3{glm::vec3{-4.0, 1.0, 0.0}, 1.0};
+		Sphere sphere3{glm::vec3{-4.0, 1.0, 0.0}, 1.0, 0 };
 		modeldata.spheres.emplace_back(sphere3);
 
-		Sphere sphere4{glm::vec3{4.0, 1.0, 0.0}, 1.0};
+		Sphere sphere4{glm::vec3{4.0, 1.0, 0.0}, 1.0, 1 };
 		modeldata.spheres.emplace_back(sphere4);
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);

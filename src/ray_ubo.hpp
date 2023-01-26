@@ -15,6 +15,7 @@ namespace nugiEngine {
   struct Sphere {
     alignas(16) glm::vec3 center;
     alignas(4) float radius;
+    alignas(4) uint32_t materialType;
   };
 
   struct BvhNode {
@@ -34,6 +35,6 @@ namespace nugiEngine {
   };
 
   struct RayTracePushConstant {
-    int randomSeed;
-	};
+     alignas(4) uint32_t randomSeed;
+  };
 }

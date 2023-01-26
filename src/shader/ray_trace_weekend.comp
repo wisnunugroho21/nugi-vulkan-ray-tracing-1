@@ -9,6 +9,7 @@ layout(set = 0, binding = 0, rgba8) uniform image2D targetImage[8];
 struct Sphere {
   vec3 center;
   float radius;
+  uint materialType;
 };
 
 struct Triangle {
@@ -210,7 +211,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
   rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  rec.materialHit.materialType = 2;
+  rec.materialHit.materialType = obj.materialType;
   return rec;
 }
 
