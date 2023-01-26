@@ -5,9 +5,6 @@
 #include <iostream>
 #include <unordered_map>
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
@@ -16,26 +13,26 @@
 namespace nugiEngine {
 	EngineRayTraceModel::EngineRayTraceModel(EngineDevice &device, RayTraceModelData &datas) : engineDevice{device} {
 		auto bvhData = this->createBvhData(datas);
-		auto triangleData = this->createTriangleData(datas);
+		auto triangleData = this->createObjectData(datas);
 
 		this->createBuffers(triangleData, bvhData);
 	}
 
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
-	TriangleData EngineRayTraceModel::createTriangleData(const RayTraceModelData &data) {
-		TriangleData object;
-		for (int i = 0; i < data.triangles.size(); i++) {
-			object.triangles[i] = data.triangles[i];
+	SphereData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
+		SphereData object;
+		for (int i = 0; i < data.spheres.size(); i++) {
+			object.spheres[i] = data.spheres[i];
 		}
 
 		return object;
 	}
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
-		std::vector<TriangleBoundBox> objects;
-		for (int i = 0; i < data.triangles.size(); i++) {
-			Triangle t = data.triangles[i];
+		std::vector<SphereBoundBox> objects;
+		for (int i = 0; i < data.spheres.size(); i++) {
+			Sphere t = data.spheres[i];
 			objects.push_back({i, t});
 		}
 
@@ -49,10 +46,10 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(TriangleData &data, BvhData &bvh) {
+	void EngineRayTraceModel::createBuffers(SphereData &data, BvhData &bvh) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
-			sizeof(TriangleData),
+			sizeof(SphereData),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -63,13 +60,13 @@ namespace nugiEngine {
 
 		this->objectBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(TriangleData),
+			sizeof(SphereData),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(TriangleData));
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(SphereData));
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
@@ -101,39 +98,7 @@ namespace nugiEngine {
 	}
 
 	void RayTraceModelData::loadModel(const std::string &filePath) {
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
-
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {
-			throw std::runtime_error(warn + err);
-		}
-
-		std::vector<glm::vec3> vertices{};
-
-		uint32_t curIndex = 0;
-		for (const auto &shape: shapes) {
-			for (const auto &index: shape.mesh.indices) {
-				if (index.vertex_index >= 0) {
-					vertices.push_back({
-						attrib.vertices[3 * index.vertex_index + 0],
-						attrib.vertices[3 * index.vertex_index + 1],
-						attrib.vertices[3 * index.vertex_index + 2]
-					});
-				}
-			}
-		}
-
-		for (int i = 0; i < vertices.size(); i++) {
-			Triangle triangle{
-				vertices[i * 3],
-				vertices[i * 3 + 1],
-				vertices[i * 3 + 2]
-			};
-
-			this->triangles.emplace_back(triangle);
-		}
+		
 	}
     
 } // namespace nugiEngine

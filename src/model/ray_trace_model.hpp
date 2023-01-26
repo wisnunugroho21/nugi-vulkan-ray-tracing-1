@@ -14,14 +14,17 @@
 
 namespace nugiEngine {
 	struct RayTraceModelData {
-        std::vector<Triangle> triangles;
+    std::vector<Sphere> spheres;
 		void loadModel(const std::string &filePath);
 	};
 
   struct TriangleData {
     Triangle triangles[100];
   };
-  
+
+  struct SphereData {
+    Sphere spheres[100];
+  };
 
   struct BvhData {
     BvhNode bvhNodes[100];
@@ -46,8 +49,8 @@ namespace nugiEngine {
     std::shared_ptr<EngineBuffer> objectBuffer;
     std::shared_ptr<EngineBuffer> bvhBuffer;
 
-	TriangleData createTriangleData(const RayTraceModelData &data);
+	  SphereData createObjectData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
-    void createBuffers(TriangleData &data, BvhData &bvh);
+    void createBuffers(SphereData &data, BvhData &bvh);
 	};
 } // namespace nugiEngine

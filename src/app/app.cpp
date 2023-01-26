@@ -86,68 +86,21 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		glm::vec3 vertices[36] {
-			{-.5f, -.5f, -.5f},
-			{-.5f, .5f, .5f},
-			{-.5f, -.5f, .5f},
-			{-.5f, -.5f, -.5f},
-			{-.5f, .5f, -.5f},
-			{-.5f, .5f, .5f},
- 
-			// right face (yellow)
-			{.5f, -.5f, -.5f},
-			{.5f, .5f, .5f},
-			{.5f, -.5f, .5f},
-			{.5f, -.5f, -.5f},
-			{.5f, .5f, -.5f},
-			{.5f, .5f, .5f},
- 
-			// top face (orange, remember y axis points down)
-			{-.5f, -.5f, -.5f},
-			{.5f, -.5f, .5f},
-			{-.5f, -.5f, .5f},
-			{-.5f, -.5f, -.5f},
-			{.5f, -.5f, -.5f},
-			{.5f, -.5f, .5f},
- 
-			// bottom face (red)
-			{-.5f, .5f, -.5f},
-			{.5f, .5f, .5f},
-			{-.5f, .5f, .5f},
-			{-.5f, .5f, -.5f},
-			{.5f, .5f, -.5f},
-			{.5f, .5f, .5f},
- 
-			// nose face (blue)
-			{-.5f, -.5f, 0.5f},
-			{.5f, .5f, 0.5f},
-			{-.5f, .5f, 0.5f},
-			{-.5f, -.5f, 0.5f},
-			{.5f, -.5f, 0.5f},
-			{.5f, .5f, 0.5f},
- 
-			// tail face (green)
-			{-.5f, -.5f, -0.5f},
-			{.5f, .5f, -0.5f},
-			{-.5f, .5f, -0.5f},
-			{-.5f, -.5f, -0.5f},
-			{.5f, -.5f, -0.5f},
-			{.5f, .5f, -0.5f},
-		};
+		RayTraceModelData modeldata{};
 
-		RayTraceModelData modelData{};
+		Sphere sphere1{glm::vec3{0.0, -1000.0, 0.0}, 1000.0};
+		modeldata.spheres.emplace_back(sphere1);
 
-		for (int i = 0; i < 36; i++) {
-			Triangle triangle{
-				vertices[i * 3],
-				vertices[i * 3 + 1],
-				vertices[i * 3 + 2]
-			};
+		Sphere sphere2{glm::vec3{0.0, 1.0, 0.0}, 1.0};
+		modeldata.spheres.emplace_back(sphere2);
 
-			modelData.triangles.emplace_back(triangle);
-		}
+		Sphere sphere3{glm::vec3{-4.0, 1.0, 0.0}, 1.0};
+		modeldata.spheres.emplace_back(sphere3);
 
-		this->models = std::make_unique<EngineRayTraceModel>(this->device, modelData);
+		Sphere sphere4{glm::vec3{4.0, 1.0, 0.0}, 1.0};
+		modeldata.spheres.emplace_back(sphere4);
+
+		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {

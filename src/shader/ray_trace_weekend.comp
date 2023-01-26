@@ -35,7 +35,7 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectSsbo {
-  Triangle triangles[100];
+  Sphere spheres[100];
 };
 
 layout(set = 0, binding = 3) buffer BvhSsbo {
@@ -211,7 +211,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
   rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  rec.materialHit.materialType = obj.materialType;
+  rec.materialHit.materialType = 0;
   return rec;
 }
 
@@ -282,7 +282,7 @@ HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
 
     if (objList[currentNode].objIndex != -1) {
       int objIndex = objList[currentNode].objIndex;
-      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
+      HitRecord tempRec = hitSphere(spheres[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;

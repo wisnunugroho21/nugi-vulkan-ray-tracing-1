@@ -6,20 +6,25 @@
 #include <glm/gtc/constants.hpp>
 
 namespace nugiEngine {
-    struct Triangle {
-        alignas(16) glm::vec3 point0;
-        alignas(16) glm::vec3 point1;
-        alignas(16) glm::vec3 point2;
-    };
+  struct Triangle {
+    alignas(16) glm::vec3 point0;
+    alignas(16) glm::vec3 point1;
+    alignas(16) glm::vec3 point2;
+  };
 
-    struct BvhNode {
-        int leftNode = -1;
-        int rightNode = -1;
-        int objIndex = -1;
+  struct Sphere {
+    alignas(16) glm::vec3 center;
+    alignas(4) float radius;
+  };
 
-        alignas(16) glm::vec3 maximum;
-        alignas(16) glm::vec3 minimum;
-    };
+  struct BvhNode {
+    alignas(4) int leftNode = -1;
+    alignas(4) int rightNode = -1;
+    alignas(4) int objIndex = -1;
+
+    alignas(16) glm::vec3 maximum;
+    alignas(16) glm::vec3 minimum;
+  };
 
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
