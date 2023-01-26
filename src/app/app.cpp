@@ -188,7 +188,7 @@ namespace nugiEngine {
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		VkDescriptorBufferInfo buffersInfo[3] { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getNumInfo() };
+		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo() };
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
 			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, buffersInfo);

@@ -14,7 +14,7 @@
 
 namespace nugiEngine {
 	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, VkDescriptorBufferInfo buffersInfo[3]) : appDevice{device}, width{width}, height{height}, nSample{nSample} 
+		uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, std::vector<VkDescriptorBufferInfo> buffersInfo) : appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createImageStorages(swapChainImageCount);
 		this->createUniformBuffer(swapChainImageCount);
@@ -91,14 +91,13 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, VkDescriptorBufferInfo buffersInfo[3]) {
+	void EngineTraceRayRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, std::vector<VkDescriptorBufferInfo> buffersInfo) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, this->nSample)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 
 		this->descriptorSets.clear();
@@ -121,7 +120,6 @@ namespace nugiEngine {
 				.writeBuffer(1, &uniformBufferInfo)
 				.writeBuffer(2, &buffersInfo[0])
 				.writeBuffer(3, &buffersInfo[1])
-				.writeBuffer(4, &buffersInfo[2])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

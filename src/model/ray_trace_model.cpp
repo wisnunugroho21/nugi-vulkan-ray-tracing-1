@@ -15,8 +15,6 @@
 
 namespace nugiEngine {
 	EngineRayTraceModel::EngineRayTraceModel(EngineDevice &device, RayTraceModelData &datas) : engineDevice{device} {
-		this->numData.objSize = datas.triangles.size();
-
 		auto bvhData = this->createBvhData(datas);
 		auto triangleData = this->createTriangleData(datas);
 
@@ -36,7 +34,7 @@ namespace nugiEngine {
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
 		std::vector<TriangleBoundBox> objects;
-		for (uint32_t i = 0; i < data.triangles.size(); i++) {
+		for (int i = 0; i < data.triangles.size(); i++) {
 			Triangle t = data.triangles[i];
 			objects.push_back({i, t});
 		}
@@ -48,7 +46,6 @@ namespace nugiEngine {
 			bvh.bvhNodes[i] = bvhNodes[i];
 		}
 
-		this->numData.bvhSize = bvhNodes.size();
 		return bvh;
 	}
 
@@ -94,27 +91,6 @@ namespace nugiEngine {
 		);
 
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
-
-		EngineBuffer numStagingBuffer {
-			this->engineDevice,
-			sizeof(NumData),
-			1,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		};
-
-		numStagingBuffer.map();
-		numStagingBuffer.writeToBuffer(&this->numData);
-
-		this->numBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
-			sizeof(NumData),
-			1,
-			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
-
-		this->numBuffer->copyBuffer(numStagingBuffer.getBuffer(), sizeof(NumData));
 	}
 
 	std::unique_ptr<EngineRayTraceModel> EngineRayTraceModel::createModelFromFile(EngineDevice &device, const std::string &filePath) {

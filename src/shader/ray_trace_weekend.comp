@@ -35,17 +35,12 @@ layout(set = 0, binding = 1) uniform GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer ObjectSsbo {
-  Triangle triangles[500];
+  Triangle triangles[100];
 };
 
 layout(set = 0, binding = 3) buffer BvhSsbo {
-  BvhNode bvhNodes[500];
+  BvhNode bvhNodes[100];
 };
-
-layout(set = 0, binding = 4) buffer NumSsbo {
-  uint objSize;
-  uint bvhSize;
-} numSsbo;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -163,7 +158,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   rec.faceNormal = setFaceNormal(normalize(r.direction), outwardNormal);
 
-  // rec.faceNormal.normal = -1.0 * outwardNormal;
+  // rec.faceNormal.normal = 1.0 * outwardNormal;
 
   rec.materialHit.materialType = 1;
   return rec;
@@ -220,7 +215,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitTriangleList(Triangle objList[500], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitTriangleList(Triangle objList[100], uint objNum, Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
@@ -235,7 +230,7 @@ HitRecord hitTriangleList(Triangle objList[500], uint objNum, Ray r, float tMin,
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[500], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Sphere objList[100], uint objNum, Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
@@ -261,8 +256,8 @@ vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return vec2(tNear, tFar);
 }
 
-#define MAX_NODE_DEPTH 25
-HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMax) {
+#define MAX_NODE_DEPTH 200
+HitRecord hitBvh(BvhNode objList[100], Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
@@ -276,28 +271,28 @@ HitRecord hitBvh(BvhNode objList[500], uint objNum, Ray r, float tMin, float tMa
   while(stackIndex > 0 && stackIndex < MAX_NODE_DEPTH) {
     stackIndex--;
     int currentNode = stack[stackIndex];
-    if (currentNode < 0) {
+    if (currentNode == -1) {
       continue;
     }
 
-    vec2 intersect = intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum);
+    vec2 intersect = intersectAABB(r, objList[currentNode].minimum, objList[currentNode].maximum);
     if (intersect.x > intersect.y) {
       continue;
     }
 
-    if (bvhNodes[currentNode].objIndex > 0) {
-      int objIndex = bvhNodes[currentNode].objIndex;
+    if (objList[currentNode].objIndex != -1) {
+      int objIndex = objList[currentNode].objIndex;
       HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;
       }
-    }
+    } 
 
-    stack[stackIndex] = bvhNodes[currentNode].leftNode;
+    stack[stackIndex] = objList[currentNode].leftNode;
     stackIndex++;
 
-    stack[stackIndex] = bvhNodes[currentNode].rightNode;
+    stack[stackIndex] = objList[currentNode].rightNode;
     stackIndex++;
   }
 
@@ -371,7 +366,7 @@ vec3 rayColor(Ray r) {
   vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitTriangleList(triangles, numSsbo.objSize, curRay, 0.001, 10000.0); // hitBvh(bvhNodes, 23, curRay, 0.001, 10000.0);
+    HitRecord hit = hitBvh(bvhNodes, curRay, 0.001, 10000.0);
 
     if (hit.isHit) {
       ScatterRecord scat;
@@ -389,7 +384,7 @@ vec3 rayColor(Ray r) {
         curAttenuation *= scat.colorAttenuation;
         curRay = scat.raySpecular;
       } else {
-        return vec3(1.0, 0.0, 0.0);
+        return vec3(0.0, 0.0, 0.0);
       }
     } else {
       vec3 unit_direction = normalize(curRay.direction);
@@ -400,7 +395,7 @@ vec3 rayColor(Ray r) {
     }
   }
 
-  return vec3(0.0, 0.0, 1.0); // exceeded recursion
+  return vec3(0.0, 0.0, 0.0); // exceeded recursion
 }
 
 void main() {

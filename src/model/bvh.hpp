@@ -42,7 +42,7 @@ namespace nugiEngine {
 
   // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
   struct TriangleBoundBox {
-    uint32_t index;
+    int index;
     Triangle t;
   };
 
@@ -177,7 +177,7 @@ namespace nugiEngine {
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
 
     std::vector<BvhNode> output;
-    output.reserve(intermediate.size());
+    // output.reserve(intermediate.size());
 
     for (int i = 0; i < intermediate.size(); i++) {
       output.emplace_back(intermediate[i].getGpuModel());

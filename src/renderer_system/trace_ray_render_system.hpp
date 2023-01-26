@@ -18,7 +18,7 @@ namespace nugiEngine {
 	class EngineTraceRayRenderSystem {
 		public:
 			EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, VkDescriptorBufferInfo buffersInfo[3]);
+				uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, std::vector<VkDescriptorBufferInfo> buffersInfo);
 			~EngineTraceRayRenderSystem();
 
 			EngineTraceRayRenderSystem(const EngineTraceRayRenderSystem&) = delete;
@@ -43,7 +43,7 @@ namespace nugiEngine {
 			void createUniformBuffer(uint32_t swapChainImageCount);
 			void createImageStorages(uint32_t swapChainImageCount);
 
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, VkDescriptorBufferInfo buffersInfo[3]);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, std::vector<VkDescriptorBufferInfo> buffersInfo);
 
 			EngineDevice& appDevice;
 

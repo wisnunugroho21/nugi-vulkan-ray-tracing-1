@@ -19,18 +19,13 @@ namespace nugiEngine {
 	};
 
   struct TriangleData {
-    Triangle triangles[500];
+    Triangle triangles[100];
   };
   
 
   struct BvhData {
-    BvhNode bvhNodes[500];
+    BvhNode bvhNodes[100];
 	};
-
-  struct NumData {
-    uint32_t objSize;
-    uint32_t bvhSize;
-  };
 
 	class EngineRayTraceModel {
 	public:
@@ -42,7 +37,6 @@ namespace nugiEngine {
 
     VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
-    VkDescriptorBufferInfo getNumInfo() { return this->numBuffer->descriptorInfo(); }
 
     static std::unique_ptr<EngineRayTraceModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
 		
@@ -51,9 +45,6 @@ namespace nugiEngine {
 		
     std::shared_ptr<EngineBuffer> objectBuffer;
     std::shared_ptr<EngineBuffer> bvhBuffer;
-    std::shared_ptr<EngineBuffer> numBuffer;
-
-    NumData numData;
 
 	TriangleData createTriangleData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
