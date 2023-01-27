@@ -37,7 +37,7 @@ namespace nugiEngine {
 		while (!this->window.shouldClose()) {
 			this->window.pollEvents();
 
-			auto newTime = std::chrono::high_resolution_clock::now();
+			/*auto newTime = std::chrono::high_resolution_clock::now();
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 
 			if (t == 10) {
@@ -49,7 +49,7 @@ namespace nugiEngine {
 				t++;
 			}
 
-			currentTime = newTime;
+			currentTime = newTime;*/
 
 			if (this->renderer->acquireFrame()) {
 				uint32_t imageIndex = this->renderer->getImageIndex();
