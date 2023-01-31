@@ -32,6 +32,7 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 horizontal;
   vec3 vertical;
   vec3 lowerLeftCorner;
+  vec3 background;
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
@@ -75,9 +76,10 @@ struct HitRecord {
   vec2 uv;
 };
 
-struct ScatterRecord {
-  bool isScattered;
+struct ShadeRecord {
+  bool isScatter;
   vec3 colorAttenuation;
+  vec3 colorEmitted;
   Ray raySpecular;
 };
 
@@ -85,14 +87,13 @@ struct ScatterRecord {
 
 #include "helper/random.glsl"
 
+// Return true if the vector is close to zero in all dimensions.
 bool nearZero(vec3 xyz) {
-  // Return true if the vector is close to zero in all dimensions.
-  float s = 1e-8;
-  return (abs(xyz.x) < s) && (abs(xyz.y) < s) && (abs(xyz.z) < s);
+  return (abs(xyz.x) < 1e-8) && (abs(xyz.y) < 1e-8) && (abs(xyz.z) < 1e-8);
 }
 
+// Use Schlick's approximation for reflectance.
 float reflectance(float cosine, float refIdx) {
-  // Use Schlick's approximation for reflectance.
   float r0 = (1 - refIdx) / (1 + refIdx);
   r0 = r0 * r0;
   return r0 + (1 - r0) * pow((1 - cosine), 5);
@@ -157,8 +158,6 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   rec.faceNormal = setFaceNormal(normalize(r.direction), outwardNormal);
-
-  // rec.faceNormal.normal = 1.0 * outwardNormal;
 
   rec.materialHit.materialType = 0;
   return rec;
@@ -245,7 +244,7 @@ HitRecord hitSphereList(Ray r, float tMin, float tMax) {
   return rec;
 }
 
-vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
@@ -253,7 +252,7 @@ vec2 intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return vec2(tNear, tFar);
+  return tNear > tFar;
 }
 
 HitRecord hitBvh(Ray r, float tMin, float tMax) {
@@ -274,8 +273,7 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    vec2 intersect = intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum);
-    if (intersect.x > intersect.y) {
+    if (intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum)) {
       continue;
     }
 
@@ -304,25 +302,25 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   return rec;
 }
 
-ScatterRecord scatterLambertian(Ray r, HitRecord hit) {
-  ScatterRecord scat;
+ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
+  ShadeRecord scat;
 
-  vec3 scatterDirection = hit.faceNormal.normal + normalize(randomInUnitSphere(0));
-  if (nearZero(scatterDirection)) {
-    scatterDirection = hit.faceNormal.normal;
+  vec3 shadeDirection = hit.faceNormal.normal + normalize(randomInUnitSphere(0));
+  if (nearZero(shadeDirection)) {
+    shadeDirection = hit.faceNormal.normal;
   }
 
   scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = scatterDirection;
+  scat.raySpecular.direction = shadeDirection;
 
-  scat.isScattered = true;
+  scat.isScatter = true;
   scat.colorAttenuation = vec3(0.5, 0.4, 0.2);
 
   return scat;
 }
 
-ScatterRecord scatterMetal(Ray r, HitRecord hit) {
-  ScatterRecord scat;
+ShadeRecord shadeMetal(Ray r, HitRecord hit) {
+  ShadeRecord scat;
 
   vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
 
@@ -332,14 +330,14 @@ ScatterRecord scatterMetal(Ray r, HitRecord hit) {
   scat.raySpecular.origin = hit.point;
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
-  scat.isScattered = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
+  scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
   scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
 
   return scat;
 }
 
-ScatterRecord scatterDielectric(Ray r, HitRecord hit) {
-  ScatterRecord scat;
+ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
+  ShadeRecord scat;
 
   float indexOfRefraction = 1.5;
   float refractionRatio = hit.faceNormal.frontFace ? (1.0 / indexOfRefraction) : indexOfRefraction;
@@ -360,47 +358,10 @@ ScatterRecord scatterDielectric(Ray r, HitRecord hit) {
   scat.raySpecular.origin = hit.point;
   scat.raySpecular.direction = direction;
 
-  scat.isScattered = true;
+  scat.isScatter = true;
   scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
 
   return scat;
-}
-
-vec3 rayColor(Ray r) {
-  Ray curRay = r;
-  vec3 curAttenuation = vec3(1.0, 1.0, 1.0);
-  
-  for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitBvh(curRay, 0.001, 10000.0);
-
-    if (hit.isHit) {
-      ScatterRecord scat;
-      scat.isScattered = false;
-
-      if (hit.materialHit.materialType == 0) {
-        scat = scatterLambertian(curRay, hit);
-      } else if (hit.materialHit.materialType == 1) {
-        scat = scatterMetal(curRay, hit);
-      } else if (hit.materialHit.materialType == 2) {
-        scat = scatterDielectric(curRay, hit);
-      }
-
-      if (scat.isScattered) {
-        curAttenuation *= scat.colorAttenuation;
-        curRay = scat.raySpecular;
-      } else {
-        return vec3(0.0, 0.0, 0.0);
-      }
-    } else {
-      vec3 unit_direction = normalize(curRay.direction);
-      float t = 0.5 * (unit_direction.y + 1.0);
-      vec3 c = (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
-
-      return curAttenuation * c;
-    }
-  }
-
-  return vec3(0.0, 0.0, 0.0); // exceeded recursion
 }
 
 void main() {
@@ -415,10 +376,62 @@ void main() {
   vec2 noiseUV = vec2(noiseX, noiseY);
   vec2 uv = (imgPosition + noiseUV) / imgSize;
 
-  Ray r;
-  r.origin = ubo.origin;
-  r.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
+  Ray curRay;
+  curRay.origin = ubo.origin;
+  curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
+
+  vec4 lastNum = vec4(0.0, 0.0, 0.0, 0.0);
+  mat4 rayTransform = mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0
+  );
   
-  vec4 curColor = vec4(rayColor(r), 1.0);
+  for(int i = 0; i < 50; i++) {
+    HitRecord hit = hitBvh(curRay, 0.001, 10000.0);
+
+    if (!hit.isHit) {
+      lastNum = vec4(ubo.background, 1.0);
+      break;
+    }
+
+    ShadeRecord scat;
+    scat.isScatter = false;
+
+    if (hit.materialHit.materialType == 0) {
+      scat = shadeLambertian(curRay, hit);
+    } else if (hit.materialHit.materialType == 1) {
+      scat = shadeMetal(curRay, hit);
+    } else if (hit.materialHit.materialType == 2) {
+      scat = shadeDielectric(curRay, hit);
+    } else {
+      scat.colorEmitted = vec3(5.0, 5.0, 5.0);
+    }
+
+    if (!scat.isScatter) {
+      lastNum = vec4(scat.colorEmitted, 1.0);
+      break;
+    }
+
+    mat4 emitTransf = mat4(
+      1.0, 0.0, 0.0, scat.colorEmitted.x,
+      0.0, 1.0, 0.0, scat.colorEmitted.y,
+      0.0, 0.0, 1.0, scat.colorEmitted.z,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    mat4 attentTransf = mat4(
+      scat.colorAttenuation.x, 0.0, 0.0, 0.0,
+      0.0, scat.colorAttenuation.y, 0.0, 0.0,
+      0.0, 0.0, scat.colorAttenuation.z, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    rayTransform = emitTransf * attentTransf * rayTransform;
+    curRay = scat.raySpecular;
+  }
+  
+  vec4 curColor = rayTransform * lastNum;
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
 }
