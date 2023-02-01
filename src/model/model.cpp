@@ -6,7 +6,7 @@
 #include <unordered_map>
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "../../lib/tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>

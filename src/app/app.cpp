@@ -23,6 +23,7 @@ namespace nugiEngine {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
 
 		this->loadObjects();
+		this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
 
