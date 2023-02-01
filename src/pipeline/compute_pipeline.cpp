@@ -53,7 +53,7 @@ namespace nugiEngine {
 		);
 	}
 
-	EngineComputePipeline::EngineComputePipeline(EngineDevice& device, const PipelineConfigInfo& configInfo) : engineDevice{device} {
+	EngineComputePipeline::EngineComputePipeline(EngineDevice& device, const ComputePipelineConfigInfo& configInfo) : engineDevice{device} {
 		this->createGraphicPipeline(configInfo);
 	}
 
@@ -79,7 +79,7 @@ namespace nugiEngine {
 		return buffer;
 	}
 
-	void EngineComputePipeline::createGraphicPipeline(const PipelineConfigInfo& configInfo) {
+	void EngineComputePipeline::createGraphicPipeline(const ComputePipelineConfigInfo& configInfo) {
     VkComputePipelineCreateInfo pipelineInfo{};
 
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;

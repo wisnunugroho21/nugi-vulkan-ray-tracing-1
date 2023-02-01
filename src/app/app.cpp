@@ -72,7 +72,7 @@ namespace nugiEngine {
 
 				// -----
 
-				auto commandBuffer = this->renderer->beginCommand();
+				commandBuffer = this->renderer->beginCommand();
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 
 				std::shared_ptr<VkDescriptorSet> traceRayDescSet = this->traceRayRender->getDescriptorSets(imageIndex);
