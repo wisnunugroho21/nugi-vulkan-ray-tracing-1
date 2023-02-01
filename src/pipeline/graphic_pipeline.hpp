@@ -65,6 +65,9 @@ namespace nugiEngine {
 			EngineGraphicPipeline(const EngineGraphicPipeline&) = delete;
 			EngineGraphicPipeline& operator =(const EngineDevice&) = delete;
 
+			static std::vector<char> readFile(const std::string& filepath);
+			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
+
 			void bind(VkCommandBuffer commandBuffer);
 
 		private:
@@ -72,8 +75,6 @@ namespace nugiEngine {
 			VkPipeline graphicPipeline;
 			std::vector<VkShaderModule> shaderModules{};
 			
-			static std::vector<char> readFile(const std::string& filepath);
-			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
 			void createGraphicPipeline(const PipelineConfigInfo& configInfo);
 	};
 }

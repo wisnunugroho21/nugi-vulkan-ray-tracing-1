@@ -2,11 +2,14 @@
 
 #include "../window/window.hpp"
 #include "../device/device.hpp"
-#include "../descriptor/descriptor.hpp"
-#include "../renderer/ray_tracing_renderer.hpp"
-#include "../renderer_system/trace_ray_render_system.hpp"
-#include "../renderer_system/sampling_ray_render_system.hpp"
 #include "../model/ray_trace_model.hpp"
+#include "../model/model.hpp"
+#include "../descriptor/descriptor.hpp"
+#include "../renderer/hybrid_renderer.hpp"
+#include "../renderer_sub/swapchain_sub_renderer.hpp"
+#include "../renderer_system/trace_ray_render_system.hpp"
+#include "../renderer_system/sampling_ray_raster_render_system.hpp"
+
 
 #include <memory>
 #include <vector>
@@ -30,16 +33,20 @@ namespace nugiEngine {
 
 		private:
 			void loadObjects();
+			void loadQuadModels();
+
 			RayTraceUbo updateCamera();
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
 			EngineDevice device{window};
 			
-			std::unique_ptr<EngineRayTraceRenderer> renderer{};
+			std::unique_ptr<EngineHybridRenderer> renderer{};
+			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 			std::unique_ptr<EngineTraceRayRenderSystem> traceRayRender{};
-			std::unique_ptr<EngineSamplingRayRenderSystem> samplingRayRender{};
+			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
 
 			std::unique_ptr<EngineRayTraceModel> models;
+			std::shared_ptr<EngineModel> quadModels;
 	};
 }

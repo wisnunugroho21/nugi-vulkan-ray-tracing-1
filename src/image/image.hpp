@@ -32,7 +32,9 @@ namespace nugiEngine
         std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
       void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
-        VkAccessFlags srcAccess, VkAccessFlags dstAccess, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, EngineDevice *appDevice = nullptr);
+        VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
+        uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, 
+        EngineDevice *appDevice = nullptr);
 
       void copyImageFromOther(std::shared_ptr<EngineImage> srcImage, VkImageLayout srcLayout, VkImageLayout dstLayout, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
       void copyImageToOther(std::shared_ptr<EngineImage> dstImage, VkImageLayout srcLayout, VkImageLayout dstLayout, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
@@ -44,6 +46,7 @@ namespace nugiEngine
 
       static void transitionImageLayout(std::vector<std::shared_ptr<EngineImage>> images, VkImageLayout oldLayout, VkImageLayout newLayout, 
         VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkAccessFlags srcAccess, VkAccessFlags dstAccess,
+        uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, EngineDevice *appDevice = nullptr);
 
     private:

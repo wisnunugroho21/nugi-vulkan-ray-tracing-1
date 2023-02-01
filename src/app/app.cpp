@@ -20,7 +20,7 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
+		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
 
 		this->loadObjects();
 		this->recreateSubRendererAndSubsystem();
@@ -62,19 +62,25 @@ namespace nugiEngine {
 				}
 
 				auto commandBuffer = this->renderer->beginCommand();
-				
 				this->traceRayRender->prepareFrame(commandBuffer, imageIndex);
+
 				this->traceRayRender->render(commandBuffer, imageIndex, randomSeed);
+
 				this->traceRayRender->finishFrame(commandBuffer, imageIndex);
+				this->renderer->endCommand(commandBuffer);
+				this->renderer->submitComputeCommand(commandBuffer);
+
+				// -----
+
+				auto commandBuffer = this->renderer->beginCommand();
+				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 
 				std::shared_ptr<VkDescriptorSet> traceRayDescSet = this->traceRayRender->getDescriptorSets(imageIndex);
+				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet, this->quadModels, randomSeed);
 
-				this->samplingRayRender->prepareFrame(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet);
-				this->samplingRayRender->finishFrame(commandBuffer, imageIndex);
-
+				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 				this->renderer->endCommand(commandBuffer);
-				this->renderer->submitCommand(commandBuffer);
+				this->renderer->submitGraphicCommand(commandBuffer);
 
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
@@ -102,6 +108,31 @@ namespace nugiEngine {
 		modeldata.spheres.emplace_back(sphere4);
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
+	}
+
+	void EngineApp::loadQuadModels() {
+		ModelData modelData{};
+
+		std::vector<Vertex> vertices;
+
+		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex1);
+
+		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex2);
+
+		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex3);
+
+		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex4);
+
+		modelData.vertices = vertices;
+		modelData.indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
+		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {
@@ -137,9 +168,13 @@ namespace nugiEngine {
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t nSample = 8;
+
+		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
+			this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
 		
-		uint32_t width = this->renderer->getSwapChain()->getSwapChainExtent().width;
-		uint32_t height = this->renderer->getSwapChain()->getSwapChainExtent().height;
+		uint32_t width = this->renderer->getSwapChain()->width();
+		uint32_t height = this->renderer->getSwapChain()->height();
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
@@ -148,7 +183,9 @@ namespace nugiEngine {
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
 			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, buffersInfo);
 
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRenderSystem>(this->device, descriptorPool, 
-			this->traceRayRender->getDescSetLayout(), swapChainImages, width, height);
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
+			this->renderer->getDescriptorPool(), this->traceRayRender->getDescSetLayout(), 
+			width, height, static_cast<uint32_t>(swapChainImages.size()), 
+			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }

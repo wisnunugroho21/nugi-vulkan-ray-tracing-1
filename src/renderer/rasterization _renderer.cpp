@@ -105,7 +105,6 @@ namespace nugiEngine {
     imageAvailableSemaphores.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
     renderFinishedSemaphores.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
     inFlightFences.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
-    imagesInFlight.resize(imageCount, VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -137,7 +136,7 @@ namespace nugiEngine {
 	bool EngineRasterRenderer::acquireFrame() {
 		assert(!this->isFrameStarted && "can't acquire frame while frame still in progress");
 
-		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, &this->inFlightFences[this->currentFrameIndex], this->imageAvailableSemaphores[this->currentFrameIndex]);
+		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, this->inFlightFences[this->currentFrameIndex], this->imageAvailableSemaphores[this->currentFrameIndex]);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			this->recreateSwapChain();
 			return false;
@@ -165,12 +164,6 @@ namespace nugiEngine {
 
 	void EngineRasterRenderer::submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-
-		if (this->imagesInFlight[this->currentImageIndex] != VK_NULL_HANDLE) {
-      vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->imagesInFlight[this->currentImageIndex], VK_TRUE, UINT64_MAX);
-    }
-
-    imagesInFlight[this->currentImageIndex] = this->inFlightFences[this->currentFrameIndex];
     vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
@@ -182,12 +175,6 @@ namespace nugiEngine {
 
 	void EngineRasterRenderer::submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-
-    if (this->imagesInFlight[this->currentImageIndex] != VK_NULL_HANDLE) {
-      vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->imagesInFlight[this->currentImageIndex], VK_TRUE, UINT64_MAX);
-    }
-
-    imagesInFlight[this->currentImageIndex] = this->inFlightFences[this->currentFrameIndex];
     vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
@@ -200,7 +187,8 @@ namespace nugiEngine {
 	bool EngineRasterRenderer::presentFrame() {
 		assert(this->isFrameStarted && "can't present frame if frame is not in progress");
 
-		auto result = this->swapChain->presentRenders(&this->currentImageIndex, &this->renderFinishedSemaphores[this->currentFrameIndex]);
+		std::vector<VkSemaphore> waitSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		auto result = this->swapChain->presentRenders(&this->currentImageIndex, waitSemaphores);
 
 		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineSwapChain::MAX_FRAMES_IN_FLIGHT;
 		this->isFrameStarted = false;

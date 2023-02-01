@@ -14,14 +14,14 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineSamplingRayRenderSystem {
+	class EngineSamplingRayCompRenderSystem {
 		public:
-			EngineSamplingRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout,
+			EngineSamplingRayCompRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout,
 				std::vector<std::shared_ptr<EngineImage>> swapChainImages, uint32_t width, uint32_t height);
-			~EngineSamplingRayRenderSystem();
+			~EngineSamplingRayCompRenderSystem();
 
-			EngineSamplingRayRenderSystem(const EngineSamplingRayRenderSystem&) = delete;
-			EngineSamplingRayRenderSystem& operator = (const EngineSamplingRayRenderSystem&) = delete;
+			EngineSamplingRayCompRenderSystem(const EngineSamplingRayCompRenderSystem&) = delete;
+			EngineSamplingRayCompRenderSystem& operator = (const EngineSamplingRayCompRenderSystem&) = delete;
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, std::shared_ptr<VkDescriptorSet> traceRayDescSet, uint32_t randomSeed = 1);
 

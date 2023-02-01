@@ -12,14 +12,14 @@
 #include <cassert>
 
 namespace nugiEngine {
-	class EngineRayTraceRenderer
+	class EngineHybridRenderer
 	{
 		public:
-			EngineRayTraceRenderer(EngineWindow& window, EngineDevice& device);
-			~EngineRayTraceRenderer();
+			EngineHybridRenderer(EngineWindow& window, EngineDevice& device);
+			~EngineHybridRenderer();
 
-			EngineRayTraceRenderer(const EngineRayTraceRenderer&) = delete;
-			EngineRayTraceRenderer& operator = (const EngineRayTraceRenderer&) = delete;
+			EngineHybridRenderer(const EngineHybridRenderer&) = delete;
+			EngineHybridRenderer& operator = (const EngineHybridRenderer&) = delete;
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
@@ -44,8 +44,11 @@ namespace nugiEngine {
 			std::shared_ptr<EngineCommandBuffer> beginCommand();
 			void endCommand(std::shared_ptr<EngineCommandBuffer>);
 
-			void submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
-			void submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+			void submitGraphicCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
+			void submitGraphicCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+
+			void submitComputeCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
+			void submitComputeCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 
 			bool acquireFrame();
 			bool presentFrame();
@@ -64,7 +67,8 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
-			std::vector<VkSemaphore> renderFinishedSemaphores;
+			std::vector<VkSemaphore> computeFinishedSemaphores;
+			std::vector<VkSemaphore> graphicFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0, randomSeed = 0;

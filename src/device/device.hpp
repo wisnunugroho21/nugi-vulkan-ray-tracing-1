@@ -54,6 +54,8 @@ namespace nugiEngine {
       VkQueue getPresentQueue() { return this->presentQueue; }
       VkQueue getComputeQueue() { return this->computeQueue; }
       VkQueue getTransferQueue() { return this->transferQueue; }
+
+      QueueFamilyIndices getFamilyIndices() { return this->familyIndices; }
       
       VkPhysicalDeviceProperties getProperties() { return this->properties; }
       VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
@@ -96,12 +98,17 @@ namespace nugiEngine {
       EngineWindow &window;
       VkSurfaceKHR surface;
 
-      // command pool & queue
+      // command pool
       VkCommandPool commandPool;
+
+      // queue
       VkQueue graphicsQueue;
       VkQueue presentQueue;
       VkQueue computeQueue;
       VkQueue transferQueue;
+
+      // Queue Family Index
+      QueueFamilyIndices familyIndices;
 
       // Anti-aliasing
       VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;

@@ -139,14 +139,14 @@ namespace nugiEngine {
   }
 
   void EngineDevice::createLogicalDevice() {
-    QueueFamilyIndices indices = this->findQueueFamilies(this->physicalDevice);
+    this->familyIndices = this->findQueueFamilies(this->physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {
-      indices.graphicsFamily, 
-      indices.presentFamily, 
-      indices.computeFamily,
-      indices.transferFamily
+      this->familyIndices.graphicsFamily, 
+      this->familyIndices.presentFamily, 
+      this->familyIndices.computeFamily,
+      this->familyIndices.transferFamily
     };
 
     float queuePriority = 1.0f;
@@ -186,10 +186,10 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(this->device, indices.graphicsFamily, 0, &this->graphicsQueue);
-    vkGetDeviceQueue(this->device, indices.presentFamily, 0, &this->presentQueue);
-    vkGetDeviceQueue(this->device, indices.computeFamily, 0, &this->computeQueue);
-    vkGetDeviceQueue(this->device, indices.transferFamily, 0, &this->transferQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, 0, &this->graphicsQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, 0, &this->presentQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, 0, &this->computeQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, 0, &this->transferQueue);
   }
 
   void EngineDevice::createCommandPool() {

@@ -30,11 +30,11 @@ namespace nugiEngine {
     }
   }
 
-  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, VkFence *inFlightFence, VkSemaphore imageAvailableSemaphore) {
+  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, VkFence inFlightFence, VkSemaphore imageAvailableSemaphore) {
     vkWaitForFences(
       this->device.getLogicalDevice(),
       1,
-      inFlightFence,
+      &inFlightFence,
       VK_TRUE,
       std::numeric_limits<uint64_t>::max());
 
@@ -49,12 +49,12 @@ namespace nugiEngine {
     return result;
   }
 
-  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, VkSemaphore* signalSemaphores) {
+  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores) {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+    presentInfo.pWaitSemaphores = signalSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { this->swapChain };
     presentInfo.swapchainCount = 1;

@@ -170,11 +170,14 @@ namespace nugiEngine {
 		if (selectedImages[0]->getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
 			EngineImage::transitionImageLayout(selectedImages, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 
 				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
-				0, VK_ACCESS_SHADER_WRITE_BIT, commandBuffer);
+				0, VK_ACCESS_SHADER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
+				commandBuffer);
 		} else {
 			EngineImage::transitionImageLayout(selectedImages, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, 
 				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
-				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, commandBuffer);
+				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, 
+				this->appDevice.getFamilyIndices().graphicsFamily, this->appDevice.getFamilyIndices().computeFamily, 
+				commandBuffer);
 		}
 
 		return true;
@@ -189,6 +192,7 @@ namespace nugiEngine {
 		EngineImage::transitionImageLayout(selectedImages, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, 
 			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
 			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
+			this->appDevice.getFamilyIndices().computeFamily, this->appDevice.getFamilyIndices().graphicsFamily,
 			commandBuffer);
 
 		return true;
