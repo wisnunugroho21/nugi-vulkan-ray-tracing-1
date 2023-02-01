@@ -48,5 +48,7 @@ namespace nugiEngine {
 
 			std::unique_ptr<EngineRayTraceModel> models;
 			std::shared_ptr<EngineModel> quadModels;
+
+			uint32_t randomSeed = 0;
 	};
 }

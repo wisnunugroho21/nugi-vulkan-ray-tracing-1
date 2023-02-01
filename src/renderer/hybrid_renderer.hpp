@@ -23,7 +23,6 @@ namespace nugiEngine {
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
-			uint32_t getRandomSeed() const { return this->randomSeed; }
 			bool isFrameInProgress() const { return this->isFrameStarted; }
 
 			VkCommandBuffer getCommandBuffer() const { 
@@ -71,7 +70,7 @@ namespace nugiEngine {
 			std::vector<VkSemaphore> graphicFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
 
-			uint32_t currentImageIndex = 0, currentFrameIndex = 0, randomSeed = 0;
+			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
 			bool isFrameStarted = false;
 	};
 }

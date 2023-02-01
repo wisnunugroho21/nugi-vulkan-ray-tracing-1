@@ -85,7 +85,9 @@ namespace nugiEngine {
 	bool EngineHybridRenderer::acquireFrame() {
 		assert(!this->isFrameStarted && "can't acquire frame while frame still in progress");
 
-		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, this->inFlightFences[this->currentFrameIndex], this->imageAvailableSemaphores[this->currentFrameIndex]);
+		std::vector<VkFence> acquireFrameFences = { this->inFlightFences[this->currentFrameIndex] };
+		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, acquireFrameFences, this->imageAvailableSemaphores[this->currentFrameIndex]);
+		
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			this->recreateSwapChain();
 			return false;
@@ -113,24 +115,20 @@ namespace nugiEngine {
 
 	void EngineHybridRenderer::submitComputeCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-    vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
 		std::vector<VkSemaphore> signalSemaphores = {this->computeFinishedSemaphores[this->currentFrameIndex]};
-    std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(), waitSemaphores, {}, signalSemaphores);
 	}
 
 	void EngineHybridRenderer::submitComputeCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-    vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
 		std::vector<VkSemaphore> signalSemaphores = {this->computeFinishedSemaphores[this->currentFrameIndex]};
-    std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		commandBuffer->submitCommand(this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		commandBuffer->submitCommand(this->appDevice.getComputeQueue(), waitSemaphores, {}, signalSemaphores);
 	}
 
 	void EngineHybridRenderer::submitGraphicCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers) {
@@ -141,7 +139,7 @@ namespace nugiEngine {
 		std::vector<VkSemaphore> signalSemaphores = {this->graphicFinishedSemaphores[this->currentFrameIndex]};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getGraphicsQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	void EngineHybridRenderer::submitGraphicCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
@@ -152,7 +150,7 @@ namespace nugiEngine {
 		std::vector<VkSemaphore> signalSemaphores = {this->graphicFinishedSemaphores[this->currentFrameIndex]};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		commandBuffer->submitCommand(this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		commandBuffer->submitCommand(this->appDevice.getGraphicsQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	bool EngineHybridRenderer::presentFrame() {
@@ -169,13 +167,11 @@ namespace nugiEngine {
 			this->recreateSwapChain();
 			this->descriptorPool->resetPool();
 
-			this->randomSeed = 0;
 			return false;
 		} else if (result != VK_SUCCESS) {
 			throw std::runtime_error("failed to present swap chain image");
 		}
 
-		this->randomSeed++;
 		return true;
 	}
 }

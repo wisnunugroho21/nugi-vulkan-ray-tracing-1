@@ -30,13 +30,14 @@ namespace nugiEngine {
     }
   }
 
-  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, VkFence inFlightFence, VkSemaphore imageAvailableSemaphore) {
+  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFences, VkSemaphore imageAvailableSemaphore) {
     vkWaitForFences(
       this->device.getLogicalDevice(),
-      1,
-      &inFlightFence,
+      static_cast<uint32_t>(inFlightFences.size()),
+      inFlightFences.data(),
       VK_TRUE,
-      std::numeric_limits<uint64_t>::max());
+      std::numeric_limits<uint64_t>::max()
+    );
 
     VkResult result = vkAcquireNextImageKHR(
       this->device.getLogicalDevice(),
@@ -44,7 +45,8 @@ namespace nugiEngine {
       std::numeric_limits<uint64_t>::max(),
       imageAvailableSemaphore,  // must be a not signaled semaphore
       VK_NULL_HANDLE,
-      imageIndex);
+      imageIndex
+    );
 
     return result;
   }
