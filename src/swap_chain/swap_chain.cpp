@@ -51,12 +51,12 @@ namespace nugiEngine {
     return result;
   }
 
-  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores) {
+  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> waitSemaphores) {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-    presentInfo.pWaitSemaphores = signalSemaphores.data();
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+    presentInfo.pWaitSemaphores = waitSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { this->swapChain };
     presentInfo.swapchainCount = 1;

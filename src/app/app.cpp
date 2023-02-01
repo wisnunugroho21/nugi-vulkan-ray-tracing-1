@@ -64,25 +64,18 @@ namespace nugiEngine {
 				}
 
 				auto commandBuffer = this->renderer->beginCommand();
+
 				this->traceRayRender->prepareFrame(commandBuffer, imageIndex);
-
 				this->traceRayRender->render(commandBuffer, imageIndex, this->randomSeed);
-
 				this->traceRayRender->finishFrame(commandBuffer, imageIndex);
-				this->renderer->endCommand(commandBuffer);
-				this->renderer->submitComputeCommand(commandBuffer);
 
 				// -----
-
-				commandBuffer = this->renderer->beginCommand();
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-
-				std::shared_ptr<VkDescriptorSet> traceRayDescSet = this->traceRayRender->getDescriptorSets(imageIndex);
-				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet, this->quadModels, this->randomSeed);
-
+				this->samplingRayRender->render(commandBuffer, imageIndex, this->traceRayRender->getDescriptorSets(imageIndex), this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
+
 				this->renderer->endCommand(commandBuffer);
-				this->renderer->submitGraphicCommand(commandBuffer);
+				this->renderer->submitCommand(commandBuffer);
 
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();

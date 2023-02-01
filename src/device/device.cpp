@@ -188,9 +188,9 @@ namespace nugiEngine {
     }
 
     vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, 0, &this->graphicsQueue);
-    vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, 0, &this->presentQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, 1, &this->presentQueue);
     vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, 0, &this->computeQueue);
-    vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, 0, &this->transferQueue);
+    vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, 2, &this->transferQueue);
   }
 
   void EngineDevice::createCommandPool() {

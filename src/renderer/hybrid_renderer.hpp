@@ -49,6 +49,9 @@ namespace nugiEngine {
 			void submitComputeCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
 			void submitComputeCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 
+			void submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
+			void submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+
 			bool acquireFrame();
 			bool presentFrame();
 
@@ -68,6 +71,7 @@ namespace nugiEngine {
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> computeFinishedSemaphores;
 			std::vector<VkSemaphore> graphicFinishedSemaphores;
+			std::vector<VkSemaphore> renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
