@@ -78,7 +78,7 @@ namespace nugiEngine {
 
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "LittleVulkanEngine App";
+    appInfo.pApplicationName = "Nugie App";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -149,13 +149,21 @@ namespace nugiEngine {
       indices.transferFamily
     };
 
-    float queuePriority = 1.0f;
+    std::vector<float> queuePriority;
+    for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+      if (i == 0) {
+        queuePriority.emplace_back(1.0f);
+      } else {
+        queuePriority.emplace_back(queuePriority[i - 1] * 0.5f);
+      }
+    }
+
     for (uint32_t queueFamily : uniqueQueueFamilies) {
       VkDeviceQueueCreateInfo queueCreateInfo = {};
       queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
       queueCreateInfo.queueFamilyIndex = queueFamily;
-      queueCreateInfo.queueCount = 1;
-      queueCreateInfo.pQueuePriorities = &queuePriority;
+      queueCreateInfo.queueCount = static_cast<uint32_t>(queuePriority.size());
+      queueCreateInfo.pQueuePriorities = queuePriority.data();
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
@@ -186,10 +194,12 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(this->device, indices.graphicsFamily, 0, &this->graphicsQueue);
-    vkGetDeviceQueue(this->device, indices.presentFamily, 0, &this->presentQueue);
-    vkGetDeviceQueue(this->device, indices.computeFamily, 0, &this->computeQueue);
-    vkGetDeviceQueue(this->device, indices.transferFamily, 0, &this->transferQueue);
+    for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+      vkGetDeviceQueue(this->device, indices.graphicsFamily, i, &this->graphicsQueue[i]);
+      vkGetDeviceQueue(this->device, indices.presentFamily, i, &this->presentQueue[i]);
+      vkGetDeviceQueue(this->device, indices.computeFamily, i, &this->computeQueue[i]);
+      vkGetDeviceQueue(this->device, indices.transferFamily, i, &this->transferQueue[i]);
+    }
   }
 
   void EngineDevice::createCommandPool() {

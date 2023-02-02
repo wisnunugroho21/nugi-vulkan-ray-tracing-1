@@ -54,7 +54,6 @@ namespace nugiEngine {
 			if (this->renderer->acquireFrame()) {
 				uint32_t imageIndex = this->renderer->getImageIndex();
 				uint32_t frameIndex = this->renderer->getFrameIndex();
-				uint32_t randomSeed = this->renderer->getRandomSeed();
 
 				if (!this->traceRayRender->isFrameUpdated[imageIndex]) {
 					this->traceRayRender->writeGlobalData(imageIndex, ubo);
@@ -64,13 +63,13 @@ namespace nugiEngine {
 				auto commandBuffer = this->renderer->beginCommand();
 				
 				this->traceRayRender->prepareFrame(commandBuffer, imageIndex);
-				this->traceRayRender->render(commandBuffer, imageIndex, randomSeed);
+				this->traceRayRender->render(commandBuffer, imageIndex, this->randomSeed);
 				this->traceRayRender->finishFrame(commandBuffer, imageIndex);
 
 				std::shared_ptr<VkDescriptorSet> traceRayDescSet = this->traceRayRender->getDescriptorSets(imageIndex);
 
 				this->samplingRayRender->prepareFrame(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet);
+				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet, this->randomSeed);
 				this->samplingRayRender->finishFrame(commandBuffer, imageIndex);
 
 				this->renderer->endCommand(commandBuffer);
@@ -79,6 +78,15 @@ namespace nugiEngine {
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
 					ubo = this->updateCamera();
+
+					this->randomSeed = 0;
+					continue;
+				} 
+
+				if (this->randomSeed >= 50) {
+					this->randomSeed = 0;
+				} else {
+					this->randomSeed++;
 				}
 			}
 		}

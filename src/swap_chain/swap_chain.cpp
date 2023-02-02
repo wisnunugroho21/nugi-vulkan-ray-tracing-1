@@ -30,13 +30,14 @@ namespace nugiEngine {
     }
   }
 
-  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, VkFence *inFlightFence, VkSemaphore imageAvailableSemaphore) {
+  VkResult EngineSwapChain::acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFence, VkSemaphore imageAvailableSemaphore) {
     vkWaitForFences(
       this->device.getLogicalDevice(),
-      1,
-      inFlightFence,
+      static_cast<uint32_t>(inFlightFence.size()),
+      inFlightFence.data(),
       VK_TRUE,
-      std::numeric_limits<uint64_t>::max());
+      std::numeric_limits<uint64_t>::max()
+    );
 
     VkResult result = vkAcquireNextImageKHR(
       this->device.getLogicalDevice(),
@@ -44,17 +45,18 @@ namespace nugiEngine {
       std::numeric_limits<uint64_t>::max(),
       imageAvailableSemaphore,  // must be a not signaled semaphore
       VK_NULL_HANDLE,
-      imageIndex);
+      imageIndex
+    );
 
     return result;
   }
 
-  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, VkSemaphore* signalSemaphores) {
+  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores) {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+    presentInfo.pWaitSemaphores = signalSemaphores.data();
 
     VkSwapchainKHR swapChains[] = { this->swapChain };
     presentInfo.swapchainCount = 1;
@@ -62,7 +64,7 @@ namespace nugiEngine {
 
     presentInfo.pImageIndices = imageIndex;
 
-    auto result = vkQueuePresentKHR(this->device.getPresentQueue(), &presentInfo);
+    auto result = vkQueuePresentKHR(this->device.getPresentQueue(0), &presentInfo);
     return result;
   }
 

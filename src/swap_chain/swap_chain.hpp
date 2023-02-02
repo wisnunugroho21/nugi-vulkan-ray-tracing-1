@@ -16,8 +16,6 @@ namespace nugiEngine {
 
   class EngineSwapChain {
   public:
-    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
     EngineSwapChain(EngineDevice &deviceRef, VkExtent2D windowExtent);
     EngineSwapChain(EngineDevice &deviceref, VkExtent2D windowExtent, std::shared_ptr<EngineSwapChain> previous);
 
@@ -37,8 +35,8 @@ namespace nugiEngine {
       return static_cast<float>(this->swapChainExtent.width) / static_cast<float>(this->swapChainExtent.height);
     }
 
-    VkResult acquireNextImage(uint32_t *imageIndex, VkFence *inFlightFence, VkSemaphore imageAvailableSemaphore);
-    VkResult presentRenders(uint32_t *imageIndex, VkSemaphore* signalSemaphores);
+    VkResult acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFence, VkSemaphore imageAvailableSemaphore);
+    VkResult presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores);
 
     bool compareSwapFormat(const EngineSwapChain& swapChain) {
       return swapChain.swapChainImageFormat == this->swapChainImageFormat;

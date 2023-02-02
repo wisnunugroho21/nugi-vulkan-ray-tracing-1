@@ -41,5 +41,7 @@ namespace nugiEngine {
 			std::unique_ptr<EngineSamplingRayRenderSystem> samplingRayRender{};
 
 			std::unique_ptr<EngineRayTraceModel> models;
+
+			uint32_t randomSeed = 0;
 	};
 }
