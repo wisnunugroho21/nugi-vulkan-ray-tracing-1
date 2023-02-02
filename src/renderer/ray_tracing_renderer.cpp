@@ -84,7 +84,7 @@ namespace nugiEngine {
 
 		std::vector<VkFence> acquireFrameFences = { this->inFlightFences[this->currentFrameIndex] };
 		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, acquireFrameFences, this->imageAvailableSemaphores[this->currentFrameIndex]);
-		
+
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			this->recreateSwapChain();
 			return false;
@@ -118,7 +118,7 @@ namespace nugiEngine {
 		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(0), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	void EngineRayTraceRenderer::submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
@@ -129,7 +129,7 @@ namespace nugiEngine {
 		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
     std::vector<VkPipelineStageFlags> waitStages = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
-		commandBuffer->submitCommand(this->appDevice.getComputeQueue(), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		commandBuffer->submitCommand(this->appDevice.getComputeQueue(0), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	bool EngineRayTraceRenderer::presentFrame() {
