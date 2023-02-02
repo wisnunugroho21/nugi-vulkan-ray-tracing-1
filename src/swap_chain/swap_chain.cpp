@@ -51,7 +51,7 @@ namespace nugiEngine {
     return result;
   }
 
-  VkResult EngineSwapChain::presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> waitSemaphores) {
+  VkResult EngineSwapChain::presentRenders(VkQueue queue, uint32_t *imageIndex, std::vector<VkSemaphore> waitSemaphores) {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -64,7 +64,7 @@ namespace nugiEngine {
 
     presentInfo.pImageIndices = imageIndex;
 
-    auto result = vkQueuePresentKHR(this->device.getPresentQueue(), &presentInfo);
+    auto result = vkQueuePresentKHR(queue, &presentInfo);
     return result;
   }
 

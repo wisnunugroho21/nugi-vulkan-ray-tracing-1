@@ -190,7 +190,7 @@ namespace nugiEngine {
 		assert(this->isFrameStarted && "can't present frame if frame is not in progress");
 
 		std::vector<VkSemaphore> waitSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
-		auto result = this->swapChain->presentRenders(&this->currentImageIndex, waitSemaphores);
+		auto result = this->swapChain->presentRenders(this->appDevice.getPresentQueue(0), &this->currentImageIndex, waitSemaphores);
 
 		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineSwapChain::MAX_FRAMES_IN_FLIGHT;
 		this->isFrameStarted = false;
