@@ -139,7 +139,6 @@ namespace nugiEngine {
 		auto result = this->swapChain->presentRenders(this->appDevice.getPresentQueue(this->currentFrameIndex), &this->currentImageIndex, waitSemaphores);
 
 		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineSwapChain::MAX_FRAMES_IN_FLIGHT;
-		this->currentQueueIndex = (this->currentQueueIndex + 1) % EngineDevice::MAX_QUEUE_IN_FLIGHT;
 
 		this->isFrameStarted = false;
 
