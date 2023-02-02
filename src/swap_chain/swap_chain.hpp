@@ -36,7 +36,7 @@ namespace nugiEngine {
     }
 
     VkResult acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFence, VkSemaphore imageAvailableSemaphore);
-    VkResult presentRenders(uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores);
+    VkResult presentRenders(VkQueue queue, uint32_t *imageIndex, std::vector<VkSemaphore> signalSemaphores);
 
     bool compareSwapFormat(const EngineSwapChain& swapChain) {
       return swapChain.swapChainImageFormat == this->swapChainImageFormat;

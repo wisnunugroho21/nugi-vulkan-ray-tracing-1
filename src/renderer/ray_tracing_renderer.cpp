@@ -124,8 +124,9 @@ namespace nugiEngine {
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
 		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
 
-		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(this->currentFrameIndex), waitSemaphores, {}, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getComputeQueue(0), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	void EngineRayTraceRenderer::submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
@@ -140,15 +141,16 @@ namespace nugiEngine {
 
     std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
 		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT };
 
-		commandBuffer->submitCommand(this->appDevice.getComputeQueue(this->currentFrameIndex), waitSemaphores, {}, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		commandBuffer->submitCommand(this->appDevice.getComputeQueue(0), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
 	bool EngineRayTraceRenderer::presentFrame() {
 		assert(this->isFrameStarted && "can't present frame if frame is not in progress");
 
 		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
-		auto result = this->swapChain->presentRenders(&this->currentImageIndex, signalSemaphores);
+		auto result = this->swapChain->presentRenders(this->appDevice.getPresentQueue(0), &this->currentImageIndex, signalSemaphores);
 
 		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineDevice::MAX_FRAMES_IN_FLIGHT;
 		this->isFrameStarted = false;

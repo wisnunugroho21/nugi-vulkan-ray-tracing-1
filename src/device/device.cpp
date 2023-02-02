@@ -194,6 +194,11 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
+    this->graphicsQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->presentQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->computeQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->transferQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+
     for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
       vkGetDeviceQueue(this->device, indices.graphicsFamily, i, &this->graphicsQueue[i]);
       vkGetDeviceQueue(this->device, indices.presentFamily, i, &this->presentQueue[i]);
