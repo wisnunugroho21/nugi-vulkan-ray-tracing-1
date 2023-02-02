@@ -43,12 +43,6 @@ namespace nugiEngine {
 			std::shared_ptr<EngineCommandBuffer> beginCommand();
 			void endCommand(std::shared_ptr<EngineCommandBuffer>);
 
-			void submitGraphicCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
-			void submitGraphicCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
-
-			void submitComputeCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
-			void submitComputeCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
-
 			void submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
 			void submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 
@@ -69,12 +63,10 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
-			std::vector<VkSemaphore> computeFinishedSemaphores;
-			std::vector<VkSemaphore> graphicFinishedSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
 
-			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
+			uint32_t currentImageIndex = 0, currentFrameIndex = 0, currentQueueIndex = 0;
 			bool isFrameStarted = false;
 	};
 }

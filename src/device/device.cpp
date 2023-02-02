@@ -149,13 +149,18 @@ namespace nugiEngine {
       this->familyIndices.transferFamily
     };
 
-    float queuePriority = 1.0f;
+    std::vector<float> queuePriority;
+
+    for (int i = 0; i < EngineDevice::MAX_QUEUE_IN_FLIGHT; i++) {
+      queuePriority.emplace_back(1.0f);
+    }
+
     for (uint32_t queueFamily : uniqueQueueFamilies) {
       VkDeviceQueueCreateInfo queueCreateInfo = {};
       queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
       queueCreateInfo.queueFamilyIndex = queueFamily;
-      queueCreateInfo.queueCount = 1;
-      queueCreateInfo.pQueuePriorities = &queuePriority;
+      queueCreateInfo.queueCount = EngineDevice::MAX_QUEUE_IN_FLIGHT;
+      queueCreateInfo.pQueuePriorities = queuePriority.data();
       queueCreateInfos.push_back(queueCreateInfo);
     }
 
@@ -187,10 +192,12 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
-    vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, 0, &this->graphicsQueue);
-    vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, 1, &this->presentQueue);
-    vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, 0, &this->computeQueue);
-    vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, 2, &this->transferQueue);
+    for (int i = 0; i < EngineDevice::MAX_QUEUE_IN_FLIGHT; i++) {
+      vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, i, &this->graphicsQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, i, &this->presentQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, i, &this->computeQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, i, &this->transferQueue[i]);
+    }
   }
 
   void EngineDevice::createCommandPool() {

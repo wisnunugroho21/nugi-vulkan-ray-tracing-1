@@ -35,6 +35,8 @@ namespace nugiEngine {
       const bool enableValidationLayers = true;
     #endif
 
+      static constexpr int MAX_QUEUE_IN_FLIGHT = 2;
+
       EngineDevice(EngineWindow &window);
       ~EngineDevice();
 
@@ -50,10 +52,10 @@ namespace nugiEngine {
       VkCommandPool getCommandPool() { return this->commandPool; }
       VkSurfaceKHR getSurface() { return this->surface; }
 
-      VkQueue getGraphicsQueue() { return this->graphicsQueue; }
-      VkQueue getPresentQueue() { return this->presentQueue; }
-      VkQueue getComputeQueue() { return this->computeQueue; }
-      VkQueue getTransferQueue() { return this->transferQueue; }
+      VkQueue getGraphicsQueue(uint32_t index) { return this->graphicsQueue[index]; }
+      VkQueue getPresentQueue(uint32_t index) { return this->presentQueue[index]; }
+      VkQueue getComputeQueue(uint32_t index) { return this->computeQueue[index]; }
+      VkQueue getTransferQueue(uint32_t index) { return this->transferQueue[index]; }
 
       QueueFamilyIndices getFamilyIndices() { return this->familyIndices; }
       
@@ -102,10 +104,10 @@ namespace nugiEngine {
       VkCommandPool commandPool;
 
       // queue
-      VkQueue graphicsQueue;
-      VkQueue presentQueue;
-      VkQueue computeQueue;
-      VkQueue transferQueue;
+      std::vector<VkQueue> graphicsQueue;
+      std::vector<VkQueue> presentQueue;
+      std::vector<VkQueue> computeQueue;
+      std::vector<VkQueue> transferQueue;
 
       // Queue Family Index
       QueueFamilyIndices familyIndices;
