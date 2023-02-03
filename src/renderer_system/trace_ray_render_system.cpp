@@ -98,6 +98,8 @@ namespace nugiEngine {
 				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 
 		this->descriptorSets.clear();
@@ -120,6 +122,8 @@ namespace nugiEngine {
 				.writeBuffer(1, &uniformBufferInfo)
 				.writeBuffer(2, &buffersInfo[0])
 				.writeBuffer(3, &buffersInfo[1])
+				.writeBuffer(4, &buffersInfo[2])
+				.writeBuffer(5, &buffersInfo[3])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
