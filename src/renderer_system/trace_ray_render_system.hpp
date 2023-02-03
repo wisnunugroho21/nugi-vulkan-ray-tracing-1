@@ -26,6 +26,7 @@ namespace nugiEngine {
 
 			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() { return this->descSetLayout; }
 			std::shared_ptr<VkDescriptorSet> getDescriptorSets(uint32_t index) { return this->descriptorSets[index]; }
+			std::vector<std::shared_ptr<EngineImage>> getStorageImages() { return this->storageImages; }
 			bool getFramesUpdated(uint32_t index) const { return this->isFrameUpdated[index]; }
 
 			void writeGlobalData(uint32_t imageIndex, RayTraceUbo ubo);

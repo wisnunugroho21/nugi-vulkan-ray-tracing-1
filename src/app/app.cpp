@@ -71,7 +71,7 @@ namespace nugiEngine {
 
 				// -----
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, imageIndex, this->traceRayRender->getDescriptorSets(imageIndex), this->quadModels, this->randomSeed);
+				this->samplingRayRender->render(commandBuffer, imageIndex, this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
 				this->renderer->endCommand(commandBuffer);
@@ -173,14 +173,14 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t nSample = 8;
 
-		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
-			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
-			this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
-		
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+
+		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
+			width, height);
 
 		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo() };
 
@@ -188,8 +188,8 @@ namespace nugiEngine {
 			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, buffersInfo);
 
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
-			this->renderer->getDescriptorPool(), this->traceRayRender->getDescSetLayout(), 
-			width, height, static_cast<uint32_t>(swapChainImages.size()), 
-			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+			this->renderer->getDescriptorPool(), width, height, 
+			this->traceRayRender->getStorageImages(), static_cast<uint32_t>(swapChainImages.size()), 
+			nSample, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }
