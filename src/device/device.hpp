@@ -35,7 +35,7 @@ namespace nugiEngine {
       const bool enableValidationLayers = true;
     #endif
 
-      static constexpr int MAX_QUEUE_IN_FLIGHT = 2;
+      static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
       EngineDevice(EngineWindow &window);
       ~EngineDevice();

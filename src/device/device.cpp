@@ -151,15 +151,19 @@ namespace nugiEngine {
 
     std::vector<float> queuePriority;
 
-    for (int i = 0; i < EngineDevice::MAX_QUEUE_IN_FLIGHT; i++) {
-      queuePriority.emplace_back(1.0f);
+    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+      if (i == 0) {
+        queuePriority.emplace_back(1.0f);
+      } else {
+        queuePriority.emplace_back(queuePriority[i - 1] * 0.5f);
+      }
     }
 
     for (uint32_t queueFamily : uniqueQueueFamilies) {
       VkDeviceQueueCreateInfo queueCreateInfo = {};
       queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
       queueCreateInfo.queueFamilyIndex = queueFamily;
-      queueCreateInfo.queueCount = EngineDevice::MAX_QUEUE_IN_FLIGHT;
+      queueCreateInfo.queueCount = static_cast<uint32_t>(queuePriority.size());
       queueCreateInfo.pQueuePriorities = queuePriority.data();
       queueCreateInfos.push_back(queueCreateInfo);
     }
@@ -192,12 +196,12 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
-    this->graphicsQueue.resize(EngineDevice::MAX_QUEUE_IN_FLIGHT);
-    this->presentQueue.resize(EngineDevice::MAX_QUEUE_IN_FLIGHT);
-    this->computeQueue.resize(EngineDevice::MAX_QUEUE_IN_FLIGHT);
-    this->transferQueue.resize(EngineDevice::MAX_QUEUE_IN_FLIGHT);
+    this->graphicsQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->presentQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->computeQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->transferQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
-    for (int i = 0; i < EngineDevice::MAX_QUEUE_IN_FLIGHT; i++) {
+    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
       vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, i, &this->graphicsQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, i, &this->presentQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, i, &this->computeQueue[i]);

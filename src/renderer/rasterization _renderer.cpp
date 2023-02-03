@@ -10,7 +10,7 @@ namespace nugiEngine {
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
 
-		this->commandBuffers = EngineCommandBuffer::createCommandBuffers(device, EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
+		this->commandBuffers = EngineCommandBuffer::createCommandBuffers(device, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
 		this->createGlobalBuffers(sizeof(GlobalUBO), sizeof(GlobalLight));
 		this->createGlobalUboDescriptor();
@@ -18,7 +18,7 @@ namespace nugiEngine {
 
 	EngineRasterRenderer::~EngineRasterRenderer() {
 		// cleanup synchronization objects
-    for (size_t i = 0; i < EngineSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
       vkDestroySemaphore(this->appDevice.getLogicalDevice(), this->renderFinishedSemaphores[i], nullptr);
       vkDestroySemaphore(this->appDevice.getLogicalDevice(), this->imageAvailableSemaphores[i], nullptr);
       vkDestroyFence(this->appDevice.getLogicalDevice(), this->inFlightFences[i], nullptr);
@@ -47,8 +47,8 @@ namespace nugiEngine {
 	}
 
 	void EngineRasterRenderer::createGlobalBuffers(unsigned long sizeUBO, unsigned long sizeLightBuffer) {
-		this->globalUniformBuffers.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
-		this->globalLightBuffers.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
+		this->globalUniformBuffers.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+		this->globalLightBuffers.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
 		for (int i = 0; i < this->globalUniformBuffers.size(); i++) {
 			this->globalUniformBuffers[i] = std::make_unique<EngineBuffer>(
@@ -75,8 +75,8 @@ namespace nugiEngine {
 	void EngineRasterRenderer::createGlobalUboDescriptor() {
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
-				.setMaxSets(100 * EngineSwapChain::MAX_FRAMES_IN_FLIGHT)
-				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, EngineSwapChain::MAX_FRAMES_IN_FLIGHT)
+				.setMaxSets(100 * EngineDevice::MAX_FRAMES_IN_FLIGHT)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, EngineDevice::MAX_FRAMES_IN_FLIGHT)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100)
 				.build();
 
@@ -102,9 +102,9 @@ namespace nugiEngine {
 	}
 
 	void EngineRasterRenderer::createSyncObjects(uint32_t imageCount) {
-    imageAvailableSemaphores.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
-    renderFinishedSemaphores.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
-    inFlightFences.resize(EngineSwapChain::MAX_FRAMES_IN_FLIGHT);
+    imageAvailableSemaphores.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -113,7 +113,7 @@ namespace nugiEngine {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < EngineSwapChain::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
       if (vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->imageAvailableSemaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->renderFinishedSemaphores[i]) != VK_SUCCESS ||
 				vkCreateFence(this->appDevice.getLogicalDevice(), &fenceInfo, nullptr, &this->inFlightFences[i]) != VK_SUCCESS) 
@@ -192,7 +192,7 @@ namespace nugiEngine {
 		std::vector<VkSemaphore> waitSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
 		auto result = this->swapChain->presentRenders(this->appDevice.getPresentQueue(0), &this->currentImageIndex, waitSemaphores);
 
-		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineSwapChain::MAX_FRAMES_IN_FLIGHT;
+		this->currentFrameIndex = (this->currentFrameIndex + 1) % EngineDevice::MAX_FRAMES_IN_FLIGHT;
 		this->isFrameStarted = false;
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->appWindow.wasResized()) {
