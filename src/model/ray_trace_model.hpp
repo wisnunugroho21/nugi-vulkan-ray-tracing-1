@@ -15,6 +15,9 @@
 namespace nugiEngine {
 	struct RayTraceModelData {
     std::vector<Sphere> spheres;
+    std::vector<Lambertian> lambertians;
+    std::vector<Light> lights;
+    
 		void loadModel(const std::string &filePath);
 	};
 
@@ -24,6 +27,14 @@ namespace nugiEngine {
 
   struct SphereData {
     Sphere spheres[100];
+  };
+
+  struct MaterialData {
+    Lambertian lambertians[100];
+  };
+
+  struct LightData {
+    Light lights[100];
   };
 
   struct BvhData {

@@ -10,12 +10,17 @@ namespace nugiEngine {
     alignas(16) glm::vec3 point0;
     alignas(16) glm::vec3 point1;
     alignas(16) glm::vec3 point2;
+
+    alignas(4) uint32_t materialType;
+    alignas(4) uint32_t materialIndex;
   };
 
   struct Sphere {
     alignas(16) glm::vec3 center;
     alignas(4) float radius;
+
     alignas(4) uint32_t materialType;
+    alignas(4) uint32_t materialIndex;
   };
 
   struct BvhNode {
@@ -25,6 +30,14 @@ namespace nugiEngine {
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;
+  };
+
+  struct Lambertian {
+    alignas(16) glm::vec3 albedoColor;
+  };
+
+  struct Light {
+    alignas(16) glm::vec3 lightColor;
   };
 
   struct RayTraceUbo {
