@@ -23,7 +23,7 @@ namespace nugiEngine {
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
 	SphereData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
-		SphereData object;
+		SphereData object{};
 		for (int i = 0; i < data.spheres.size(); i++) {
 			object.spheres[i] = data.spheres[i];
 		}
@@ -32,7 +32,7 @@ namespace nugiEngine {
 	}
 
 	MaterialData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
-		MaterialData object;
+		MaterialData object{};
 		for (int i = 0; i < data.lambertians.size(); i++) {
 			object.lambertians[i] = data.lambertians[i];
 		}
@@ -41,7 +41,7 @@ namespace nugiEngine {
 	}
 
   LightData EngineRayTraceModel::createLightData(const RayTraceModelData &data) {
-		LightData object;
+		LightData object{};
 		for (int i = 0; i < data.lights.size(); i++) {
 			object.lights[i] = data.lights[i];
 		}
@@ -118,7 +118,7 @@ namespace nugiEngine {
 		};
 
 		materialStagingBuffer.map();
-		materialStagingBuffer.writeToBuffer(&data);
+		materialStagingBuffer.writeToBuffer(&material);
 
 		this->materialBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
@@ -139,7 +139,7 @@ namespace nugiEngine {
 		};
 
 		lightStagingBuffer.map();
-		lightStagingBuffer.writeToBuffer(&data);
+		lightStagingBuffer.writeToBuffer(&light);
 
 		this->lightBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
