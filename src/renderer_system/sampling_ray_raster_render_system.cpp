@@ -14,11 +14,11 @@
 
 namespace nugiEngine {
 	EngineSamplingRayRasterRenderSystem::EngineSamplingRayRasterRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t width, uint32_t height, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t swapChainImageCount, uint32_t nSample, 
-		VkRenderPass renderPass) : appDevice{device}
+		uint32_t width, uint32_t height, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t nSample, VkRenderPass renderPass) 
+		: appDevice{device}
 	{
-		this->createAccumulateImages(width, height, swapChainImageCount);
-		this->createDescriptor(descriptorPool, computeStoreImages, swapChainImageCount, nSample);
+		this->createAccumulateImages(width, height);
+		this->createDescriptor(descriptorPool, computeStoreImages, nSample);
 
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
@@ -56,10 +56,10 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createAccumulateImages(uint32_t width, uint32_t height, uint32_t swapChainImageCount) {
+	void EngineSamplingRayRasterRenderSystem::createAccumulateImages(uint32_t width, uint32_t height) {
 		this->accumulateImages.clear();
 
-		for (uint32_t i = 0; i < swapChainImageCount; i++) {
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			auto accumulateImage = std::make_shared<EngineImage>(
 				this->appDevice, width, height, 
 				1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_B8G8R8A8_UNORM, 
@@ -75,7 +75,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t swapChainImageCount, uint32_t nSample) {
+	void EngineSamplingRayRasterRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t nSample) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -84,7 +84,7 @@ namespace nugiEngine {
 				
 		this->descriptorSets.clear();
 
-		for (uint32_t i = 0; i < swapChainImageCount; i++) {
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			auto descSet = std::make_shared<VkDescriptorSet>();
 
 			auto accumulateImage = this->accumulateImages[i];
@@ -105,10 +105,10 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed) {
+	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
-		std::vector<VkDescriptorSet> descpSet = { *this->descriptorSets[imageIndex] };
+		std::vector<VkDescriptorSet> descpSet = { *this->descriptorSets[frameIndex] };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

@@ -18,7 +18,7 @@ namespace nugiEngine {
 	class EngineTraceRayRenderSystem {
 		public:
 			EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				uint32_t swapChainImageCount, uint32_t width, uint32_t height, uint32_t nSample, std::vector<VkDescriptorBufferInfo> buffersInfo);
+				uint32_t width, uint32_t height, uint32_t nSample, std::vector<VkDescriptorBufferInfo> buffersInfo);
 			~EngineTraceRayRenderSystem();
 
 			EngineTraceRayRenderSystem(const EngineTraceRayRenderSystem&) = delete;
@@ -29,11 +29,11 @@ namespace nugiEngine {
 			std::vector<std::shared_ptr<EngineImage>> getStorageImages() { return this->storageImages; }
 			bool getFramesUpdated(uint32_t index) const { return this->isFrameUpdated[index]; }
 
-			void writeGlobalData(uint32_t imageIndex, RayTraceUbo ubo);
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, uint32_t randomSeed = 1);
+			void writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, uint32_t randomSeed = 1);
 
-			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);
-			bool finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);
+			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			bool finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 
 			std::vector<bool> isFrameUpdated;
 
@@ -41,10 +41,10 @@ namespace nugiEngine {
 			void createPipelineLayout();
 			void createPipeline();
 
-			void createUniformBuffer(uint32_t swapChainImageCount);
-			void createImageStorages(uint32_t swapChainImageCount);
+			void createUniformBuffer();
+			void createImageStorages();
 
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t swapChainImageCount, std::vector<VkDescriptorBufferInfo> buffersInfo);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
 
 			EngineDevice& appDevice;
 

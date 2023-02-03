@@ -17,21 +17,21 @@ namespace nugiEngine {
 	class EngineSamplingRayRasterRenderSystem {
 		public:
 			EngineSamplingRayRasterRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-				uint32_t width, uint32_t height, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t swapChainImageCount, uint32_t nSample,
+				uint32_t width, uint32_t height, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t nSample,
 				VkRenderPass renderPass);
 			~EngineSamplingRayRasterRenderSystem();
 
 			EngineSamplingRayRasterRenderSystem(const EngineSamplingRayRasterRenderSystem&) = delete;
 			EngineSamplingRayRasterRenderSystem& operator = (const EngineSamplingRayRasterRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed = 1);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed = 1);
 		
 		private:
 			void createPipelineLayout();
 			void createPipeline(VkRenderPass renderPass);
 
-			void createAccumulateImages(uint32_t width, uint32_t height, uint32_t swapChainImageCount);
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t swapChainImageCount, uint32_t nSample);
+			void createAccumulateImages(uint32_t width, uint32_t height);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::shared_ptr<EngineImage>> computeStoreImages, uint32_t nSample);
 
 			EngineDevice& appDevice;
 			
