@@ -43,14 +43,16 @@ namespace nugiEngine {
 				}
 
 				auto commandBuffer = this->renderer->beginCommand();
-
 				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
+
 				this->traceRayRender->render(commandBuffer, frameIndex, this->randomSeed);
+				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
+				
+				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
+
+				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
 				this->traceRayRender->finishFrame(commandBuffer, frameIndex);
 
-				// -----
-				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
 				this->renderer->endCommand(commandBuffer);
