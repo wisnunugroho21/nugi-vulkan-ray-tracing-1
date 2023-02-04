@@ -37,6 +37,11 @@ namespace nugiEngine {
 				uint32_t imageIndex = this->renderer->getImageIndex();
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 
+				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
+					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
+					this->traceRayRender->isFrameUpdated[frameIndex] = true;
+				}
+
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
@@ -71,7 +76,13 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		RayTraceUbo ubo = this->updateCamera();
+		this->globalUbo = this->updateCamera();
+
+		if (!this->traceRayRender->isFrameUpdated[0]) {
+			this->traceRayRender->writeGlobalData(0, this->globalUbo);
+			this->traceRayRender->isFrameUpdated[0] = true;
+		}
+
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {

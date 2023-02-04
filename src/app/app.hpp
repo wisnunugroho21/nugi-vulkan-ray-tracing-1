@@ -52,5 +52,6 @@ namespace nugiEngine {
 
 			uint32_t randomSeed = 0;
 			bool isRendering = true;
+			RayTraceUbo globalUbo;
 	};
 }
