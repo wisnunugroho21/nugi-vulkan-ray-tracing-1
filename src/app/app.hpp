@@ -51,5 +51,6 @@ namespace nugiEngine {
 			std::shared_ptr<EngineModel> quadModels;
 
 			uint32_t randomSeed = 0;
+			bool isRendering = true;
 	};
 }
