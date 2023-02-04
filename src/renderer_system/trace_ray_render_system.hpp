@@ -33,6 +33,7 @@ namespace nugiEngine {
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, uint32_t randomSeed = 1);
 
 			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			bool transferFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 			bool finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 
 			std::vector<bool> isFrameUpdated;
