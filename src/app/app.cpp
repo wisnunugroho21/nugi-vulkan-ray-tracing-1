@@ -49,11 +49,10 @@ namespace nugiEngine {
 				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-
 				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
-				this->traceRayRender->finishFrame(commandBuffer, frameIndex);
-
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
+
+				this->traceRayRender->finishFrame(commandBuffer, frameIndex);				
 
 				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
