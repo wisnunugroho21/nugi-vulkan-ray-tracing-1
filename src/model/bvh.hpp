@@ -48,7 +48,7 @@ namespace nugiEngine {
 
   struct SphereBoundBox {
     int index;
-    Sphere t;
+    Sphere s;
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.
@@ -57,7 +57,7 @@ namespace nugiEngine {
     int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     int leftNodeIndex = -1;
     int rightNodeIndex = -1;
-    std::vector<SphereBoundBox> objects;
+    std::vector<TriangleBoundBox> objects;
 
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
@@ -84,12 +84,13 @@ namespace nugiEngine {
     return {glm::min(box0.min, box1.min), glm::max(box0.max, box1.max)};
   }
 
-  Aabb objectBoundingBox(Sphere &t) {
+  Aabb objectBoundingBox(Triangle &t) {
     // Need to add eps to correctly construct an AABB for flat objects like planes.
-    return {t.center - t.radius, t.center + t.radius};
+    return {glm::min(glm::min(t.point0, t.point1), t.point2) - eps, glm::max(glm::max(t.point0, t.point1), t.point2) + eps};
+    // return {t.center - t.radius, t.center + t.radius};
   }
 
-  Aabb objectListBoundingBox(std::vector<SphereBoundBox> &objects) {
+  Aabb objectListBoundingBox(std::vector<TriangleBoundBox> &objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;
@@ -103,28 +104,28 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(Sphere &a, Sphere &b, int axis) {
+  inline bool boxCompare(Triangle &a, Triangle &b, int axis) {
     Aabb boxA = objectBoundingBox(a);
     Aabb boxB = objectBoundingBox(b);
 
     return boxA.min[axis] < boxB.min[axis];
   }
 
-  bool boxXCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxXCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 0);
   }
 
-  bool boxYCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxYCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 1);
   }
 
-  bool boxZCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxZCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 2);
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<SphereBoundBox> &srcObjects) {
+  std::vector<BvhNode> createBvh(const std::vector<TriangleBoundBox> &srcObjects) {
     std::vector<BvhItemBuild> intermediate;
     int nodeCounter = 0;
     std::stack<BvhItemBuild> nodeStack;

@@ -99,11 +99,20 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		Sphere sphere1{ glm::vec3{0.0, -1000.0, 0.0}, 1000.0, 1, 0 };
-		modeldata.spheres.emplace_back(sphere1);
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 0, 0}, glm::vec3{555, 555, 0}, glm::vec3{555, 555, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{555, 0, 555}, glm::vec3{555, 0, 0}, 1, 0 });
 
-		Sphere sphere2{ glm::vec3{0.0, 2.0, 0.0}, 2.0, 0, 0 };
-		modeldata.spheres.emplace_back(sphere2);
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 0}, glm::vec3{0, 555, 0}, glm::vec3{0, 555, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 555, 555}, glm::vec3{0, 0, 555}, glm::vec3{0, 0, 0}, 1, 0 });
+
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 0}, glm::vec3{555, 0, 0}, glm::vec3{555, 0, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 0, 555}, glm::vec3{0, 0, 555}, glm::vec3{0, 0, 0}, 1, 0 });
+
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 555, 0,}, glm::vec3{555, 555, 0}, glm::vec3{555, 555, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{0, 555, 555}, glm::vec3{0, 555, 0}, 1, 0 });
+
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 555}, glm::vec3{0, 555, 555}, glm::vec3{555, 555, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{0, 555, 0}, glm::vec3{0, 0, 555}, 1, 0 });
 
 		Lambertian lambert{glm::vec3(0.75f, 0.75f, 0.75f)};
 		modeldata.lambertians.emplace_back(lambert);
