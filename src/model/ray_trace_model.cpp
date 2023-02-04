@@ -22,10 +22,10 @@ namespace nugiEngine {
 
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
-	SphereData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
-		SphereData object;
-		for (int i = 0; i < data.spheres.size(); i++) {
-			object.spheres[i] = data.spheres[i];
+	TriangleData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
+		TriangleData object;
+		for (int i = 0; i < data.triangles.size(); i++) {
+			object.triangles[i] = data.triangles[i];
 		}
 
 		return object;
@@ -50,9 +50,9 @@ namespace nugiEngine {
 	}
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
-		std::vector<SphereBoundBox> objects;
-		for (int i = 0; i < data.spheres.size(); i++) {
-			Sphere t = data.spheres[i];
+		std::vector<TriangleBoundBox> objects;
+		for (int i = 0; i < data.triangles.size(); i++) {
+			Triangle t = data.triangles[i];
 			objects.push_back({i, t});
 		}
 
@@ -66,10 +66,10 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(SphereData &data, BvhData &bvh, MaterialData &material, LightData &light) {
+	void EngineRayTraceModel::createBuffers(TriangleData &data, BvhData &bvh, MaterialData &material, LightData &light) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
-			sizeof(SphereData),
+			sizeof(TriangleData),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -80,13 +80,13 @@ namespace nugiEngine {
 
 		this->objectBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(SphereData),
+			sizeof(TriangleData),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(SphereData));
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(TriangleData));
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
