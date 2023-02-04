@@ -165,7 +165,7 @@ namespace nugiEngine {
 		ubo.horizontal = viewportWidth * u;
 		ubo.vertical = viewportHeight * v;
 		ubo.lowerLeftCorner = ubo.origin - ubo.horizontal / 2.0f + ubo.vertical / 2.0f - w;
-		ubo.background = glm::vec3(0.52f, 0.8f, 0.91f);
+		ubo.background = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		return ubo;
 	}
