@@ -99,17 +99,17 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		Sphere sphere1{glm::vec3{0.0, -1000.0, 0.0}, 1000.0, 0};
+		Sphere sphere1{ glm::vec3{0.0, -1000.0, 0.0}, 1000.0, 1, 0 };
 		modeldata.spheres.emplace_back(sphere1);
 
-		Sphere sphere2{glm::vec3{0.0, 1.0, 0.0}, 1.0, 2 };
+		Sphere sphere2{ glm::vec3{0.0, 2.0, 0.0}, 2.0, 0, 0 };
 		modeldata.spheres.emplace_back(sphere2);
 
-		Sphere sphere3{glm::vec3{-4.0, 1.0, 0.0}, 1.0, 0 };
-		modeldata.spheres.emplace_back(sphere3);
+		Lambertian lambert{glm::vec3(0.75f, 0.75f, 0.75f)};
+		modeldata.lambertians.emplace_back(lambert);
 
-		Sphere sphere4{glm::vec3{4.0, 1.0, 0.0}, 1.0, 1 };
-		modeldata.spheres.emplace_back(sphere4);
+		Light light{glm::vec3(5.0f, 5.0f, 5.0f)};
+		modeldata.lights.emplace_back(light);
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
 	}
@@ -145,8 +145,8 @@ namespace nugiEngine {
 
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(13.0f, 2.0f, 3.0f);
-		glm::vec3 lookAt = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec3 lookFrom = glm::vec3(26.0f, 3.0f, 6.0f);
+		glm::vec3 lookAt = glm::vec3(0.0f, 2.0f, 0.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		
 		float vfov = 20.0f;
@@ -182,7 +182,7 @@ namespace nugiEngine {
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
 			width, height);
 
-		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo() };
+		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getMaterialInfo(), this->models->getLightInfo() };
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
 			width, height, nSample, buffersInfo);

@@ -16,8 +16,6 @@ namespace nugiEngine {
 
   class EngineSwapChain {
   public:
-    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
     EngineSwapChain(EngineDevice &deviceRef, VkExtent2D windowExtent);
     EngineSwapChain(EngineDevice &deviceref, VkExtent2D windowExtent, std::shared_ptr<EngineSwapChain> previous);
 
