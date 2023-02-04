@@ -27,10 +27,6 @@ namespace nugiEngine
 
       VkDescriptorImageInfo getDescriptorInfo(VkImageLayout desiredImageLayout);
 
-      void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
-      void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
-        std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
-
       void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
         VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
         uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, 
@@ -40,9 +36,6 @@ namespace nugiEngine
       void copyImageToOther(std::shared_ptr<EngineImage> dstImage, VkImageLayout srcLayout, VkImageLayout dstLayout, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
       void generateMipMap();
-
-      static void transitionImageLayout(std::vector<std::shared_ptr<EngineImage>> images, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, 
-        VkPipelineStageFlags dstStage, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, EngineDevice *appDevice = nullptr);
 
       static void transitionImageLayout(std::vector<std::shared_ptr<EngineImage>> images, VkImageLayout oldLayout, VkImageLayout newLayout, 
         VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkAccessFlags srcAccess, VkAccessFlags dstAccess,
