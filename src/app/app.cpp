@@ -18,6 +18,8 @@
 #include <chrono>
 #include <iostream>
 
+#include <thread>
+
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
@@ -29,30 +31,11 @@ namespace nugiEngine {
 
 	EngineApp::~EngineApp() {}
 
-	void EngineApp::run() {
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		uint32_t t = 0;
-
+	void EngineApp::renderLoop() {
 		RayTraceUbo ubo = this->updateCamera();
 
 		while (!this->window.shouldClose()) {
 			this->window.pollEvents();
-
-			/*auto newTime = std::chrono::high_resolution_clock::now();
-			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-
-			if (t == 10) {
-				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
-				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
-
-				t = 0;
-			} else {
-				t++;
-			}
-
-			currentTime = newTime;*/
-
-			
 
 			if (this->renderer->acquireFrame()) {
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -91,6 +74,20 @@ namespace nugiEngine {
 					this->randomSeed++;
 				}
 			}
+		}
+	}
+
+	void EngineApp::run() {
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		uint32_t t = 0;
+
+		std::vector<std::thread> threads;
+		for (int i = 0; i < 3; i++) {
+			threads.emplace_back(std::thread(&EngineApp::renderLoop, std::ref(*this)));
+		}
+
+		for (auto &&th : threads) {
+			th.join();
 		}
 
 		vkDeviceWaitIdle(this->device.getLogicalDevice());

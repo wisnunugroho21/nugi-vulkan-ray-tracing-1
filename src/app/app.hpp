@@ -30,6 +30,7 @@ namespace nugiEngine {
 			EngineApp& operator = (const EngineApp&) = delete;
 
 			void run();
+			void renderLoop();
 
 		private:
 			void loadObjects();
