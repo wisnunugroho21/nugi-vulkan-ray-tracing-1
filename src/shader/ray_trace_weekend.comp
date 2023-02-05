@@ -2,9 +2,9 @@
 
 // ------------- layout ------------- 
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 3) in;
 
-layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[8];
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[3];
 
 struct Sphere {
   vec3 center;
@@ -63,14 +63,6 @@ layout(set = 0, binding = 4) buffer readonly materialSsbo {
 
 layout(set = 0, binding = 5) buffer readonly lightSsbo {
   Light lights[20];
-};
-
-layout(set = 0, binding = 4) buffer readonly materialSsbo {
-  Lambertian lambertians[100];
-};
-
-layout(set = 0, binding = 5) buffer readonly lightSsbo {
-  Light lights[100];
 };
 
 layout(push_constant) uniform Push {

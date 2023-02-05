@@ -29,14 +29,6 @@ namespace nugiEngine {
     Sphere spheres[20];
   };
 
-  struct MaterialData {
-    Lambertian lambertians[100];
-  };
-
-  struct LightData {
-    Light lights[100];
-  };
-
   struct BvhData {
     BvhNode bvhNodes[20];
 	};
@@ -46,7 +38,7 @@ namespace nugiEngine {
   };
 
   struct LightData {
-    Light lights[100];
+    Light lights[20];
   };
 
 	class EngineRayTraceModel {
