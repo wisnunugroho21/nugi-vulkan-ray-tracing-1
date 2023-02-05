@@ -55,6 +55,7 @@ namespace nugiEngine {
     this->image->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
       0, VK_ACCESS_TRANSFER_WRITE_BIT);
+      
     stagingBuffer.copyBufferToImage(this->image->getImage(), static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), 1);
     this->image->generateMipMap();
     // this->image->transitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

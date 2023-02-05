@@ -7,7 +7,7 @@
 #include "../device/device.hpp"
 
 namespace nugiEngine {
-	struct PipelineConfigInfo {
+	struct ComputePipelineConfigInfo {
 		VkPipelineLayout pipelineLayout = nullptr;
 
     VkPipelineShaderStageCreateInfo shaderStageInfo{};
@@ -29,11 +29,11 @@ namespace nugiEngine {
 					std::unique_ptr<EngineComputePipeline> build();
 
 				private:
-					PipelineConfigInfo configInfo{};
+					ComputePipelineConfigInfo configInfo{};
 					EngineDevice& appDevice;
 			};
 
-			EngineComputePipeline(EngineDevice& device, const PipelineConfigInfo& configInfo);
+			EngineComputePipeline(EngineDevice& device, const ComputePipelineConfigInfo& configInfo);
 			~EngineComputePipeline();
 
 			EngineComputePipeline(const EngineComputePipeline&) = delete;
@@ -49,6 +49,6 @@ namespace nugiEngine {
 			
 			static std::vector<char> readFile(const std::string& filepath);
 			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
-			void createGraphicPipeline(const PipelineConfigInfo& configInfo);
+			void createGraphicPipeline(const ComputePipelineConfigInfo& configInfo);
 	};
 }

@@ -18,21 +18,73 @@
 #include <chrono>
 #include <iostream>
 
+#include <thread>
+
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
+		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
 
 		this->loadObjects();
+		this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
 
 	EngineApp::~EngineApp() {}
 
+	void EngineApp::renderLoop() {
+		while (this->isRendering) {
+			if (this->renderer->acquireFrame()) {
+				uint32_t imageIndex = this->renderer->getImageIndex();
+				uint32_t frameIndex = this->renderer->getFrameIndex();
+
+				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
+					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
+					this->traceRayRender->isFrameUpdated[frameIndex] = true;
+				}
+
+				auto commandBuffer = this->renderer->beginCommand();
+				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
+
+				this->traceRayRender->render(commandBuffer, frameIndex, this->randomSeed);
+				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
+				
+				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
+				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
+				this->swapChainSubRenderer->endRenderPass(commandBuffer);
+
+				this->traceRayRender->finishFrame(commandBuffer, frameIndex);				
+
+				this->renderer->endCommand(commandBuffer);
+				this->renderer->submitCommand(commandBuffer);
+
+				if (!this->renderer->presentFrame()) {
+					this->recreateSubRendererAndSubsystem();
+					this->randomSeed = 0;
+
+					continue;
+				}
+
+				if (this->randomSeed >= 50) {
+					this->randomSeed = 0;
+				} else {
+					this->randomSeed++;
+				}
+			}
+		}
+	}
+
 	void EngineApp::run() {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		RayTraceUbo ubo = this->updateCamera();
+		this->globalUbo = this->updateCamera();
+
+		if (!this->traceRayRender->isFrameUpdated[0]) {
+			this->traceRayRender->writeGlobalData(0, this->globalUbo);
+			this->traceRayRender->isFrameUpdated[0] = true;
+		}
+
+		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
 			this->window.pollEvents();
@@ -50,46 +102,10 @@ namespace nugiEngine {
 			}
 
 			currentTime = newTime;*/
-
-			if (this->renderer->acquireFrame()) {
-				uint32_t imageIndex = this->renderer->getImageIndex();
-				uint32_t frameIndex = this->renderer->getFrameIndex();
-
-				if (!this->traceRayRender->isFrameUpdated[imageIndex]) {
-					this->traceRayRender->writeGlobalData(imageIndex, ubo);
-					this->traceRayRender->isFrameUpdated[imageIndex] = true;
-				}
-
-				auto commandBuffer = this->renderer->beginCommand();
-				
-				this->traceRayRender->prepareFrame(commandBuffer, imageIndex);
-				this->traceRayRender->render(commandBuffer, imageIndex, this->randomSeed);
-				this->traceRayRender->finishFrame(commandBuffer, imageIndex);
-
-				std::shared_ptr<VkDescriptorSet> traceRayDescSet = this->traceRayRender->getDescriptorSets(imageIndex);
-
-				this->samplingRayRender->prepareFrame(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, imageIndex, traceRayDescSet, this->randomSeed);
-				this->samplingRayRender->finishFrame(commandBuffer, imageIndex);
-
-				this->renderer->endCommand(commandBuffer);
-				this->renderer->submitCommand(commandBuffer);
-
-				if (!this->renderer->presentFrame()) {
-					this->recreateSubRendererAndSubsystem();
-					ubo = this->updateCamera();
-
-					this->randomSeed = 0;
-					continue;
-				} 
-
-				if (this->randomSeed >= 1000) {
-					this->randomSeed = 0;
-				} else {
-					this->randomSeed++;
-				}
-			}
 		}
+
+		this->isRendering = false;
+		renderThread.join();
 
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
@@ -97,19 +113,57 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		Sphere sphere1{ glm::vec3{0.0, -1000.0, 0.0}, 1000.0, 1, 0 };
-		modeldata.spheres.emplace_back(sphere1);
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 1 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, 1, 1 });
 
-		Sphere sphere2{ glm::vec3{0.0, 2.0, 0.0}, 2.0, 0, 0 };
-		modeldata.spheres.emplace_back(sphere2);
+		modeldata.triangles.emplace_back(Triangle{glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, 1, 2});
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f}, 1, 2 }); 
 
-		Lambertian lambert{glm::vec3(0.75f, 0.75f, 0.75f)};
-		modeldata.lambertians.emplace_back(lambert);
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f}, 1, 0 }); 
 
-		Light light{glm::vec3(5.0f, 5.0f, 5.0f)};
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, 1, 0 });  
+
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, 1, 0 }); 
+
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f}, 0, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f}, 0, 0 });
+
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(1.0f, 1.0f, 1.0f) });
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.12f, 0.45f, 0.15f) });
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.65f, 0.05f, 0.05f) });
+
+		Light light{glm::vec3(10.0f, 10.0f, 10.0f)};
 		modeldata.lights.emplace_back(light);
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
+	}
+
+	void EngineApp::loadQuadModels() {
+		ModelData modelData{};
+
+		std::vector<Vertex> vertices;
+
+		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex1);
+
+		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex2);
+
+		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex3);
+
+		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		vertices.emplace_back(vertex4);
+
+		modelData.vertices = vertices;
+		modelData.indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
+		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
 	}
 
 	RayTraceUbo EngineApp::updateCamera() {
@@ -118,11 +172,11 @@ namespace nugiEngine {
 
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(26.0f, 3.0f, 6.0f);
-		glm::vec3 lookAt = glm::vec3(0.0f, 2.0f, 0.0f);
+		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
+		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		
-		float vfov = 20.0f;
+		float vfov = 40.0f;
 		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
 		float theta = glm::radians(vfov);
@@ -145,18 +199,23 @@ namespace nugiEngine {
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t nSample = 8;
-		
-		uint32_t width = this->renderer->getSwapChain()->getSwapChainExtent().width;
-		uint32_t height = this->renderer->getSwapChain()->getSwapChainExtent().height;
+
+		uint32_t width = this->renderer->getSwapChain()->width();
+		uint32_t height = this->renderer->getSwapChain()->height();
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+
+		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
+			width, height);
 
 		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getMaterialInfo(), this->models->getLightInfo() };
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			static_cast<uint32_t>(swapChainImages.size()), width, height, nSample, buffersInfo);
+			width, height, nSample, buffersInfo);
 
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRenderSystem>(this->device, descriptorPool, 
-			this->traceRayRender->getDescSetLayout(), swapChainImages, width, height);
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
+			this->renderer->getDescriptorPool(), width, height, this->traceRayRender->getStorageImages(), 
+			nSample, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }

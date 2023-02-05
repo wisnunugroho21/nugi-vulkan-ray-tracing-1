@@ -139,18 +139,19 @@ namespace nugiEngine {
   }
 
   void EngineDevice::createLogicalDevice() {
-    QueueFamilyIndices indices = this->findQueueFamilies(this->physicalDevice);
+    this->familyIndices = this->findQueueFamilies(this->physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies = {
-      indices.graphicsFamily, 
-      indices.presentFamily, 
-      indices.computeFamily,
-      indices.transferFamily
+      this->familyIndices.graphicsFamily, 
+      this->familyIndices.presentFamily, 
+      this->familyIndices.computeFamily,
+      this->familyIndices.transferFamily
     };
 
     std::vector<float> queuePriority;
-    for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+
+    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
       if (i == 0) {
         queuePriority.emplace_back(1.0f);
       } else {
@@ -170,6 +171,7 @@ namespace nugiEngine {
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
     deviceFeatures.sampleRateShading = VK_TRUE;
+    deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -199,11 +201,11 @@ namespace nugiEngine {
     this->computeQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
     this->transferQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
-    for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-      vkGetDeviceQueue(this->device, indices.graphicsFamily, i, &this->graphicsQueue[i]);
-      vkGetDeviceQueue(this->device, indices.presentFamily, i, &this->presentQueue[i]);
-      vkGetDeviceQueue(this->device, indices.computeFamily, i, &this->computeQueue[i]);
-      vkGetDeviceQueue(this->device, indices.transferFamily, i, &this->transferQueue[i]);
+    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+      vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, i, &this->graphicsQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, i, &this->presentQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, i, &this->computeQueue[i]);
+      vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, i, &this->transferQueue[i]);
     }
   }
 

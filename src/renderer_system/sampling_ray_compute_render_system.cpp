@@ -1,4 +1,4 @@
-#include "sampling_ray_render_system.hpp"
+#include "sampling_ray_compute_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
 #include "../ray_ubo.hpp"
@@ -13,7 +13,7 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineSamplingRayRenderSystem::EngineSamplingRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout,
+	EngineSamplingRayCompRenderSystem::EngineSamplingRayCompRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout,
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages, uint32_t width, uint32_t height) : appDevice{device}, width{width}, height{height}, swapChainImages{swapChainImages} 
 	{
 		this->createAccumulateImages(static_cast<uint32_t>(swapChainImages.size()));
@@ -23,11 +23,11 @@ namespace nugiEngine {
 		this->createPipeline();
 	}
 
-	EngineSamplingRayRenderSystem::~EngineSamplingRayRenderSystem() {
+	EngineSamplingRayCompRenderSystem::~EngineSamplingRayCompRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineSamplingRayRenderSystem::createPipelineLayout(std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout) {
+	void EngineSamplingRayCompRenderSystem::createPipelineLayout(std::shared_ptr<EngineDescriptorSetLayout> traceRayDescLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -47,7 +47,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRenderSystem::createPipeline() {
+	void EngineSamplingRayCompRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
@@ -55,7 +55,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineSamplingRayRenderSystem::createAccumulateImages(uint32_t swapChainImageCount) {
+	void EngineSamplingRayCompRenderSystem::createAccumulateImages(uint32_t swapChainImageCount) {
 		this->accumulateImages.clear();
 
 		for (uint32_t i = 0; i < swapChainImageCount; i++) {
@@ -70,7 +70,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool) {
+	void EngineSamplingRayCompRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
@@ -93,7 +93,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, std::shared_ptr<VkDescriptorSet> traceRayDescSet, uint32_t randomSeed) {
+	void EngineSamplingRayCompRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, std::shared_ptr<VkDescriptorSet> traceRayDescSet, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		VkDescriptorSet descpSet[2] = { *traceRayDescSet, *this->descriptorSets[imageIndex] };
@@ -124,40 +124,44 @@ namespace nugiEngine {
 		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 4, 1);
 	}
 
-	bool EngineSamplingRayRenderSystem::prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex) {
+	bool EngineSamplingRayCompRenderSystem::prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex) {
 		auto swapChainImage = this->swapChainImages[imageIndex];
 		auto accumulateImage = this->accumulateImages[imageIndex];
 
 		if (accumulateImage->getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
 			accumulateImage->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 
-				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
-				0, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, commandBuffer);
+				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 
+				VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, 
+				VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 		}
 
 		swapChainImage->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
-			0, VK_ACCESS_TRANSFER_WRITE_BIT, commandBuffer);
+			0, VK_ACCESS_TRANSFER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 
 		return true;
 	}
 
-	bool EngineSamplingRayRenderSystem::finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex) {
+	bool EngineSamplingRayCompRenderSystem::finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex) {
 		auto swapChainImage = this->swapChainImages[imageIndex];
 		auto accumulateImage = this->accumulateImages[imageIndex];
 
 		accumulateImage->transitionImageLayout(VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
 			VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 
-			VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, commandBuffer);
+			VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT, 
+			VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 
 		swapChainImage->copyImageFromOther(accumulateImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer);
 
 		swapChainImage->transitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, commandBuffer);
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT, 
+			VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 
 		accumulateImage->transitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
-			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, commandBuffer);
+			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, 
+			VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 
     return true;
 	}

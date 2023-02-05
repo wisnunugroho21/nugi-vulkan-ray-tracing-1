@@ -12,14 +12,14 @@
 #include <cassert>
 
 namespace nugiEngine {
-	class EngineRayTraceRenderer
+	class EngineHybridRenderer
 	{
 		public:
-			EngineRayTraceRenderer(EngineWindow& window, EngineDevice& device);
-			~EngineRayTraceRenderer();
+			EngineHybridRenderer(EngineWindow& window, EngineDevice& device);
+			~EngineHybridRenderer();
 
-			EngineRayTraceRenderer(const EngineRayTraceRenderer&) = delete;
-			EngineRayTraceRenderer& operator = (const EngineRayTraceRenderer&) = delete;
+			EngineHybridRenderer(const EngineHybridRenderer&) = delete;
+			EngineHybridRenderer& operator = (const EngineHybridRenderer&) = delete;
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }

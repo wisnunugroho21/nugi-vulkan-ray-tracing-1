@@ -11,12 +11,12 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001f);
+  const glm::vec3 eps(0.01f);
 
   // Axis-aligned bounding box.
   struct Aabb {
-    alignas(16) glm::vec3 min = {FLT_MAX, FLT_MAX, FLT_MAX};
-    alignas(16) glm::vec3 max = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    glm::vec3 min = {FLT_MAX, FLT_MAX, FLT_MAX};
+    glm::vec3 max = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
 
     int longestAxis() {
       float x = abs(max[0] - min[0]);
@@ -48,7 +48,7 @@ namespace nugiEngine {
 
   struct SphereBoundBox {
     int index;
-    Sphere t;
+    Sphere s;
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.
@@ -57,19 +57,25 @@ namespace nugiEngine {
     int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     int leftNodeIndex = -1;
     int rightNodeIndex = -1;
-    std::vector<SphereBoundBox> objects;
+    std::vector<TriangleBoundBox> objects;
 
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
 
       BvhNode node{};
       node.minimum = box.min;
-      node.maximum = box.max;
-      node.leftNode = leftNodeIndex;
-      node.rightNode = rightNodeIndex;
+      node.maximum = box.max;      
 
       if (leaf) {
-        node.objIndex = objects[0].index;
+        node.leftObjIndex = objects[0].index;
+
+        if (objects.size() >= 2) {
+          node.rightObjIndex = objects[1].index;
+        }
+      }
+      else {
+        node.leftNode = leftNodeIndex;
+        node.rightNode = rightNodeIndex;
       }
 
       return node;
@@ -81,15 +87,16 @@ namespace nugiEngine {
   }
 
   Aabb surroundingBox(Aabb box0, Aabb box1) {
-    return {glm::min(box0.min, box1.min), glm::max(box0.max, box1.max)};
+    return Aabb{ glm::min(box0.min, box1.min), glm::max(box0.max, box1.max) };
   }
 
-  Aabb objectBoundingBox(Sphere &t) {
+  Aabb objectBoundingBox(Triangle &t) {
     // Need to add eps to correctly construct an AABB for flat objects like planes.
-    return {t.center - t.radius, t.center + t.radius};
+    return Aabb{ glm::min(glm::min(t.point0, t.point1), t.point2) - eps, glm::max(glm::max(t.point0, t.point1), t.point2) + eps };
+    // return {t.center - t.radius, t.center + t.radius};
   }
 
-  Aabb objectListBoundingBox(std::vector<SphereBoundBox> &objects) {
+  Aabb objectListBoundingBox(std::vector<TriangleBoundBox> &objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;
@@ -103,30 +110,30 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(Sphere &a, Sphere &b, int axis) {
+  inline bool boxCompare(Triangle &a, Triangle &b, int axis) {
     Aabb boxA = objectBoundingBox(a);
     Aabb boxB = objectBoundingBox(b);
 
     return boxA.min[axis] < boxB.min[axis];
   }
 
-  bool boxXCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxXCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 0);
   }
 
-  bool boxYCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxYCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 1);
   }
 
-  bool boxZCompare(SphereBoundBox a, SphereBoundBox b) {
+  bool boxZCompare(TriangleBoundBox a, TriangleBoundBox b) {
     return boxCompare(a.t, b.t, 2);
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<SphereBoundBox> &srcObjects) {
-    std::vector<BvhItemBuild> intermediate;
+  std::vector<BvhNode> createBvh(const std::vector<TriangleBoundBox> &srcObjects) {
     int nodeCounter = 0;
+    std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
 
     BvhItemBuild root;
@@ -141,15 +148,15 @@ namespace nugiEngine {
 
       currentNode.box = objectListBoundingBox(currentNode.objects);
 
-      int axis = currentNode.box.randomAxis();
-      auto comparator = (axis == 0)   ? boxXCompare
-                        : (axis == 1) ? boxYCompare
-                                      : boxZCompare;
+      int axis = currentNode.box.longestAxis();
+      auto comparator = (axis == 0) ? boxXCompare
+                      : (axis == 1) ? boxYCompare
+                      : boxZCompare;
 
       size_t objectSpan = currentNode.objects.size();
       std::sort(currentNode.objects.begin(), currentNode.objects.end(), comparator);
 
-      if (objectSpan <= 1) {
+      if (objectSpan <= 2) {
         intermediate.push_back(currentNode);
         continue;
       } else {

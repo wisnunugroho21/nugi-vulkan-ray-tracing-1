@@ -26,7 +26,8 @@ namespace nugiEngine {
   struct BvhNode {
     alignas(4) int leftNode = -1;
     alignas(4) int rightNode = -1;
-    alignas(4) int objIndex = -1;
+    alignas(4) int leftObjIndex = -1;
+    alignas(4) int rightObjIndex = -1;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;

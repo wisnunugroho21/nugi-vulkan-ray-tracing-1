@@ -7,7 +7,7 @@
 #include "../device/device.hpp"
 
 namespace nugiEngine {
-	struct PipelineConfigInfo {
+	struct GraphicPipelineConfigInfo {
 		VkPipelineLayout pipelineLayout = nullptr;
 		VkRenderPass renderPass = nullptr;
 		uint32_t subpass = 0;
@@ -54,16 +54,19 @@ namespace nugiEngine {
 				private:
 					std::vector<VkDynamicState> dynamicStates{};
 					std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo{};
-					PipelineConfigInfo configInfo{};
+					GraphicPipelineConfigInfo configInfo{};
 					
 					EngineDevice& appDevice;
 			};
 
-			EngineGraphicPipeline(EngineDevice& device, const PipelineConfigInfo& configInfo);
+			EngineGraphicPipeline(EngineDevice& device, const GraphicPipelineConfigInfo& configInfo);
 			~EngineGraphicPipeline();
 
 			EngineGraphicPipeline(const EngineGraphicPipeline&) = delete;
 			EngineGraphicPipeline& operator =(const EngineDevice&) = delete;
+
+			static std::vector<char> readFile(const std::string& filepath);
+			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
 
 			void bind(VkCommandBuffer commandBuffer);
 
@@ -71,9 +74,7 @@ namespace nugiEngine {
 			EngineDevice& engineDevice;
 			VkPipeline graphicPipeline;
 			std::vector<VkShaderModule> shaderModules{};
-			
-			static std::vector<char> readFile(const std::string& filepath);
-			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
-			void createGraphicPipeline(const PipelineConfigInfo& configInfo);
+
+			void createGraphicPipeline(const GraphicPipelineConfigInfo& configInfo);
 	};
 }

@@ -87,7 +87,8 @@ namespace nugiEngine {
   }
 
   void EngineImage::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
-    VkAccessFlags srcAccess, VkAccessFlags dstAccess, std::shared_ptr<EngineCommandBuffer> commandBuffer, EngineDevice *appDevice) 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, uint32_t dstQueueFamilyIndex,
+    std::shared_ptr<EngineCommandBuffer> commandBuffer, EngineDevice *appDevice) 
   {
     bool isCommandBufferCreatedHere = false;
     
@@ -103,8 +104,8 @@ namespace nugiEngine {
     barrier.oldLayout = oldLayout;
     barrier.newLayout = newLayout;
 
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
+    barrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
 
     barrier.image = this->image;
     barrier.subresourceRange.aspectMask = this->aspectFlags;
@@ -133,9 +134,10 @@ namespace nugiEngine {
       commandBuffer->submitCommand(this->appDevice.getTransferQueue(0));
     }
   }
-
+  
   void EngineImage::transitionImageLayout(std::vector<std::shared_ptr<EngineImage>> images, VkImageLayout oldLayout, VkImageLayout newLayout, 
     VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkAccessFlags srcAccess, VkAccessFlags dstAccess,
+    uint32_t srcQueueFamilyIndex, uint32_t dstQueueFamilyIndex,
     std::shared_ptr<EngineCommandBuffer> commandBuffer, EngineDevice *appDevice) 
   {
     bool isCommandBufferCreatedHere = false;
@@ -156,8 +158,8 @@ namespace nugiEngine {
       barrier.oldLayout = oldLayout;
       barrier.newLayout = newLayout;
 
-      barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-      barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+      barrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
+      barrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
 
       barrier.image = image->getImage();
       barrier.subresourceRange.aspectMask = image->getAspectFlag();

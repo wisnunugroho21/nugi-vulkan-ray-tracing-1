@@ -14,7 +14,7 @@
 
 namespace nugiEngine {
 	struct RayTraceModelData {
-    std::vector<Sphere> spheres;
+    std::vector<Triangle> triangles;
     std::vector<Lambertian> lambertians;
     std::vector<Light> lights;
 
@@ -22,11 +22,11 @@ namespace nugiEngine {
 	};
 
   struct TriangleData {
-    Triangle triangles[100];
+    Triangle triangles[20];
   };
 
   struct SphereData {
-    Sphere spheres[100];
+    Sphere spheres[20];
   };
 
   struct MaterialData {
@@ -38,8 +38,16 @@ namespace nugiEngine {
   };
 
   struct BvhData {
-    BvhNode bvhNodes[100];
+    BvhNode bvhNodes[20];
 	};
+
+  struct MaterialData {
+    Lambertian lambertians[20];
+  };
+
+  struct LightData {
+    Light lights[100];
+  };
 
 	class EngineRayTraceModel {
 	public:
@@ -64,11 +72,11 @@ namespace nugiEngine {
     std::shared_ptr<EngineBuffer> materialBuffer;
     std::shared_ptr<EngineBuffer> lightBuffer;
 
-	  SphereData createObjectData(const RayTraceModelData &data);
+	  TriangleData createObjectData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
     MaterialData createMaterialData(const RayTraceModelData &data);
     LightData createLightData(const RayTraceModelData &data);
 
-    void createBuffers(SphereData &data, BvhData &bvh, MaterialData &material, LightData &light);
+    void createBuffers(TriangleData &data, BvhData &bvh, MaterialData &material, LightData &light);
 	};
 } // namespace nugiEngine

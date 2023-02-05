@@ -175,7 +175,7 @@ namespace nugiEngine {
 		);
 	}
 
-	EngineGraphicPipeline::EngineGraphicPipeline(EngineDevice& device, const PipelineConfigInfo& configInfo) : engineDevice{device} {
+	EngineGraphicPipeline::EngineGraphicPipeline(EngineDevice& device, const GraphicPipelineConfigInfo& configInfo) : engineDevice{device} {
 		this->createGraphicPipeline(configInfo);
 	}
 
@@ -204,7 +204,7 @@ namespace nugiEngine {
 		return buffer;
 	}
 
-	void EngineGraphicPipeline::createGraphicPipeline(const PipelineConfigInfo& configInfo) {
+	void EngineGraphicPipeline::createGraphicPipeline(const GraphicPipelineConfigInfo& configInfo) {
 		auto bindingDescriptions = configInfo.bindingDescriptions;
 		auto attributeDescriptions = configInfo.attributeDescriptions;
 
