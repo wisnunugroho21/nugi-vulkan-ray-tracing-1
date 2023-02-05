@@ -176,7 +176,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 
   rec.isHit = true;
   rec.t = t;
-  rec.point = rayAt(r, rec.t);
+  rec.point = rayAt(r, t);
   rec.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
@@ -304,33 +304,35 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    int leftObjIndex = bvhNodes[currentNode].leftObjIndex;
-    if (leftObjIndex >= 0) {
-      HitRecord tempRec = hitTriangle(triangles[leftObjIndex], r, tMin, rec.t);
+    int objIndex = bvhNodes[currentNode].leftObjIndex;
+    if (objIndex >= 0) {
+      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;
+        break;
       }
     }
 
-    int rightObjIndex = bvhNodes[currentNode].rightObjIndex;    
-    if (rightObjIndex >= 0) {
-      HitRecord tempRec = hitTriangle(triangles[rightObjIndex], r, tMin, rec.t);
+    objIndex = bvhNodes[currentNode].rightObjIndex;    
+    if (objIndex >= 0) {
+      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;
+        break;
       }
     }
 
-    int leftNode = bvhNodes[currentNode].leftNode;
-    if (leftNode >= 0) {
-      stack[stackIndex] = leftNode;
+    int bvhNode = bvhNodes[currentNode].leftNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    int rightNode = bvhNodes[currentNode].rightNode;
-    if (rightNode >= 0) {
-      stack[stackIndex] = rightNode;
+    bvhNode = bvhNodes[currentNode].rightNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
       stackIndex++;
     }
   }
