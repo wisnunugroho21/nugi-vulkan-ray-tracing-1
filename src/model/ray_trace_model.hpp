@@ -22,19 +22,19 @@ namespace nugiEngine {
 	};
 
   struct TriangleData {
-    Triangle triangles[100];
+    Triangle triangles[20];
   };
 
   struct SphereData {
-    Sphere spheres[100];
+    Sphere spheres[20];
   };
 
   struct BvhData {
-    BvhNode bvhNodes[100];
+    BvhNode bvhNodes[20];
 	};
 
   struct MaterialData {
-    Lambertian lambertians[100];
+    Lambertian lambertians[20];
   };
 
   struct LightData {

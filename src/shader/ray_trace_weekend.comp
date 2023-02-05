@@ -34,7 +34,8 @@ struct Light {
 struct BvhNode {
   int leftNode;
   int rightNode;
-  int objIndex;
+  int leftObjIndex;
+  int rightObjIndex;
 
   vec3 maximum;
   vec3 minimum;
@@ -49,19 +50,19 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
-  Triangle triangles[100];
+  Triangle triangles[20];
 };
 
 layout(set = 0, binding = 3) buffer readonly BvhSsbo {
-  BvhNode bvhNodes[100];
+  BvhNode bvhNodes[20];
 };
 
 layout(set = 0, binding = 4) buffer readonly materialSsbo {
-  Lambertian lambertians[100];
+  Lambertian lambertians[20];
 };
 
 layout(set = 0, binding = 5) buffer readonly lightSsbo {
-  Light lights[100];
+  Light lights[20];
 };
 
 layout(push_constant) uniform Push {
@@ -142,7 +143,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 
   vec3 v0v1 = obj.point1 - obj.point0;
   vec3 v0v2 = obj.point2 - obj.point0;
-  vec3 pvec = cross(normalize(r.direction), v0v2);
+  vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
   if (abs(det) < kEpsilon) {
@@ -158,7 +159,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   }
 
   vec3 qvec = cross(tvec, v0v1);
-  float v = dot(normalize(r.direction), qvec) * invDet;
+  float v = dot(r.direction, qvec) * invDet;
   if (v < 0.0 || u + v > 1.0) {
     return rec;
   }
@@ -179,7 +180,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   rec.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  rec.faceNormal = setFaceNormal(normalize(r.direction), outwardNormal);
+  rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
   rec.materialHit.materialType = obj.materialType;
   rec.materialHit.materialIndex = obj.materialIndex;
@@ -240,13 +241,13 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitTriangleList(Triangle objList[100], uint objNum, Ray r, float tMin, float tMax) {
+HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
 
-  for (int i = 0; i < objNum; i++) {
-    HitRecord tempRec = hitTriangle(objList[i], r, tMin, rec.t);
+  for (int i = 0; i < 12; i++) {
+    HitRecord tempRec = hitTriangle(triangles[i], r, tMin, rec.t);
     if (tempRec.isHit) {
       rec = tempRec;
     }
@@ -278,7 +279,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return tNear > tFar;
+  return tNear < tFar;
 }
 
 HitRecord hitBvh(Ray r, float tMin, float tMax) {
@@ -286,31 +287,40 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   rec.isHit = false;
   rec.t = tMax;
 
-  int stack[3];
+  int stack[4];
   int stackIndex = 0;
 
   stack[0] = 0;
   stackIndex++;
 
-  while(stackIndex > 0 && stackIndex <= 3) {
+  while(stackIndex > 0 && stackIndex <= 4) {
     stackIndex--;
     int currentNode = stack[stackIndex];
     if (currentNode < 0) {
       continue;
     }
 
-    if (intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum)) {
+    if (!intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum)) {
       continue;
     }
 
-    int objIndex = bvhNodes[currentNode].objIndex;
-    if (objIndex >= 0) {
-      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
+    int leftObjIndex = bvhNodes[currentNode].leftObjIndex;
+    if (leftObjIndex >= 0) {
+      HitRecord tempRec = hitTriangle(triangles[leftObjIndex], r, tMin, rec.t);
 
       if (tempRec.isHit) {
         rec = tempRec;
       }
-    } 
+    }
+
+    int rightObjIndex = bvhNodes[currentNode].rightObjIndex;    
+    if (rightObjIndex >= 0) {
+      HitRecord tempRec = hitTriangle(triangles[rightObjIndex], r, tMin, rec.t);
+
+      if (tempRec.isHit) {
+        rec = tempRec;
+      }
+    }
 
     int leftNode = bvhNodes[currentNode].leftNode;
     if (leftNode >= 0) {

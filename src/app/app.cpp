@@ -113,25 +113,29 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 0, 0}, glm::vec3{555, 555, 0}, glm::vec3{555, 555, 555}, 1, 0 });
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{555, 0, 555}, glm::vec3{555, 0, 0}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 1 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, 1, 1 });
 
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 0}, glm::vec3{0, 555, 0}, glm::vec3{0, 555, 555}, 1, 0 });
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 555, 555}, glm::vec3{0, 0, 555}, glm::vec3{0, 0, 0}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, 1, 2});
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f}, 1, 2 }); 
 
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 0}, glm::vec3{555, 0, 0}, glm::vec3{555, 0, 555}, 1, 0 });
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 0, 555}, glm::vec3{0, 0, 555}, glm::vec3{0, 0, 0}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f}, 1, 0 }); 
 
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 555, 0,}, glm::vec3{555, 555, 0}, glm::vec3{555, 555, 555}, 1, 0 });
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{0, 555, 555}, glm::vec3{0, 555, 0}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, 1, 0 });  
 
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0, 0, 555}, glm::vec3{0, 555, 555}, glm::vec3{555, 555, 555}, 1, 0 });
-		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555, 555, 555}, glm::vec3{0, 555, 0}, glm::vec3{0, 0, 555}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f}, 1, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, 1, 0 }); 
 
-		Lambertian lambert{glm::vec3(0.75f, 0.75f, 0.75f)};
-		modeldata.lambertians.emplace_back(lambert);
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f}, 0, 0 });
+		modeldata.triangles.emplace_back(Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f}, 0, 0 });
 
-		Light light{glm::vec3(5.0f, 5.0f, 5.0f)};
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(1.0f, 1.0f, 1.0f) });
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.12f, 0.45f, 0.15f) });
+		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.65f, 0.05f, 0.05f) });
+
+		Light light{glm::vec3(10.0f, 10.0f, 10.0f)};
 		modeldata.lights.emplace_back(light);
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
@@ -168,11 +172,11 @@ namespace nugiEngine {
 
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(26.0f, 3.0f, 6.0f);
-		glm::vec3 lookAt = glm::vec3(0.0f, 2.0f, 0.0f);
+		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
+		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		
-		float vfov = 20.0f;
+		float vfov = 40.0f;
 		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
 		float theta = glm::radians(vfov);
