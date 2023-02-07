@@ -166,8 +166,8 @@ float areaTriangle(Triangle obj) {
 }
 
 HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
-  HitRecord rec;
-  rec.isHit = false;
+  HitRecord hit;
+  hit.isHit = false;
 
   float kEpsilon = 1e-8;
 
@@ -177,7 +177,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   float det = dot(v0v1, pvec);
   
   if (abs(det) < kEpsilon) {
-    return rec;
+    return hit;
   }
     
   float invDet = 1.0 / det;
@@ -185,37 +185,37 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   vec3 tvec = r.origin - obj.point0;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
-    return rec;
+    return hit;
   }
 
   vec3 qvec = cross(tvec, v0v1);
   float v = dot(r.direction, qvec) * invDet;
   if (v < 0.0 || u + v > 1.0) {
-    return rec;
+    return hit;
   }
   
   float t = dot(v0v2, qvec) * invDet;
 
   if (t <= kEpsilon) {
-    return rec;
+    return hit;
   }
 
   if (t < tMin || t > tMax) {
-    return rec;
+    return hit;
   }
 
-  rec.isHit = true;
-  rec.t = t;
-  rec.point = rayAt(r, t);
-  rec.uv = vec2(u, v);
+  hit.isHit = true;
+  hit.t = t;
+  hit.point = rayAt(r, t);
+  hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  rec.materialHit.materialType = obj.materialType;
-  rec.materialHit.materialIndex = obj.materialIndex;
+  hit.materialHit.materialType = obj.materialType;
+  hit.materialHit.materialIndex = obj.materialIndex;
 
-  return rec;
+  return hit;
 }
 
 vec2 getSphereUV(vec3 point) {
@@ -229,8 +229,8 @@ vec2 getSphereUV(vec3 point) {
 }
 
 HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
-  HitRecord rec;
-  rec.isHit = false;
+  HitRecord hit;
+  hit.isHit = false;
 
   vec3 oc = r.origin - obj.center;
 
@@ -241,7 +241,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   float discriminant = half_b * half_b - a * c;
 
   if (discriminant < 0.0) {
-    return rec;
+    return hit;
   }
 
   float sqrtd = sqrt(discriminant);
@@ -251,22 +251,22 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   if (root < tMin || root > tMax) {
     root = (-half_b + sqrtd) / a;
     if (root < tMin || root > tMax) {
-      return rec;
+      return hit;
     }
   }
 
-  rec.isHit = true;
-  rec.t = root;
-  rec.point = rayAt(r, rec.t);
-  rec.uv = getSphereUV(rec.point);
+  hit.isHit = true;
+  hit.t = root;
+  hit.point = rayAt(r, hit.t);
+  hit.uv = getSphereUV(hit.point);
 
-  vec3 outwardNormal = (rec.point - obj.center) / obj.radius;
-  rec.faceNormal = setFaceNormal(r.direction, outwardNormal);
+  vec3 outwardNormal = (hit.point - obj.center) / obj.radius;
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  rec.materialHit.materialType = obj.materialType;
-  rec.materialHit.materialIndex = obj.materialIndex;
+  hit.materialHit.materialType = obj.materialType;
+  hit.materialHit.materialIndex = obj.materialIndex;
   
-  return rec;
+  return hit;
 }
 
 float triangleGetPdfValue(Triangle obj, Ray r) {
@@ -314,33 +314,33 @@ vec3 triangleListGenerateRandom(vec3 origin) {
 }
 
 /* HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
-  HitRecord rec;
-  rec.isHit = false;
-  rec.t = tMax;
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
 
   for (int i = 0; i < 12; i++) {
-    HitRecord tempRec = hitTriangle(triangles[i], r, tMin, rec.t);
-    if (tempRec.isHit) {
-      rec = tempRec;
+    HitRecord tempHit = hitTriangle(triangles[i], r, tMin, hit.t);
+    if (tempHit.isHit) {
+      hit = tempHit;
     }
   }
 
-  return rec;
+  return hit;
 }
 
 HitRecord hitSphereList(Ray r, float tMin, float tMax) {
-  HitRecord rec;
-  rec.isHit = false;
-  rec.t = tMax;
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
   
   for (int i = 0; i < 4; i++) {
-    HitRecord tempRec = hitSphere(spheres[i], r, tMin, rec.t);
-    if (tempRec.isHit) {
-      rec = tempRec;
+    HitRecord tempHit = hitSphere(spheres[i], r, tMin, hit.t);
+    if (tempHit.isHit) {
+      hit = tempHit;
     }
   }
 
-  return rec;
+  return hit;
 } */
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
@@ -355,9 +355,9 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 }
 
 HitRecord hitBvh(Ray r, float tMin, float tMax) {
-  HitRecord rec;
-  rec.isHit = false;
-  rec.t = tMax;
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
 
   int stack[4];
   int stackIndex = 0;
@@ -378,20 +378,20 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
 
     int objIndex = bvhNodes[currentNode].leftObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
+      HitRecord tempHit = hitTriangle(triangles[objIndex], r, tMin, hit.t);
 
-      if (tempRec.isHit) {
-        rec = tempRec;
+      if (tempHit.isHit) {
+        hit = tempHit;
         break;
       }
     }
 
     objIndex = bvhNodes[currentNode].rightObjIndex;    
     if (objIndex >= 0) {
-      HitRecord tempRec = hitTriangle(triangles[objIndex], r, tMin, rec.t);
+      HitRecord tempHit = hitTriangle(triangles[objIndex], r, tMin, hit.t);
 
-      if (tempRec.isHit) {
-        rec = tempRec;
+      if (tempHit.isHit) {
+        hit = tempHit;
         break;
       }
     }
@@ -409,7 +409,7 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
     }
   }
 
-  return rec;
+  return hit;
 }
 
 ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
