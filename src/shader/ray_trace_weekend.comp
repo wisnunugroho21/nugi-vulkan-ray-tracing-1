@@ -94,13 +94,14 @@ struct HitRecord {
   bool isHit;
   float t;
   vec3 point;
+  vec2 uv;
   FaceNormal faceNormal;
   MaterialHitRecord materialHit;
-  vec2 uv;
 };
 
 struct ShadeRecord {
   bool isScatter;
+  bool isSpecular;
   vec3 colorAttenuation;
   vec3 colorEmitted;
   Ray raySpecular;
@@ -126,6 +127,26 @@ vec3 rayAt(Ray r, float t) {
   return r.origin + t * r.direction;
 }
 
+vec3[3] buildOnb(vec3 normal) {
+  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+
+  vec3 z = normalize(normal);
+  vec3 y = normalize(cross(z, a));
+  vec3 x = cross(z, y);
+
+  return vec3[3](x, y, z);
+}
+
+float cosineGetPdfValue(vec3 localOnb, vec3 direction) {
+  float cosine = dot(normalize(direction), localOnb);
+  return cosine < 0 ? 0 : cosine / pi;
+}
+
+vec3 cosineGenerateRandom(vec3[3] globalOnb) {
+  vec3 source = randomVecThree(0);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
 FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   FaceNormal faceNormal;
 
@@ -133,6 +154,21 @@ FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   faceNormal.normal = faceNormal.frontFace ? outwardNormal : -1.0 * outwardNormal;
 
   return faceNormal;
+}
+
+vec3 randomOnTriangle(int objIndex) {
+  vec3 a = triangles[objIndex].point1 - triangles[objIndex].point0;
+  vec3 b = triangles[objIndex].point2 - triangles[objIndex].point0;
+
+  float u1 = randomFloat(1);
+  float u2 = randomFloat(2);
+
+  if (u1 + u2 > 1) {
+    u1 = 1 - u1;
+    u2 = 1 - u2;
+  }
+
+  return u1 * a + u2 * b + triangles[objIndex].point0;
 }
 
 HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
@@ -189,8 +225,6 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 }
 
 vec2 getSphereUV(vec3 point) {
-  float pi = 3.1415926535897932385;
-
   float theta = acos(-1.0 * point.y);
   float phi = atan(point.x, -1.0 * point.z) + pi; // HLSL atan2(x,y) == GLSL atan(y,x)
 
@@ -241,7 +275,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
+/* HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
@@ -256,20 +290,20 @@ HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
   return rec;
 }
 
-HitRecord hitSphereList(Sphere objList[100], Ray r, float tMin, float tMax) {
+HitRecord hitSphereList(Ray r, float tMin, float tMax) {
   HitRecord rec;
   rec.isHit = false;
   rec.t = tMax;
   
   for (int i = 0; i < 4; i++) {
-    HitRecord tempRec = hitSphere(objList[i], r, tMin, rec.t);
+    HitRecord tempRec = hitSphere(spheres[i], r, tMin, rec.t);
     if (tempRec.isHit) {
       rec = tempRec;
     }
   }
 
   return rec;
-}
+} */
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   vec3 tMin = (boxMin - r.origin) / r.direction;
@@ -352,8 +386,9 @@ ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
   scat.raySpecular.direction = shadeDirection;
 
   scat.isScatter = true;
-  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor;
+  scat.isSpecular = true;
 
+  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor;
   return scat;
 }
 
@@ -369,8 +404,9 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit) {
   scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
 
   scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
+  scat.isSpecular = true;
 
+  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
   return scat;
 }
 
@@ -397,9 +433,15 @@ ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
   scat.raySpecular.direction = direction;
 
   scat.isScatter = true;
-  scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
+  scat.isSpecular = true;
 
+  scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
   return scat;
+}
+
+float scatterPdfLambertian(HitRecord hit, Ray scatteredRay) {
+  float cosine = dot(hit.faceNormal.normal, normalize(scatteredRay.direction));
+  return cosine < 0 ? 0 : cosine / pi;
 }
 
 void main() {
@@ -466,8 +508,37 @@ void main() {
       0.0, 0.0, 0.0, 1.0
     );
 
-    rayTransform = emitTransf * attentTransf * rayTransform;
-    curRay = scat.raySpecular;
+    if (!scat.isSpecular) {
+      rayTransform = emitTransf * attentTransf * rayTransform;
+      curRay = scat.raySpecular;
+
+      continue;
+    }
+
+    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+    vec3 newDirection = cosineGenerateRandom(globalOnb);
+
+    curRay.origin = hit.point;
+    curRay.direction = newDirection;
+
+    float pdfVal = cosineGetPdfValue(globalOnb[2], newDirection);
+    float scatterPdf = scatterPdfLambertian(hit, curRay);
+
+    mat4 scatteredPdfTransf = mat4(
+      scatterPdf, 0.0, 0.0, 0.0,
+      0.0, scatterPdf, 0.0, 0.0,
+      0.0, 0.0, scatterPdf, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    mat4 valuePdfTransf = mat4(
+      pdfVal, 0.0, 0.0, 0.0,
+      0.0, pdfVal, 0.0, 0.0,
+      0.0, 0.0, pdfVal, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    rayTransform = emitTransf * attentTransf * scatteredPdfTransf * rayTransform * inverse(valuePdfTransf);
   }
   
   vec4 curColor = rayTransform * lastNum;
