@@ -144,7 +144,7 @@ float cosineGetPdfValue(vec3 localOnb, vec3 direction) {
 }
 
 vec3 cosineGenerateRandom(vec3[3] globalOnb) {
-  vec3 source = randomVecThree(0);
+  vec3 source = randomCosineDirection(0);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
@@ -416,7 +416,7 @@ ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
   ShadeRecord scat;
 
   scat.isScatter = true;
-  scat.isSpecular = true;
+  scat.isSpecular = false;
 
   scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor;
   return scat;
@@ -538,7 +538,7 @@ void main() {
       0.0, 0.0, 0.0, 1.0
     );
 
-    if (!scat.isSpecular) {
+    if (scat.isSpecular) {
       rayTransform = emitTransf * attentTransf * rayTransform;
       curRay = scat.raySpecular;
 
