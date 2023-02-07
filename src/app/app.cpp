@@ -135,8 +135,8 @@ namespace nugiEngine {
 		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.12f, 0.45f, 0.15f) });
 		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.65f, 0.05f, 0.05f) });
 
-		Light light{glm::vec3(10.0f, 10.0f, 10.0f)};
-		modeldata.lights.emplace_back(light);
+		modeldata.lights.emplace_back( Light{glm::vec3(10.0f, 10.0f, 10.0f), 10} );
+		modeldata.lights.emplace_back( Light{glm::vec3(10.0f, 10.0f, 10.0f), 11} );
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
 	}
