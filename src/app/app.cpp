@@ -64,7 +64,7 @@ namespace nugiEngine {
 					continue;
 				}
 
-				if (this->randomSeed >= 50) {
+				if (this->randomSeed >= 100) {
 					this->randomSeed = 0;
 				} else {
 					this->randomSeed++;

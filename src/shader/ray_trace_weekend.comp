@@ -415,14 +415,6 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
 ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
   ShadeRecord scat;
 
-  vec3 shadeDirection = hit.faceNormal.normal + normalize(randomInUnitSphere(0));
-  if (nearZero(shadeDirection)) {
-    shadeDirection = hit.faceNormal.normal;
-  }
-
-  scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = shadeDirection;
-
   scat.isScatter = true;
   scat.isSpecular = true;
 
@@ -553,12 +545,20 @@ void main() {
       continue;
     }
 
-    vec3 newDirection = triangleListGenerateRandom(hit.point);
+    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+    int chooseRandom = randomInt(0, 1, 2);
+    
+    vec3 newDirection;
+
+    switch(chooseRandom) {
+      case 0: newDirection = triangleListGenerateRandom(hit.point); break;
+      case 1: newDirection = cosineGenerateRandom(globalOnb); break;
+    }
 
     curRay.origin = hit.point;
     curRay.direction = newDirection;
 
-    float pdfVal = triangleListGetPdfValue(curRay);
+    float pdfVal = 0.5 * triangleListGetPdfValue(curRay) + 0.5 * cosineGetPdfValue(globalOnb[2], newDirection);
     float scatterPdf = scatterPdfLambertian(hit, curRay);
 
     mat4 scatteredPdfTransf = mat4(
