@@ -33,7 +33,7 @@ float randomFloatAt(float min, float max, uint index) {
 }
 
 int randomInt(float min, float max, uint index) {
-  return int(randomFloatAt(min, max + 1, 0));
+  return int(randomFloatAt(min, max + 1, index));
 }
 
 vec3 randomVecThree(uint index) {
