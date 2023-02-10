@@ -12,9 +12,9 @@ float stepAndOutputRNGFloat(inout uint rngState) {
   return float(word) / 4294967295.0;
 }
 
-uint rngStateXY =  (600 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
-uint rngStateXZ =  (600 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
-uint rngStateYZ =  (600 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateXY =  (800 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
+uint rngStateXZ =  (800 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateYZ =  (800 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
 
 float randomFloat(uint index) {
   float randNum = 0.0;
@@ -30,6 +30,10 @@ float randomFloat(uint index) {
 
 float randomFloatAt(float min, float max, uint index) {
   return min + (max - min) * randomFloat(index);
+}
+
+int randomInt(float min, float max, uint index) {
+  return int(randomFloatAt(min, max + 1, index));
 }
 
 vec3 randomVecThree(uint index) {
@@ -69,4 +73,16 @@ vec3 randomInUnitDisk(uint index) {
       return p;
     }
   }
+}
+
+vec3 randomCosineDirection(uint index) {
+  float r1 = randomFloat(index);
+  float r2 = randomFloat(index);
+  float z = sqrt(1 - r2);
+
+  float phi = 2 * 3.14159265359 * r1;
+  float x = cos(phi) * sqrt(r2);
+  float y = sin(phi) * sqrt(r2);
+
+  return vec3(x, y, z);
 }

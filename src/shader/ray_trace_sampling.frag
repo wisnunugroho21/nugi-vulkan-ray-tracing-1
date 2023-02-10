@@ -18,6 +18,8 @@ void main() {
 
   for (uint i = 0; i < 3; i++) {
     vec4 imgColor = imageLoad(inputImage[i], ivec2(gl_FragCoord.xy));
+    imgColor = clamp(imgColor, 0.0, 1.0);
+    
     totalColor += imgColor;
   }
 

@@ -39,6 +39,7 @@ namespace nugiEngine {
 
   struct Light {
     alignas(16) glm::vec3 lightColor;
+    alignas(4) uint32_t objIndex;
   };
 
   struct RayTraceUbo {
