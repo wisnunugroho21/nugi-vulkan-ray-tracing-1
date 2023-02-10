@@ -102,7 +102,6 @@ struct HitRecord {
 
 struct ShadeRecord {
   bool isScatter;
-  bool isSpecular;
   vec3 colorAttenuation;
   vec3 colorEmitted;
   Ray raySpecular;
@@ -342,65 +341,6 @@ HitRecord hitSphereList(Ray r, float tMin, float tMax) {
   return hit;
 } */
 
-// ------------- Material -------------
-
-ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
-  ShadeRecord scat;
-
-  scat.isScatter = true;
-  scat.isSpecular = false;
-
-  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor;
-  return scat;
-}
-
-ShadeRecord shadeMetal(Ray r, HitRecord hit) {
-  ShadeRecord scat;
-
-  vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
-
-  float fuzziness = 0.0;
-  // fuzziness = min(fuzziness, 1.0);
-
-  scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
-
-  scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  scat.isSpecular = true;
-
-  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
-  return scat;
-}
-
-ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
-  ShadeRecord scat;
-
-  float indexOfRefraction = 1.5;
-  float refractionRatio = hit.faceNormal.frontFace ? (1.0 / indexOfRefraction) : indexOfRefraction;
-
-  vec3 unitDirection = normalize(r.direction);
-  float cosTheta = min(dot(-unitDirection, hit.faceNormal.normal), 1.0);
-  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-
-  bool cannotRefract = refractionRatio * sinTheta > 1.0;
-  vec3 direction;
-
-  if (cannotRefract || reflectance(cosTheta, refractionRatio) > randomFloat(0)) {
-    direction = reflect(unitDirection, hit.faceNormal.normal);
-  } else {
-    direction = refract(unitDirection, hit.faceNormal.normal, refractionRatio);
-  }
-
-  scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = direction;
-
-  scat.isScatter = true;
-  scat.isSpecular = true;
-
-  scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
-  return scat;
-}
-
 // ------------- Denoiser Cosine ------------- 
 
 vec3[3] buildOnb(vec3 normal) {
@@ -413,8 +353,8 @@ vec3[3] buildOnb(vec3 normal) {
   return vec3[3](x, y, z);
 }
 
-float cosineGetPdfValue(vec3 localOnb, vec3 direction) {
-  float cosine = dot(normalize(direction), localOnb);
+float cosineGetPdfValue(vec3 normal, vec3 direction) {
+  float cosine = dot(normalize(direction), normal);
   return cosine < 0 ? 0 : cosine / pi;
 }
 
@@ -477,11 +417,74 @@ vec3 triangleListGenerateRandom(vec3 origin) {
   return triangleGenerateRandom(triangles[lights[randomInt(0, 1, 0)].objIndex], origin);
 }
 
-// ------------- Denoiser Material -------------
+// ------------- Material -------------
 
-float scatterPdfLambertian(HitRecord hit, Ray scatteredRay) {
-  float cosine = dot(hit.faceNormal.normal, normalize(scatteredRay.direction));
-  return cosine < 0 ? 0 : cosine / pi;
+ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
+  ShadeRecord scat;
+  
+  vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+  scat.raySpecular.origin = hit.point;
+
+  int chooseRandom = randomInt(0, 1, 2);
+  switch(chooseRandom) {
+    case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
+    case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
+  }
+
+  float pdfVal = 0.5 * triangleListGetPdfValue(scat.raySpecular) + 0.5 * cosineGetPdfValue(globalOnb[2], scat.raySpecular.direction);
+
+  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
+  float scatterPdf = cosine < 0 ? 0 : cosine / pi;
+
+  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor * scatterPdf / pdfVal;
+  scat.isScatter = true;
+
+  return scat;
+}
+
+ShadeRecord shadeMetal(Ray r, HitRecord hit) {
+  ShadeRecord scat;
+
+  vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
+
+  float fuzziness = 0.0;
+  // fuzziness = min(fuzziness, 1.0);
+
+  scat.raySpecular.origin = hit.point;
+  scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
+
+  scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
+  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
+
+  return scat;
+}
+
+ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
+  ShadeRecord scat;
+
+  float indexOfRefraction = 1.5;
+  float refractionRatio = hit.faceNormal.frontFace ? (1.0 / indexOfRefraction) : indexOfRefraction;
+
+  vec3 unitDirection = normalize(r.direction);
+  float cosTheta = min(dot(-unitDirection, hit.faceNormal.normal), 1.0);
+  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+
+  bool cannotRefract = refractionRatio * sinTheta > 1.0;
+  vec3 direction;
+
+  if (cannotRefract || reflectance(cosTheta, refractionRatio) > randomFloat(0)) {
+    direction = reflect(unitDirection, hit.faceNormal.normal);
+  } else {
+    direction = refract(unitDirection, hit.faceNormal.normal, refractionRatio);
+  }
+
+  scat.raySpecular.origin = hit.point;
+  scat.raySpecular.direction = direction;
+
+  scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
+  scat.isScatter = true;
+
+  return scat;
 }
 
 // ------------- Main -------------
@@ -550,44 +553,8 @@ void main() {
       0.0, 0.0, 0.0, 1.0
     );
 
-    if (scat.isSpecular) {
-      rayTransform = emitTransf * attentTransf * rayTransform;
-      curRay = scat.raySpecular;
-
-      continue;
-    }
-
-    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
-    int chooseRandom = randomInt(0, 1, 2);
-    
-    vec3 newDirection;
-
-    switch(chooseRandom) {
-      case 0: newDirection = triangleListGenerateRandom(hit.point); break;
-      case 1: newDirection = cosineGenerateRandom(globalOnb); break;
-    }
-
-    curRay.origin = hit.point;
-    curRay.direction = newDirection;
-
-    float pdfVal = 0.5 * triangleListGetPdfValue(curRay) + 0.5 * cosineGetPdfValue(globalOnb[2], newDirection);
-    float scatterPdf = scatterPdfLambertian(hit, curRay);
-
-    mat4 scatteredPdfTransf = mat4(
-      scatterPdf, 0.0, 0.0, 0.0,
-      0.0, scatterPdf, 0.0, 0.0,
-      0.0, 0.0, scatterPdf, 0.0,
-      0.0, 0.0, 0.0, 1.0
-    );
-
-    mat4 valuePdfTransf = mat4(
-      pdfVal, 0.0, 0.0, 0.0,
-      0.0, pdfVal, 0.0, 0.0,
-      0.0, 0.0, pdfVal, 0.0,
-      0.0, 0.0, 0.0, 1.0
-    );
-
-    rayTransform = emitTransf * attentTransf * scatteredPdfTransf * rayTransform * inverse(valuePdfTransf);
+    rayTransform = emitTransf * attentTransf * rayTransform;
+    curRay = scat.raySpecular;
   }
   
   vec4 curColor = rayTransform * lastNum;
