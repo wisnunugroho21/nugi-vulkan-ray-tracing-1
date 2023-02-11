@@ -434,9 +434,9 @@ ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
   float pdfVal = 0.5 * triangleListGetPdfValue(scat.raySpecular) + 0.5 * cosineGetPdfValue(globalOnb[2], scat.raySpecular.direction);
 
   float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
-  float scatterPdf = cosine < 0 ? 0 : cosine / pi;
+  vec3 reflectedLight = lambertians[hit.materialHit.materialIndex].albedoColor / pi * max(cosine, 0);
 
-  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor * scatterPdf / pdfVal;
+  scat.colorAttenuation = reflectedLight / pdfVal;
   scat.isScatter = true;
 
   return scat;
@@ -447,15 +447,15 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit) {
 
   vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
 
-  float fuzziness = 0.0;
-  // fuzziness = min(fuzziness, 1.0);
-
   scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = reflected + fuzziness * randomInUnitSphere(0);
+  scat.raySpecular.direction = reflected;
 
+  vec3 halAngle = normalize(scat.raySpecular.direction + r.direction);
+  float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0);
+
+  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor * pow(blinnTerm, 64.0);
   scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  scat.colorAttenuation = vec3(0.3, 0.7, 0.3);
-
+  
   return scat;
 }
 
