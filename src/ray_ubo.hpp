@@ -10,18 +10,20 @@ namespace nugiEngine {
     alignas(16) glm::vec3 point0;
     alignas(16) glm::vec3 point1;
     alignas(16) glm::vec3 point2;
-
-    alignas(4) uint32_t materialType;
-    alignas(4) uint32_t materialIndex;
   };
 
   struct Sphere {
     alignas(16) glm::vec3 center;
     alignas(4) float radius;
+  };
+
+  struct Object {
+    Triangle triangle{};
 
     alignas(4) uint32_t materialType;
     alignas(4) uint32_t materialIndex;
   };
+  
 
   struct BvhNode {
     alignas(4) int leftNode = -1;
@@ -38,8 +40,8 @@ namespace nugiEngine {
   };
 
   struct Light {
-    alignas(16) glm::vec3 lightColor;
-    alignas(4) uint32_t objIndex;
+    Triangle triangle{};
+    alignas(16) glm::vec3 color;
   };
 
   struct RayTraceUbo {

@@ -22,10 +22,10 @@ namespace nugiEngine {
 
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
-	TriangleData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
-		TriangleData object;
-		for (int i = 0; i < data.triangles.size(); i++) {
-			object.triangles[i] = data.triangles[i];
+	ObjectData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
+		ObjectData object;
+		for (int i = 0; i < data.objects.size(); i++) {
+			object.objects[i] = data.objects[i];
 		}
 
 		return object;
@@ -50,10 +50,10 @@ namespace nugiEngine {
 	}
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
-		std::vector<TriangleBoundBox> objects;
-		for (int i = 0; i < data.triangles.size(); i++) {
-			Triangle t = data.triangles[i];
-			objects.push_back({i, t});
+		std::vector<ObjectBoundBox> objects;
+		for (int i = 0; i < data.objects.size(); i++) {
+			Object o = data.objects[i];
+			objects.push_back({i, o});
 		}
 
 		auto bvhNodes = createBvh(objects);
@@ -66,10 +66,10 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(TriangleData &data, BvhData &bvh, MaterialData &material, LightData &light) {
+	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
-			sizeof(TriangleData),
+			sizeof(ObjectData),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -80,13 +80,13 @@ namespace nugiEngine {
 
 		this->objectBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(TriangleData),
+			sizeof(ObjectData),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(TriangleData));
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(ObjectData));
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
