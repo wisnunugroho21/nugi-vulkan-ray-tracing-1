@@ -512,27 +512,23 @@ void main() {
   
   for(int i = 0; i < 50; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
-
     if (!hit.isHit) {
-      hit = hitLightList(curRay, 0.001, 1000000.0);
-      if (hit.isHit) {
-        lastNum = vec4(lights[hit.objIndex].color, 1.0);
-        break;
-      }
-
       lastNum = vec4(ubo.background, 1.0);
       break;
     }
 
-    uint materialType = objects[hit.objIndex].materialType;
-    uint materialIndex = objects[hit.objIndex].materialIndex;
+    HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
+    if (hittedLight.isHit) {
+      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      break;
+    }
 
     ShadeRecord scat;
-    if (materialType == 1) {
-      scat = shadeLambertian(curRay, hit, materialIndex);
-    } else if (materialType == 2) {
-      scat = shadeMetal(curRay, hit, materialIndex);
-    } else if (materialType == 3) {
+    if (objects[hit.objIndex].materialType == 1) {
+      scat = shadeLambertian(curRay, hit, objects[hit.objIndex].materialIndex);
+    } else if (objects[hit.objIndex].materialType == 2) {
+      scat = shadeMetal(curRay, hit, objects[hit.objIndex].materialIndex);
+    } else if (objects[hit.objIndex].materialType == 3) {
       scat = shadeDielectric(curRay, hit);
     }
 

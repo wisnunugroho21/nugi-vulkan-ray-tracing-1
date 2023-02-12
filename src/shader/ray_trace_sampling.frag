@@ -23,8 +23,7 @@ void main() {
     totalColor += clamp(imgColor, 0.0, 1.0);
   }
 
-  totalColor = totalColor / NSAMPLE;
-  totalColor = sqrt(totalColor);
+  totalColor = sqrt(totalColor / NSAMPLE);
   totalColor = (totalColor + accColor * push.randomSeed) / (push.randomSeed + 1.0);
 
   imageStore(accumulateImage, ivec2(gl_FragCoord.xy), totalColor);
