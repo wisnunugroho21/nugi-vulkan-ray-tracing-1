@@ -34,8 +34,8 @@ namespace nugiEngine {
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
 			if (this->renderer->acquireFrame()) {
-				uint32_t imageIndex = this->renderer->getImageIndex();
 				uint32_t frameIndex = this->renderer->getFrameIndex();
+				uint32_t imageIndex = this->renderer->getImageIndex();				
 
 				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
 					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
@@ -62,13 +62,11 @@ namespace nugiEngine {
 					this->randomSeed = 0;
 
 					continue;
-				}
+				}				
 
-				if (this->randomSeed >= 100) {
-					this->randomSeed = 0;
-				} else {
+				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
 					this->randomSeed++;
-				}
+				}				
 			}
 		}
 	}
@@ -198,7 +196,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
-		uint32_t nSample = 3;
+		uint32_t nSample = 1;
 
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
