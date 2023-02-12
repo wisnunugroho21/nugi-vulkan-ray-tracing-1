@@ -1,11 +1,10 @@
 #version 460
 
-// ------------- layout ------------- 
+// ------------- layout -------------
 
 #define NSAMPLE 1
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
 
 struct Sphere {
@@ -20,7 +19,10 @@ struct Triangle {
   vec3 point0;
   vec3 point1;
   vec3 point2;
+};
 
+struct Object {
+  Triangle triangle;
   uint materialType;
   uint materialIndex;
 };
@@ -30,8 +32,8 @@ struct Lambertian {
 };
 
 struct Light {
-  vec3 lightColor;
-  uint objIndex;
+  Triangle triangle;
+  vec3 color;
 };
 
 struct BvhNode {
@@ -53,7 +55,7 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
-  Triangle triangles[20];
+  Object objects[20];
 };
 
 layout(set = 0, binding = 3) buffer readonly BvhSsbo {
@@ -95,17 +97,19 @@ struct MaterialHitRecord {
 
 struct HitRecord {
   bool isHit;
+  uint objIndex;
+
   float t;
   vec3 point;
   vec2 uv;
+
   FaceNormal faceNormal;
-  MaterialHitRecord materialHit;
 };
 
 struct ShadeRecord {
-  bool isScatter;
   vec3 colorAttenuation;
   vec3 colorEmitted;
+
   Ray raySpecular;
 };
 
@@ -187,9 +191,6 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  hit.materialHit.materialType = obj.materialType;
-  hit.materialHit.materialIndex = obj.materialIndex;
-
   return hit;
 }
 
@@ -237,9 +238,6 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
 
   vec3 outwardNormal = (hit.point - obj.center) / obj.radius;
   hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
-
-  hit.materialHit.materialType = obj.materialType;
-  hit.materialHit.materialIndex = obj.materialIndex;
   
   return hit;
 }
@@ -279,20 +277,24 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
 
     int objIndex = bvhNodes[currentNode].leftObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(triangles[objIndex], r, tMin, hit.t);
+      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
+        hit.objIndex = objIndex;
+
         break;
       }
     }
 
     objIndex = bvhNodes[currentNode].rightObjIndex;    
     if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(triangles[objIndex], r, tMin, hit.t);
+      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
+        hit.objIndex = objIndex;
+
         break;
       }
     }
@@ -313,22 +315,23 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   return hit;
 }
 
-/* HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
+ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
 
-  for (int i = 0; i < 12; i++) {
-    HitRecord tempHit = hitTriangle(triangles[i], r, tMin, hit.t);
+  for (int i = 0; i < 2; i++) {
+    HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
+      hit.objIndex = i;
     }
   }
 
   return hit;
 }
 
-HitRecord hitSphereList(Ray r, float tMin, float tMax) {
+/* HitRecord hitSphereList(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -409,25 +412,25 @@ float triangleListGetPdfValue(Ray r) {
   float sum = 0.0;
 
   for (int i = 0; i < 2; i++) {
-    sum += weight * triangleGetPdfValue(triangles[lights[i].objIndex], r);
+    sum += weight * triangleGetPdfValue(lights[i].triangle, r);
   }
 
   return sum;
 }
 
 vec3 triangleListGenerateRandom(vec3 origin) {
-  return triangleGenerateRandom(triangles[lights[randomInt(0, 1, 0)].objIndex], origin);
+  return triangleGenerateRandom(lights[randomInt(0, 1, 0)].triangle, origin);
 }
 
 // ------------- Material -------------
 
-ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
+ShadeRecord shadeLambertian(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
   
   vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
   scat.raySpecular.origin = hit.point;
 
-  int chooseRandom = randomInt(0, 1, 2);
+  int chooseRandom = randomInt(0, 1, 0);
   switch(chooseRandom) {
     case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
     case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
@@ -436,15 +439,13 @@ ShadeRecord shadeLambertian(Ray r, HitRecord hit) {
   float pdfVal = 0.5 * triangleListGetPdfValue(scat.raySpecular) + 0.5 * cosineGetPdfValue(globalOnb[2], scat.raySpecular.direction);
 
   float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
-  vec3 reflectedLight = lambertians[hit.materialHit.materialIndex].albedoColor / pi * max(cosine, 0.0);
+  vec3 reflectedLight = lambertians[materialIndex].albedoColor / pi * max(cosine, 0.0);
 
   scat.colorAttenuation = reflectedLight / pdfVal;
-  scat.isScatter = true;
-
   return scat;
 }
 
-ShadeRecord shadeMetal(Ray r, HitRecord hit) {
+ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
 
   scat.raySpecular.origin = hit.point;
@@ -453,9 +454,7 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit) {
   vec3 halAngle = normalize(scat.raySpecular.direction - r.direction);
   float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0);
 
-  scat.colorAttenuation = lambertians[hit.materialHit.materialIndex].albedoColor * pow(blinnTerm, 64.0);
-  scat.isScatter = dot(scat.raySpecular.direction, hit.faceNormal.normal) > 0.0;
-  
+  scat.colorAttenuation = lambertians[materialIndex].albedoColor * pow(blinnTerm, 64.0);
   return scat;
 }
 
@@ -482,8 +481,6 @@ ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
   scat.raySpecular.direction = direction;
 
   scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
-  scat.isScatter = true;
-
   return scat;
 }
 
@@ -514,29 +511,29 @@ void main() {
   );
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitBvh(curRay, 0.001, 100000.0);
+    HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
 
     if (!hit.isHit) {
+      hit = hitLightList(curRay, 0.001, 1000000.0);
+      if (hit.isHit) {
+        lastNum = vec4(lights[hit.objIndex].color, 1.0);
+        break;
+      }
+
       lastNum = vec4(ubo.background, 1.0);
       break;
     }
 
+    uint materialType = objects[hit.objIndex].materialType;
+    uint materialIndex = objects[hit.objIndex].materialIndex;
+
     ShadeRecord scat;
-    scat.isScatter = false;
-
-    if (hit.materialHit.materialType == 1) {
-      scat = shadeLambertian(curRay, hit);
-    } else if (hit.materialHit.materialType == 2) {
-      scat = shadeMetal(curRay, hit);
-    } else if (hit.materialHit.materialType == 3) {
+    if (materialType == 1) {
+      scat = shadeLambertian(curRay, hit, materialIndex);
+    } else if (materialType == 2) {
+      scat = shadeMetal(curRay, hit, materialIndex);
+    } else if (materialType == 3) {
       scat = shadeDielectric(curRay, hit);
-    } else {
-      scat.colorEmitted = lights[hit.materialHit.materialIndex].lightColor;
-    }
-
-    if (!scat.isScatter) {
-      lastNum = vec4(scat.colorEmitted, 1.0);
-      break;
     }
 
     mat4 emitTransf = mat4(
