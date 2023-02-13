@@ -55,19 +55,19 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
-  Object objects[20];
+  Object objects[100];
 };
 
 layout(set = 0, binding = 3) buffer readonly BvhSsbo {
-  BvhNode bvhNodes[20];
+  BvhNode bvhNodes[100];
 };
 
 layout(set = 0, binding = 4) buffer readonly materialSsbo {
-  Lambertian lambertians[20];
+  Lambertian lambertians[100];
 };
 
 layout(set = 0, binding = 5) buffer readonly lightSsbo {
-  Light lights[20];
+  Light lights[100];
 };
 
 layout(push_constant) uniform Push {

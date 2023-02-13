@@ -25,10 +25,6 @@ namespace nugiEngine {
     Object objects[100];
   };
 
-  struct SphereData {
-    Sphere spheres[100];
-  };
-
   struct BvhData {
     BvhNode bvhNodes[100];
 	};
