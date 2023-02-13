@@ -148,7 +148,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  float kEpsilon = 1e-8;
+  float kEpsilon = 0.0001;
 
   vec3 v0v1 = obj.point1 - obj.point0;
   vec3 v0v2 = obj.point2 - obj.point0;
@@ -258,13 +258,13 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   hit.isHit = false;
   hit.t = tMax;
 
-  int stack[4];
+  int stack[10];
   int stackIndex = 0;
 
   stack[0] = 0;
   stackIndex++;
 
-  while(stackIndex > 0 && stackIndex <= 4) {
+  while(stackIndex > 0 && stackIndex <= 10) {
     stackIndex--;
     int currentNode = stack[stackIndex];
     if (currentNode < 0) {
@@ -282,8 +282,6 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
       if (tempHit.isHit) {
         hit = tempHit;
         hit.objIndex = objIndex;
-
-        break;
       }
     }
 
@@ -294,8 +292,6 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
       if (tempHit.isHit) {
         hit = tempHit;
         hit.objIndex = objIndex;
-
-        break;
       }
     }
 
@@ -315,13 +311,29 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   return hit;
 }
 
- HitRecord hitLightList(Ray r, float tMin, float tMax) {
+HitRecord hitLightList(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
 
   for (int i = 0; i < 2; i++) {
     HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
+    if (tempHit.isHit) {
+      hit = tempHit;
+      hit.objIndex = i;
+    }
+  }
+
+  return hit;
+}
+
+HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
+
+  for (int i = 0; i < 22; i++) {
+    HitRecord tempHit = hitTriangle(objects[i].triangle, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
       hit.objIndex = i;

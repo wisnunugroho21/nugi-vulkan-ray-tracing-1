@@ -11,7 +11,7 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.01f);
+  const glm::vec3 eps(0.0001f);
 
   // Axis-aligned bounding box.
   struct Aabb {
@@ -166,7 +166,7 @@ namespace nugiEngine {
         intermediate.push_back(currentNode);
         continue;
       } else {
-        auto mid = objectSpan / 2;
+        auto mid = std::ceil(objectSpan / 2);
 
         BvhItemBuild leftNode;
         leftNode.index = nodeCounter;

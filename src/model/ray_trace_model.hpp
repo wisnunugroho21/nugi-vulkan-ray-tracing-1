@@ -22,23 +22,23 @@ namespace nugiEngine {
 	};
 
   struct ObjectData {
-    Object objects[20];
+    Object objects[100];
   };
 
   struct SphereData {
-    Sphere spheres[20];
+    Sphere spheres[100];
   };
 
   struct BvhData {
-    BvhNode bvhNodes[20];
+    BvhNode bvhNodes[100];
 	};
 
   struct MaterialData {
-    Lambertian lambertians[20];
+    Lambertian lambertians[100];
   };
 
   struct LightData {
-    Light lights[20];
+    Light lights[100];
   };
 
 	class EngineRayTraceModel {
