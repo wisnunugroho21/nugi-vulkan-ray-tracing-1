@@ -2,7 +2,7 @@
 
 // ------------- layout ------------- 
 
-#define NSAMPLE 1
+#define NSAMPLE 10
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
@@ -23,7 +23,7 @@ void main() {
     totalColor += clamp(imgColor, 0.0, 1.0);
   }
 
-  totalColor = sqrt(totalColor / NSAMPLE);
+  totalColor = totalColor / NSAMPLE; // sqrt(totalColor / NSAMPLE);
   totalColor = (totalColor + accColor * push.randomSeed) / (push.randomSeed + 1.0);
 
   imageStore(accumulateImage, ivec2(gl_FragCoord.xy), totalColor);
