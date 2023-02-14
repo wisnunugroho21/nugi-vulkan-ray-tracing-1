@@ -376,7 +376,7 @@ float cosineGetPdfValue(vec3 normal, vec3 direction) {
 }
 
 vec3 cosineGenerateRandom(vec3[3] globalOnb) {
-  vec3 source = randomCosineDirection(0);
+  vec3 source = randomCosineDirection(2);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
@@ -431,7 +431,7 @@ float triangleListGetPdfValue(Ray r) {
 }
 
 vec3 triangleListGenerateRandom(vec3 origin) {
-  return triangleGenerateRandom(lights[randomInt(0, 1, 0)].triangle, origin);
+  return triangleGenerateRandom(lights[randomInt(0, 1, 1)].triangle, origin);
 }
 
 // ------------- Material -------------
