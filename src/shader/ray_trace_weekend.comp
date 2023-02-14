@@ -464,9 +464,10 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   scat.raySpecular.direction = reflect(normalize(r.direction), hit.faceNormal.normal);
 
   vec3 halAngle = normalize(scat.raySpecular.direction - r.direction);
-  float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0);
+  float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
+  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
 
-  scat.colorAttenuation = lambertians[materialIndex].albedoColor * pow(blinnTerm, 64.0);
+  scat.colorAttenuation = lambertians[materialIndex].albedoColor * pow(blinnTerm, 64.0) * max(cosine, 0.0);
   return scat;
 }
 
