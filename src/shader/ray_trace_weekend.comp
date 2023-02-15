@@ -258,13 +258,13 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
   hit.isHit = false;
   hit.t = tMax;
 
-  int stack[10];
+  int stack[30];
   int stackIndex = 0;
 
   stack[0] = 0;
   stackIndex++;
 
-  while(stackIndex > 0 && stackIndex <= 10) {
+  while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
     int currentNode = stack[stackIndex];
     if (currentNode < 0) {
