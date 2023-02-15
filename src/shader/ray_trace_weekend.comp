@@ -434,6 +434,18 @@ vec3 triangleListGenerateRandom(vec3 origin) {
   return triangleGenerateRandom(lights[randomInt(0, 1, 1)].triangle, origin);
 }
 
+// ------------- Denoiser Phong -------------
+
+float phongGetPdfValue(vec3 reflected, vec3 direction, int shininess) {
+  float cosine = max(dot(normalize(direction), reflected), 0);
+  return (shininess + 2) / (2 * pi) * pow(cosine, shininess);
+}
+
+vec3 phongGenerateRandom(vec3[3] globalOnb, int shininess) {
+  vec3 source = randomPhong(2, shininess);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
 // ------------- Material -------------
 
 ShadeRecord shadeLambertian(Ray r, HitRecord hit, uint materialIndex) {
@@ -460,14 +472,20 @@ ShadeRecord shadeLambertian(Ray r, HitRecord hit, uint materialIndex) {
 ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
 
+  vec3 reflected = reflect(normalize(r.direction), hit.faceNormal.normal);
+  vec3[3] globalOnb = buildOnb(reflected);
+
   scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = reflect(normalize(r.direction), hit.faceNormal.normal);
+  scat.raySpecular.direction = phongGenerateRandom(globalOnb, 4);
 
   vec3 halAngle = normalize(scat.raySpecular.direction - r.direction);
   float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
   float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
 
-  scat.colorAttenuation = lambertians[materialIndex].albedoColor * pow(blinnTerm, 64.0) * max(cosine, 0.0);
+  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, 4.0) * max(cosine, 0.0);
+  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, 4);
+
+  scat.colorAttenuation = reflectedLight / pdfVal;
   return scat;
 }
 

@@ -78,11 +78,26 @@ vec3 randomInUnitDisk(uint index) {
 vec3 randomCosineDirection(uint index) {
   float r1 = randomFloat(index);
   float r2 = randomFloat(index);
-  float z = sqrt(1 - r2);
-
   float phi = 2 * 3.14159265359 * r1;
+  
   float x = cos(phi) * sqrt(r2);
   float y = sin(phi) * sqrt(r2);
+  float z = sqrt(1 - r2);
+
+  return vec3(x, y, z);
+}
+
+vec3 randomPhong(uint index, int shininess) {
+  float r1 = randomFloat(index);
+  float r2 = randomFloat(index);
+  float phi = 2 * 3.14159265359 * r2;
+
+  float cosTheta = pow(1 - r1, 1 / (2 + shininess));
+  float sinTheta = sqrt(1 - cosTheta * cosTheta);
+
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
 
   return vec3(x, y, z);
 }
