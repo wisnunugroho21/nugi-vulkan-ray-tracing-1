@@ -376,7 +376,7 @@ float cosineGetPdfValue(vec3 normal, vec3 direction) {
 }
 
 vec3 cosineGenerateRandom(vec3[3] globalOnb) {
-  vec3 source = randomCosineDirection(2);
+  vec3 source = randomCosineDirection(1, 2);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
@@ -442,7 +442,7 @@ float phongGetPdfValue(vec3 reflected, vec3 direction, int shininess) {
 }
 
 vec3 phongGenerateRandom(vec3[3] globalOnb, int shininess) {
-  vec3 source = randomPhong(2, shininess);
+  vec3 source = randomPhong(1, 2, shininess);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
@@ -482,7 +482,7 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
   float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
 
-  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, 4.0) * max(cosine, 0.0);
+  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, 4) * max(cosine, 0.0);
   float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, 4);
 
   scat.colorAttenuation = reflectedLight / pdfVal;
