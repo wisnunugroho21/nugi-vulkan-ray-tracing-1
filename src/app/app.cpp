@@ -148,6 +148,26 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 2, 3 });
+
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} } , 2, 3 }); 
+
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 2, 3 }); 
+
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 2, 3 });  
+
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 2, 3 });
+
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 2, 3 });
+		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 2, 3 });
+
+		// ----------------------------------------------------------------------------
+
 		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(1.0f, 1.0f, 1.0f) });
 		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.05f, 0.65f, 0.05f) });
 		modeldata.lambertians.emplace_back(Lambertian{ glm::vec3(0.65f, 0.05f, 0.05f) });
