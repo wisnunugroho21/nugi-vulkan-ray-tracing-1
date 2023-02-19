@@ -3,6 +3,7 @@
 // ------------- layout -------------
 
 #define NSAMPLE 8
+#define SHININESS 64
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
@@ -476,14 +477,13 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   vec3[3] globalOnb = buildOnb(reflected);
 
   scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = phongGenerateRandom(globalOnb, 4);
+  scat.raySpecular.direction = phongGenerateRandom(globalOnb, SHININESS);
 
   vec3 halAngle = normalize(scat.raySpecular.direction - r.direction);
   float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
-  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
 
-  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, 4) * max(cosine, 0.0);
-  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, 4);
+  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, SHININESS);
+  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, SHININESS);
 
   scat.colorAttenuation = reflectedLight / pdfVal;
   return scat;
