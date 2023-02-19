@@ -162,7 +162,7 @@ namespace nugiEngine {
 			&pushConstant
 		);
 
-		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 8, this->nSample / 1);
+		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 4, this->height / 4, this->nSample / 4);
 	}
 
 	bool EngineTraceRayRenderSystem::prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
