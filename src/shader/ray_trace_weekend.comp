@@ -481,12 +481,14 @@ ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
   scat.raySpecular.origin = hit.point;
   scat.raySpecular.direction = phongGenerateRandom(globalOnb, SHININESS);
 
+  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, SHININESS);
+
   vec3 halAngle = normalize(scat.raySpecular.direction - unitDirection);
   float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
-  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
+  float specularBrdf = (SHININESS + 2) / (2 * pi) * pow(blinnTerm, SHININESS);
 
-  vec3 reflectedLight = lambertians[materialIndex].albedoColor * pow(blinnTerm, SHININESS) * max(cosine, 0.0);
-  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, SHININESS);
+  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
+  vec3 reflectedLight = lambertians[materialIndex].albedoColor * specularBrdf * max(cosine, 0.0);
 
   scat.colorAttenuation = reflectedLight / pdfVal;
   return scat;
