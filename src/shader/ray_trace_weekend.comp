@@ -22,9 +22,6 @@ struct Object {
 
 struct Material {
   vec3 baseColor;
-  float metallicness;
-  float roughness;
-  float fresnelReflect;
 };
 
 struct Light {
@@ -282,9 +279,7 @@ vec3[3] buildOnb(vec3 normal) {
 
 float cosinePdfValue(vec3 normal, vec3 direction) {
   float cosine = dot(normalize(direction), normal);
-  float sinus = sqrt(1.0 - cosine * cosine);
-
-  return cosine * sinus / pi;
+  return max(cosine, 0) / pi;
 }
 
 vec3 cosineGenerateRandom(vec3[3] globalOnb) {
@@ -359,25 +354,7 @@ vec3 phongGenerateRandom(vec3[3] globalOnb, int shininess) {
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
-// ----
-
-float ggxPdfValue(vec3 reflected, vec3 direction, float roughness) {
-  float cosine = max(dot(normalize(direction), reflected), 0);
-  float sinus = sqrt(1 - cosine * cosine);
-  
-  float a = roughness * roughness;
-  float di = cosine * cosine * (a * a - 1.0) + 1.0;
-  float d = (a * a) / (pi * di * di);
-
-  return d * cosine * sinus;
-}
-
-vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
-  vec3 source = randomGGX(1, 2, roughness);
-  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
-}
-
-// ------------- Material -------------
+// ------------- GGX -------------
 
 float fresnelSchlick(float VoH, float F0) {
   return F0 + (1.0 - F0) * pow(1.0 - VoH, 5.0);
@@ -407,16 +384,41 @@ float G_Smith(float NoV, float NoL, float roughness) {
   return g1_l * g1_v;
 }
 
+float ggxPdfValue(float NoH, float roughness) {
+  return D_GGX(NoH, roughness) * NoH;
+}
+
+vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
+  vec3 source = randomGGX(1, 2, roughness);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
 ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
   
-  float fresnelReflect = 0.2;
+  float fresnelReflect = 0.5;
   float roughness = 0.1;
-  float metallicness = 0.5;
+  float metallicness = 0.2;
 
-  float f0 = 0.16 * (fresnelReflect * fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
   vec3 unitDirection = normalize(r.direction);
+  float f0 = 0.16 * (fresnelReflect * fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
+  vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
 
+  float rand = randomFloat(0);
+  if (metallicness >= rand) {
+    vec3[3] globalOnb = buildOnb(reflected);
+    scat.raySpecular.direction = ggxGenerateRandom(globalOnb, roughness);
+  } else {
+    int chooseRandom = randomInt(0, 1, 0);
+    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+
+    switch(chooseRandom) {
+      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
+      case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
+    }
+  }
+
+  scat.raySpecular.origin = hit.point;
   vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
 
   float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
@@ -431,31 +433,16 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float spec = (F * D * G) / (4.0 * max(NoV, 0.001) * max(NoL, 0.001));
   
   // diffuse
-  float diff = (1.0 - F) * (1.0 - metallicness) / pi;
+  float diff = 1.0 / pi;   
 
-  vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
-
-  float rand = randomFloat(0);
-  if (metallicness >= rand && F > rand) {
-    vec3[3] globalOnb = buildOnb(reflected);
-    scat.raySpecular.direction = ggxGenerateRandom(globalOnb, roughness);
-  } else {
-    int chooseRandom = randomInt(0, 1, 0);
-    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
-
-    switch(chooseRandom) {
-      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
-      case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
-    }
-  }
-
-  float pdfVal = 0.5 * ggxPdfValue(reflected, scat.raySpecular.direction, roughness) 
-    + 0.25 * cosinePdfValue(normalize(hit.faceNormal.normal), scat.raySpecular.direction) 
-    + 0.25 * triangleListPdfValue(scat.raySpecular);
+  float pdfVal = metallicness * ggxPdfValue(NoH, roughness) 
+    + (1.0 - metallicness) / 2 * cosinePdfValue(normalize(hit.faceNormal.normal), scat.raySpecular.direction) 
+    + (1.0 - metallicness) / 2 * triangleListPdfValue(scat.raySpecular);
   
-  vec3 reflectedLight = lambertians[materialIndex].baseColor * (diff + spec) * NoL;
-  scat.colorAttenuation = reflectedLight / pdfVal;
-  
+  float totalBrdf = mix(diff, spec, metallicness);
+  vec3 reflectedLight = lambertians[materialIndex].baseColor * totalBrdf * NoL;
+
+  scat.colorAttenuation = reflectedLight / pdfVal;  
   return scat;
 }
 
