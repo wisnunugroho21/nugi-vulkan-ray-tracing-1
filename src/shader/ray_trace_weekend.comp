@@ -8,14 +8,6 @@
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
 
-struct Sphere {
-  vec3 center;
-  float radius;
-
-  uint materialType;
-  uint materialIndex;
-};
-
 struct Triangle {
   vec3 point0;
   vec3 point1;
@@ -28,8 +20,11 @@ struct Object {
   uint materialIndex;
 };
 
-struct Lambertian {
-  vec3 albedoColor;
+struct Material {
+  vec3 baseColor;
+  float metallicness;
+  float roughness;
+  float fresnelReflect;
 };
 
 struct Light {
@@ -64,7 +59,7 @@ layout(set = 0, binding = 3) buffer readonly BvhSsbo {
 };
 
 layout(set = 0, binding = 4) buffer readonly materialSsbo {
-  Lambertian lambertians[100];
+  Material lambertians[100];
 };
 
 layout(set = 0, binding = 5) buffer readonly lightSsbo {
@@ -121,13 +116,6 @@ struct ShadeRecord {
 // Return true if the vector is close to zero in all dimensions.
 bool nearZero(vec3 xyz) {
   return (abs(xyz.x) < 1e-8) && (abs(xyz.y) < 1e-8) && (abs(xyz.z) < 1e-8);
-}
-
-// Use Schlick's approximation for reflectance.
-float reflectance(float cosine, float refIdx) {
-  float r0 = (1 - refIdx) / (1 + refIdx);
-  r0 = r0 * r0;
-  return r0 + (1 - r0) * pow((1 - cosine), 5);
 }
 
 vec3 rayAt(Ray r, float t) {
@@ -192,54 +180,6 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
-  return hit;
-}
-
-vec2 getSphereUV(vec3 point) {
-  float theta = acos(-1.0 * point.y);
-  float phi = atan(point.x, -1.0 * point.z) + pi; // HLSL atan2(x,y) == GLSL atan(y,x)
-
-  float u = phi / (2.0 * pi);
-  float v = theta / pi;
-
-  return vec2(u, v);
-}
-
-HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
-  HitRecord hit;
-  hit.isHit = false;
-
-  vec3 oc = r.origin - obj.center;
-
-  float a = dot(r.direction, r.direction);
-  float half_b = dot(oc, r.direction);
-  float c = dot(oc, oc) - obj.radius * obj.radius;
-
-  float discriminant = half_b * half_b - a * c;
-
-  if (discriminant < 0.0) {
-    return hit;
-  }
-
-  float sqrtd = sqrt(discriminant);
-
-  // Find the nearest root that lies in the acceptable range.
-  float root = (-half_b - sqrtd) / a;
-  if (root < tMin || root > tMax) {
-    root = (-half_b + sqrtd) / a;
-    if (root < tMin || root > tMax) {
-      return hit;
-    }
-  }
-
-  hit.isHit = true;
-  hit.t = root;
-  hit.point = rayAt(r, hit.t);
-  hit.uv = getSphereUV(hit.point);
-
-  vec3 outwardNormal = (hit.point - obj.center) / obj.radius;
-  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
-  
   return hit;
 }
 
@@ -328,37 +268,6 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   return hit;
 }
 
-HitRecord hitTriangleList(Ray r, float tMin, float tMax) {
-  HitRecord hit;
-  hit.isHit = false;
-  hit.t = tMax;
-
-  for (int i = 0; i < 22; i++) {
-    HitRecord tempHit = hitTriangle(objects[i].triangle, r, tMin, hit.t);
-    if (tempHit.isHit) {
-      hit = tempHit;
-      hit.objIndex = i;
-    }
-  }
-
-  return hit;
-}
-
-/* HitRecord hitSphereList(Ray r, float tMin, float tMax) {
-  HitRecord hit;
-  hit.isHit = false;
-  hit.t = tMax;
-  
-  for (int i = 0; i < 4; i++) {
-    HitRecord tempHit = hitSphere(spheres[i], r, tMin, hit.t);
-    if (tempHit.isHit) {
-      hit = tempHit;
-    }
-  }
-
-  return hit;
-} */
-
 // ------------- Denoiser Cosine ------------- 
 
 vec3[3] buildOnb(vec3 normal) {
@@ -371,9 +280,11 @@ vec3[3] buildOnb(vec3 normal) {
   return vec3[3](x, y, z);
 }
 
-float cosineGetPdfValue(vec3 normal, vec3 direction) {
+float cosinePdfValue(vec3 normal, vec3 direction) {
   float cosine = dot(normalize(direction), normal);
-  return cosine < 0 ? 0 : cosine / pi;
+  float sinus = sqrt(1.0 - cosine * cosine);
+
+  return cosine * sinus / pi;
 }
 
 vec3 cosineGenerateRandom(vec3[3] globalOnb) {
@@ -391,7 +302,7 @@ float areaTriangle(Triangle obj) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-float triangleGetPdfValue(Triangle obj, Ray r) {
+float trianglePdfValue(Triangle obj, Ray r) {
   HitRecord hit = hitTriangle(obj, r, 0.001, 1000.0);
   if (!hit.isHit) {
     return 0.0;
@@ -420,12 +331,12 @@ vec3 triangleGenerateRandom(Triangle obj, vec3 origin) {
   return randomTriangle - origin;
 }
 
-float triangleListGetPdfValue(Ray r) {
+float triangleListPdfValue(Ray r) {
   float weight = 1.0 / 2;
   float sum = 0.0;
 
   for (int i = 0; i < 2; i++) {
-    sum += weight * triangleGetPdfValue(lights[i].triangle, r);
+    sum += weight * trianglePdfValue(lights[i].triangle, r);
   }
 
   return sum;
@@ -437,9 +348,10 @@ vec3 triangleListGenerateRandom(vec3 origin) {
 
 // ------------- Denoiser Phong -------------
 
-float phongGetPdfValue(vec3 reflected, vec3 direction, int shininess) {
+float phongPdfValue(vec3 reflected, vec3 direction, int shininess) {
   float cosine = max(dot(normalize(direction), reflected), 0);
-  return (shininess + 2) / (2 * pi) * pow(cosine, shininess);
+  float sinus = sqrt(1 - cosine * cosine);
+  return (shininess + 1) / (2 * pi) * pow(cosine, shininess) * sinus;
 }
 
 vec3 phongGenerateRandom(vec3[3] globalOnb, int shininess) {
@@ -447,76 +359,103 @@ vec3 phongGenerateRandom(vec3[3] globalOnb, int shininess) {
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
+// ----
+
+float ggxPdfValue(vec3 reflected, vec3 direction, float roughness) {
+  float cosine = max(dot(normalize(direction), reflected), 0);
+  float sinus = sqrt(1 - cosine * cosine);
+  
+  float a = roughness * roughness;
+  float di = cosine * cosine * (a * a - 1.0) + 1.0;
+  float d = (a * a) / (pi * di * di);
+
+  return d * cosine * sinus;
+}
+
+vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
+  vec3 source = randomGGX(1, 2, roughness);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
 // ------------- Material -------------
 
-ShadeRecord shadeLambertian(Ray r, HitRecord hit, uint materialIndex) {
+float fresnelSchlick(float VoH, float F0) {
+  return F0 + (1.0 - F0) * pow(1.0 - VoH, 5.0);
+} 
+
+float D_GGX(float NoH, float roughness) {
+  float alpha = roughness * roughness;
+  float alpha2 = alpha * alpha;
+  float NoH2 = NoH * NoH;
+  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
+
+  return alpha2 / (pi * b * b);
+}
+float G1_GGX_Schlick(float NoV, float roughness) {
+  //float r = roughness; // original
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float k = (r * r) / 2.0;
+  float denom = NoV * (1.0 - k) + k;
+
+  return max(NoV, 0.001) / denom;
+}
+
+float G_Smith(float NoV, float NoL, float roughness) {
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
+
+  return g1_l * g1_v;
+}
+
+ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
   
-  vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
-  scat.raySpecular.origin = hit.point;
+  float fresnelReflect = 0.2;
+  float roughness = 0.1;
+  float metallicness = 0.5;
 
-  int chooseRandom = randomInt(0, 1, 0);
-  switch(chooseRandom) {
-    case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
-    case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
-  }
-
-  float pdfVal = 0.5 * triangleListGetPdfValue(scat.raySpecular) + 0.5 * cosineGetPdfValue(globalOnb[2], scat.raySpecular.direction);
-
-  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
-  vec3 reflectedLight = lambertians[materialIndex].albedoColor / pi * max(cosine, 0.0);
-
-  scat.colorAttenuation = reflectedLight / pdfVal;
-  return scat;
-}
-
-ShadeRecord shadeMetal(Ray r, HitRecord hit, uint materialIndex) {
-  ShadeRecord scat;
-
+  float f0 = 0.16 * (fresnelReflect * fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
   vec3 unitDirection = normalize(r.direction);
+
+  vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
+
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.0, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
+  float VoH = clamp(dot(-1.0 * unitDirection, H), 0.0, 1.0);
+
+  // specular microfacet (cook-torrance) BRDF
+  float F = fresnelSchlick(VoH, f0);
+  float D = D_GGX(NoH, roughness);
+  float G = G_Smith(NoV, NoL, roughness);
+  float spec = (F * D * G) / (4.0 * max(NoV, 0.001) * max(NoL, 0.001));
+  
+  // diffuse
+  float diff = (1.0 - F) * (1.0 - metallicness) / pi;
 
   vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
-  vec3[3] globalOnb = buildOnb(reflected);
 
-  scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = phongGenerateRandom(globalOnb, SHININESS);
-
-  float pdfVal = phongGetPdfValue(reflected, scat.raySpecular.direction, SHININESS);
-
-  vec3 halAngle = normalize(scat.raySpecular.direction - unitDirection);
-  float blinnTerm = max(dot(hit.faceNormal.normal, halAngle), 0.0);
-  float specularBrdf = (SHININESS + 2) / (2 * pi) * pow(blinnTerm, SHININESS);
-
-  float cosine = dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction));
-  vec3 reflectedLight = lambertians[materialIndex].albedoColor * specularBrdf * max(cosine, 0.0);
-
-  scat.colorAttenuation = reflectedLight / pdfVal;
-  return scat;
-}
-
-ShadeRecord shadeDielectric(Ray r, HitRecord hit) {
-  ShadeRecord scat;
-
-  float indexOfRefraction = 1.5;
-  float refractionRatio = hit.faceNormal.frontFace ? (1.0 / indexOfRefraction) : indexOfRefraction;
-
-  vec3 unitDirection = normalize(r.direction);
-  float cosTheta = min(dot(-1.0 * unitDirection, hit.faceNormal.normal), 1.0);
-  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-
-  bool cannotRefract = refractionRatio * sinTheta > 1.0;
-  vec3 direction;
-
-  if (cannotRefract || reflectance(cosTheta, refractionRatio) > randomFloat(0)) {
-    direction = reflect(unitDirection, hit.faceNormal.normal);
+  float rand = randomFloat(0);
+  if (metallicness >= rand && F > rand) {
+    vec3[3] globalOnb = buildOnb(reflected);
+    scat.raySpecular.direction = ggxGenerateRandom(globalOnb, roughness);
   } else {
-    direction = refract(unitDirection, hit.faceNormal.normal, refractionRatio);
+    int chooseRandom = randomInt(0, 1, 0);
+    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+
+    switch(chooseRandom) {
+      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
+      case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
+    }
   }
 
-  scat.raySpecular.origin = hit.point;
-  scat.raySpecular.direction = direction;
-
-  scat.colorAttenuation = vec3(1.0, 1.0, 1.0);
+  float pdfVal = 0.5 * ggxPdfValue(reflected, scat.raySpecular.direction, roughness) 
+    + 0.25 * cosinePdfValue(normalize(hit.faceNormal.normal), scat.raySpecular.direction) 
+    + 0.25 * triangleListPdfValue(scat.raySpecular);
+  
+  vec3 reflectedLight = lambertians[materialIndex].baseColor * (diff + spec) * NoL;
+  scat.colorAttenuation = reflectedLight / pdfVal;
+  
   return scat;
 }
 
@@ -559,14 +498,7 @@ void main() {
       break;
     }
 
-    ShadeRecord scat;
-    if (objects[hit.objIndex].materialType == 1) {
-      scat = shadeLambertian(curRay, hit, objects[hit.objIndex].materialIndex);
-    } else if (objects[hit.objIndex].materialType == 2) {
-      scat = shadeMetal(curRay, hit, objects[hit.objIndex].materialIndex);
-    } else if (objects[hit.objIndex].materialType == 3) {
-      scat = shadeDielectric(curRay, hit);
-    }
+    ShadeRecord scat = shade(curRay, hit, objects[hit.objIndex].materialIndex);
 
     mat4 emitTransf = mat4(
       1.0, 0.0, 0.0, scat.colorEmitted.x,
