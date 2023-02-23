@@ -339,7 +339,8 @@ float fresnelSchlick(float VoH, float F0) {
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float alpha = roughness * roughness;
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float alpha = r * r;
   float alpha2 = alpha * alpha;
   float NoH2 = NoH * NoH;
   float b = (NoH2 * (alpha2 - 1.0) + 1.0);
@@ -347,7 +348,6 @@ float D_GGX(float NoH, float roughness) {
   return alpha2 / (pi * b * b);
 }
 float G1_GGX_Schlick(float NoV, float roughness) {
-  //float r = roughness; // original
   float r = 0.5 + 0.5 * roughness; // Disney remapping
   float k = (r * r) / 2.0;
   float denom = NoV * (1.0 - k) + k;
@@ -410,12 +410,13 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     }
   }
   
+  vec3 unitLightDirection = normalize(scat.raySpecular.direction);
   vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
 
-  float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0001);
-  float NoL = max(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.0001);
-  float NoH = max(dot(hit.faceNormal.normal, H), 0.0001);
-  float VoH = max(dot(-1.0 * unitDirection, H), 0.0001);
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.0, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
+  float VoH = clamp(dot(unitDirection, H), 0.0, 1.0);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
@@ -424,10 +425,10 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float spec = (F * D * G) / (4.0 * NoV * NoL);
   
   // diffuse
-  float diff = 1.0 / pi;   
+  float diff = 1.0 / pi;
 
   float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, materials[materialIndex].roughness) 
-    + (1.0 - materials[materialIndex].metallicness) / 2 * cosinePdfValue(normalize(hit.faceNormal.normal), scat.raySpecular.direction) 
+    + (1.0 - materials[materialIndex].metallicness) / 2 * cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) 
     + (1.0 - materials[materialIndex].metallicness) / 2 * triangleListPdfValue(scat.raySpecular);
   
   float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
