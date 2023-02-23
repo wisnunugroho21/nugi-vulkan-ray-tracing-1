@@ -390,37 +390,38 @@ vec3 cosineGenerateRandom(vec3[3] globalOnb) {
 ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
 
-  vec3 unitDirection = normalize(r.direction);
   float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
+  vec3 unitDirection = normalize(r.direction);
   vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
 
+  scat.raySpecular.origin = hit.point;
   float rand = randomFloat(0);
+
   if (materials[materialIndex].metallicness >= rand) {
     vec3[3] globalOnb = buildOnb(reflected);
     scat.raySpecular.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness);
   } else {
-    int chooseRandom = randomInt(0, 1, 0);
     vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+    int chooseRandom = randomInt(0, 1, 0);
 
     switch(chooseRandom) {
       case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
       case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
     }
   }
-
-  scat.raySpecular.origin = hit.point;
+  
   vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
 
-  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
-  float NoL = clamp(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.0, 1.0);
-  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
-  float VoH = clamp(dot(-1.0 * unitDirection, H), 0.0, 1.0);
+  float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0001);
+  float NoL = max(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.0001);
+  float NoH = max(dot(hit.faceNormal.normal, H), 0.0001);
+  float VoH = max(dot(-1.0 * unitDirection, H), 0.0001);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
   float D = D_GGX(NoH, materials[materialIndex].roughness);
   float G = G_Smith(NoV, NoL, materials[materialIndex].roughness);
-  float spec = (F * D * G) / (4.0 * max(NoV, 0.0001) * max(NoL, 0.0001));
+  float spec = (F * D * G) / (4.0 * NoV * NoL);
   
   // diffuse
   float diff = 1.0 / pi;   
@@ -444,8 +445,8 @@ void main() {
 
   vec2 imgSize = vec2(imageSize(targetImage[imgIndex]));
 
-  float noiseX = randomFloat(1);
-  float noiseY = randomFloat(2);
+  float noiseX = randomFloat(1) * 2.0 - 1.0;
+  float noiseY = randomFloat(2) * 2.0 - 1.0;
 
   vec2 noiseUV = vec2(noiseX, noiseY);
   vec2 uv = (imgPosition + noiseUV) / imgSize;
