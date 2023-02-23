@@ -33,8 +33,8 @@ namespace nugiEngine {
 
 	MaterialData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
 		MaterialData materials;
-		for (int i = 0; i < data.lambertians.size(); i++) {
-			materials.lambertians[i] = data.lambertians[i];
+		for (int i = 0; i < data.materials.size(); i++) {
+			materials.materials[i] = data.materials[i];
 		}
 
 		return materials;

@@ -35,8 +35,11 @@ namespace nugiEngine {
     alignas(16) glm::vec3 minimum;
   };
 
-  struct Lambertian {
-    alignas(16) glm::vec3 albedoColor;
+  struct Material {
+    alignas(16) glm::vec3 baseColor;
+    alignas(4) float metallicness;
+    alignas(4) float roughness;
+    alignas(4) float fresnelReflect;
   };
 
   struct Light {

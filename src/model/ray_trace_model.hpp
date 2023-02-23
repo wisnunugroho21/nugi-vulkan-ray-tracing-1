@@ -15,7 +15,7 @@
 namespace nugiEngine {
 	struct RayTraceModelData {
     std::vector<Object> objects;
-    std::vector<Lambertian> lambertians;
+    std::vector<Material> materials;
     std::vector<Light> lights;
 
 		void loadModel(const std::string &filePath);
@@ -30,7 +30,7 @@ namespace nugiEngine {
 	};
 
   struct MaterialData {
-    Lambertian lambertians[100];
+    Material materials[100];
   };
 
   struct LightData {

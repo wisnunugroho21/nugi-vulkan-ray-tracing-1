@@ -1,0 +1,502 @@
+#version 460
+
+// ------------- layout -------------
+
+#define NSAMPLE 8
+#define SHININESS 64
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
+
+struct Triangle {
+  vec3 point0;
+  vec3 point1;
+  vec3 point2;
+};
+
+struct Object {
+  Triangle triangle;
+  uint materialType;
+  uint materialIndex;
+};
+
+struct Material {
+  vec3 baseColor;
+  float metallicness;
+  float roughness;
+  float fresnelReflect;
+};
+
+struct Light {
+  Triangle triangle;
+  vec3 color;
+};
+
+struct BvhNode {
+  int leftNode;
+  int rightNode;
+  int leftObjIndex;
+  int rightObjIndex;
+
+  vec3 maximum;
+  vec3 minimum;
+};
+
+layout(set = 0, binding = 1) uniform readonly GlobalUbo {
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  vec3 background;
+} ubo;
+
+layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+  Object objects[100];
+};
+
+layout(set = 0, binding = 3) buffer readonly BvhSsbo {
+  BvhNode bvhNodes[100];
+};
+
+layout(set = 0, binding = 4) buffer readonly materialSsbo {
+  Material materials[100];
+};
+
+layout(set = 0, binding = 5) buffer readonly lightSsbo {
+  Light lights[100];
+};
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- pre-defined parameter -------------
+
+float pi = 3.14159265359;
+
+// ------------- struct ------------- 
+
+struct Ray {
+  vec3 origin;
+  vec3 direction;
+};
+
+struct FaceNormal {
+  bool frontFace;
+  vec3 normal;
+};
+
+struct MaterialHitRecord {
+  uint materialType;
+  uint materialIndex;
+};
+
+struct HitRecord {
+  bool isHit;
+  uint objIndex;
+
+  float t;
+  vec3 point;
+  vec2 uv;
+
+  FaceNormal faceNormal;
+};
+
+struct ShadeRecord {
+  vec3 colorAttenuation;
+  vec3 colorEmitted;
+
+  Ray raySpecular;
+};
+
+// ------------- function ------------- 
+
+#include "helper/random.glsl"
+
+// Return true if the vector is close to zero in all dimensions.
+bool nearZero(vec3 xyz) {
+  return (abs(xyz.x) < 1e-8) && (abs(xyz.y) < 1e-8) && (abs(xyz.z) < 1e-8);
+}
+
+vec3 rayAt(Ray r, float t) {
+  return r.origin + t * r.direction;
+}
+
+vec3[3] buildOnb(vec3 normal) {
+  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+
+  vec3 z = normalize(normal);
+  vec3 y = normalize(cross(z, a));
+  vec3 x = cross(z, y);
+
+  return vec3[3](x, y, z);
+}
+
+// ------------- Hit Shape -------------
+
+FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
+  FaceNormal faceNormal;
+
+  faceNormal.frontFace = dot(r_direction, outwardNormal) < 0.0;
+  faceNormal.normal = faceNormal.frontFace ? outwardNormal : -1.0 * outwardNormal;
+
+  return faceNormal;
+}
+
+HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+
+  float kEpsilon = 0.0001;
+
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
+  vec3 pvec = cross(r.direction, v0v2);
+  float det = dot(v0v1, pvec);
+  
+  if (abs(det) < kEpsilon) {
+    return hit;
+  }
+    
+  float invDet = 1.0 / det;
+
+  vec3 tvec = r.origin - obj.point0;
+  float u = dot(tvec, pvec) * invDet;
+  if (u < 0.0 || u > 1.0) {
+    return hit;
+  }
+
+  vec3 qvec = cross(tvec, v0v1);
+  float v = dot(r.direction, qvec) * invDet;
+  if (v < 0.0 || u + v > 1.0) {
+    return hit;
+  }
+  
+  float t = dot(v0v2, qvec) * invDet;
+
+  if (t <= kEpsilon) {
+    return hit;
+  }
+
+  if (t < tMin || t > tMax) {
+    return hit;
+  }
+
+  hit.isHit = true;
+  hit.t = t;
+  hit.point = rayAt(r, t);
+  hit.uv = vec2(u, v);
+
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
+
+  return hit;
+}
+
+bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+  vec3 tMin = (boxMin - r.origin) / r.direction;
+  vec3 tMax = (boxMax - r.origin) / r.direction;
+  vec3 t1 = min(tMin, tMax);
+  vec3 t2 = max(tMin, tMax);
+  float tNear = max(max(t1.x, t1.y), t1.z);
+  float tFar = min(min(t2.x, t2.y), t2.z);
+
+  return tNear < tFar;
+}
+
+HitRecord hitBvh(Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
+
+  int stack[30];
+  int stackIndex = 0;
+
+  stack[0] = 0;
+  stackIndex++;
+
+  while(stackIndex > 0 && stackIndex <= 30) {
+    stackIndex--;
+    int currentNode = stack[stackIndex];
+    if (currentNode < 0) {
+      continue;
+    }
+
+    if (!intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum)) {
+      continue;
+    }
+
+    int objIndex = bvhNodes[currentNode].leftObjIndex;
+    if (objIndex >= 0) {
+      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.objIndex = objIndex;
+      }
+    }
+
+    objIndex = bvhNodes[currentNode].rightObjIndex;    
+    if (objIndex >= 0) {
+      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.objIndex = objIndex;
+      }
+    }
+
+    int bvhNode = bvhNodes[currentNode].leftNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
+      stackIndex++;
+    }
+
+    bvhNode = bvhNodes[currentNode].rightNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
+      stackIndex++;
+    }
+  }
+
+  return hit;
+}
+
+HitRecord hitLightList(Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
+
+  for (int i = 0; i < 2; i++) {
+    HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
+    if (tempHit.isHit) {
+      hit = tempHit;
+      hit.objIndex = i;
+    }
+  }
+
+  return hit;
+}
+
+// ------------- Denoiser Shape ------------- 
+
+float areaTriangle(Triangle obj) {
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
+
+  vec3 pvec = cross(v0v1, v0v2);
+  return 0.5 * sqrt(dot(pvec, pvec)); 
+}
+
+float trianglePdfValue(Triangle obj, Ray r) {
+  HitRecord hit = hitTriangle(obj, r, 0.001, 1000.0);
+  if (!hit.isHit) {
+    return 0.0;
+  }
+
+  float cosine = abs(dot(r.direction, hit.faceNormal.normal) / length(r.direction));
+  float distanceSquared = hit.t * hit.t * dot(r.direction, r.direction);
+  float area = areaTriangle(obj);
+
+  return distanceSquared / (cosine * area);
+}
+
+vec3 triangleGenerateRandom(Triangle obj, vec3 origin) {
+  vec3 a = obj.point1 - obj.point0;
+  vec3 b = obj.point2 - obj.point0;
+
+  float u1 = randomFloat(1);
+  float u2 = randomFloat(2);
+
+  if (u1 + u2 > 1) {
+    u1 = 1 - u1;
+    u2 = 1 - u2;
+  }
+
+  vec3 randomTriangle = u1 * a + u2 * b + obj.point0;
+  return randomTriangle - origin;
+}
+
+float triangleListPdfValue(Ray r) {
+  float weight = 1.0 / 2;
+  float sum = 0.0;
+
+  for (int i = 0; i < 2; i++) {
+    sum += weight * trianglePdfValue(lights[i].triangle, r);
+  }
+
+  return sum;
+}
+
+vec3 triangleListGenerateRandom(vec3 origin) {
+  return triangleGenerateRandom(lights[randomInt(0, 1, 1)].triangle, origin);
+}
+
+// ------------- GGX -------------
+
+float fresnelSchlick(float VoH, float F0) {
+  return F0 + (1.0 - F0) * pow(1.0 - VoH, 5.0);
+} 
+
+float D_GGX(float NoH, float roughness) {
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float alpha = r * r;
+  float alpha2 = alpha * alpha;
+  float NoH2 = NoH * NoH;
+  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
+
+  return alpha2 / (pi * b * b);
+}
+float G1_GGX_Schlick(float NoV, float roughness) {
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float k = (r * r) / 2.0;
+  float denom = NoV * (1.0 - k) + k;
+
+  return max(NoV, 0.001) / denom;
+}
+
+float G_Smith(float NoV, float NoL, float roughness) {
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
+
+  return g1_l * g1_v;
+}
+
+// ------------- GGX Random -------------
+
+float ggxPdfValue(float NoH, float roughness) {
+  return D_GGX(NoH, roughness) * NoH;
+}
+
+vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
+  vec3 source = randomGGX(1, 2, roughness);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
+// ------------- Lambert Random ------------- 
+
+float cosinePdfValue(vec3 normal, vec3 direction) {
+  float cosine = dot(normalize(direction), normal);
+  return max(cosine, 0.0001) / pi;
+}
+
+vec3 cosineGenerateRandom(vec3[3] globalOnb) {
+  vec3 source = randomCosineDirection(1, 2);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
+// ------------- Material -------------
+
+ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
+  ShadeRecord scat;
+
+  float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
+  vec3 unitDirection = normalize(r.direction);
+  vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
+
+  scat.raySpecular.origin = hit.point;
+  float rand = randomFloat(0);
+
+  if (materials[materialIndex].metallicness >= rand) {
+    vec3[3] globalOnb = buildOnb(reflected);
+    scat.raySpecular.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness);
+  } else {
+    vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
+    int chooseRandom = randomInt(0, 1, 0);
+
+    switch(chooseRandom) {
+      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
+      case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
+    }
+  }
+  
+  vec3 unitLightDirection = normalize(scat.raySpecular.direction);
+  vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
+
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.0, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
+  float VoH = clamp(dot(unitDirection, H), 0.0, 1.0);
+
+  // specular microfacet (cook-torrance) BRDF
+  float F = fresnelSchlick(VoH, f0);
+  float D = D_GGX(NoH, materials[materialIndex].roughness);
+  float G = G_Smith(NoV, NoL, materials[materialIndex].roughness);
+  float spec = (F * D * G) / (4.0 * NoV * NoL);
+  
+  // diffuse
+  float diff = 1.0 / pi;
+
+  float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, materials[materialIndex].roughness) 
+    + (1.0 - materials[materialIndex].metallicness) / 2 * cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) 
+    + (1.0 - materials[materialIndex].metallicness) / 2 * triangleListPdfValue(scat.raySpecular);
+  
+  float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
+  vec3 reflectedLight = materials[materialIndex].baseColor * totalBrdf * NoL;
+
+  scat.colorAttenuation = reflectedLight / pdfVal;  
+  return scat;
+}
+
+// ------------- Main -------------
+
+void main() {
+  uint imgIndex = gl_GlobalInvocationID.z;
+  uvec2 imgPosition = gl_GlobalInvocationID.xy;
+
+  vec2 imgSize = vec2(imageSize(targetImage[imgIndex]));
+
+  float noiseX = randomFloat(1) * 2.0 - 1.0;
+  float noiseY = randomFloat(2) * 2.0 - 1.0;
+
+  vec2 noiseUV = vec2(noiseX, noiseY);
+  vec2 uv = (imgPosition + noiseUV) / imgSize;
+
+  Ray curRay;
+  curRay.origin = ubo.origin;
+  curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
+
+  vec4 lastNum = vec4(0.0, 0.0, 0.0, 0.0);
+  mat4 rayTransform = mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0
+  );
+  
+  for(int i = 0; i < 50; i++) {
+    HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
+    if (!hit.isHit) {
+      lastNum = vec4(ubo.background, 1.0);
+      break;
+    }
+
+    HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
+    if (hittedLight.isHit) {
+      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      break;
+    }
+
+    ShadeRecord scat = shade(curRay, hit, objects[hit.objIndex].materialIndex);
+
+    mat4 emitTransf = mat4(
+      1.0, 0.0, 0.0, scat.colorEmitted.x,
+      0.0, 1.0, 0.0, scat.colorEmitted.y,
+      0.0, 0.0, 1.0, scat.colorEmitted.z,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    mat4 attentTransf = mat4(
+      scat.colorAttenuation.x, 0.0, 0.0, 0.0,
+      0.0, scat.colorAttenuation.y, 0.0, 0.0,
+      0.0, 0.0, scat.colorAttenuation.z, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    rayTransform = emitTransf * attentTransf * rayTransform;
+    curRay = scat.raySpecular;
+  }
+  
+  vec4 curColor = rayTransform * lastNum;
+  imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
+}

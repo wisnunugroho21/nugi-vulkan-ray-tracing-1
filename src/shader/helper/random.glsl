@@ -101,3 +101,20 @@ vec3 randomPhong(uint index1, uint index2, int shininess) {
 
   return vec3(x, y, z);
 }
+
+vec3 randomGGX(uint index1, uint index2, float roughness) {
+  float r1 = randomFloat(index1);
+  float r2 = randomFloat(index2);
+
+  float a = roughness * roughness;
+  float phi = 2 * 3.14159265359 * r2;
+
+  float cosTheta = sqrt((1.0 - r1) / ((a * a - 1.0) * r1 + 1.0));
+  float sinTheta = sqrt(1 - cosTheta * cosTheta);
+
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
+
+  return vec3(x, y, z);
+}
