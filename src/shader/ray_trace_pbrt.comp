@@ -109,6 +109,10 @@ struct ShadeRecord {
   Ray raySpecular;
 };
 
+struct RadianceRecord {
+  vec3 colorIrradiance;
+};
+
 // ------------- function ------------- 
 
 #include "helper/random.glsl"
@@ -438,6 +442,23 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   return scat;
 }
 
+// ------------- Light -------------
+
+RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
+  RadianceRecord rad;
+
+  float lightRadius = 1.0;
+  float distance = length(rayAt(r, hit.t));
+
+  float nom = pow(1.0 - pow(distance / lightRadius, 4), 2);
+  float denom = pow(distance, 2) + 1;
+
+  float falloff = clamp(nom, 0.0, 1.0) / denom;
+
+  rad.colorIrradiance = lights[lightIndex].color / falloff;
+  return rad;
+}
+
 // ------------- Main -------------
 
 void main() {
@@ -473,7 +494,9 @@ void main() {
 
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
+      lastNum = vec4(rad.colorIrradiance, 1.0);
+
       break;
     }
 
