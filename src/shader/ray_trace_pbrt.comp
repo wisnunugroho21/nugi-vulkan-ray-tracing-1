@@ -30,6 +30,7 @@ struct Material {
 struct Light {
   Triangle triangle;
   vec3 color;
+  float radius;
 };
 
 struct BvhNode {
@@ -344,19 +345,19 @@ float fresnelSchlick(float VoH, float F0) {
 
 float D_GGX(float NoH, float roughness) {
   float r = max(roughness, 0.05);
+  
   float alpha = r * r;
   float alpha2 = alpha * alpha;
-  float NoH2 = NoH * NoH;
-  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
-
+  
+  float b = (NoH * NoH * (alpha2 - 1.0) + 1.0);
   return alpha2 / (pi * b * b);
 }
 float G1_GGX_Schlick(float cosine, float roughness) {
   float r = 0.5 + 0.5 * roughness; // Disney remapping
   float k = (r * r) / 2.0;
-  float denom = cosine * (1.0 - k) + k;
 
-  return max(cosine, 0.001) / denom;
+  float denom = cosine * (1.0 - k) + k;
+  return cosine / denom;
 }
 
 float G1_GGX(float cosine, float roughness) {
@@ -364,7 +365,7 @@ float G1_GGX(float cosine, float roughness) {
   float alpha2 = alpha * alpha;
 
   float b = alpha2 + (1 - alpha2) * cosine * cosine;
-  return 2 * cosine / sqrt(cosine + sqrt(b));
+  return 2 * cosine / (cosine + sqrt(b));
 }
 
 float G_Smith(float NoV, float NoL, float roughness) {
@@ -455,10 +456,9 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
-  float lightRadius = 1.0;
   float distance = length(rayAt(r, hit.t)) / 1000.0;
 
-  float nom = clamp(1.0 - pow(distance / lightRadius, 4), 0.0, 1.0);
+  float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
   float denom = pow(distance, 2) + 1.0;
 
   float falloff = nom * nom / denom;
