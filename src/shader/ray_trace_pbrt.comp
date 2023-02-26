@@ -343,7 +343,7 @@ float fresnelSchlick(float VoH, float F0) {
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float r = max(roughness, 0.05);
   float alpha = r * r;
   float alpha2 = alpha * alpha;
   float NoH2 = NoH * NoH;
@@ -351,17 +351,25 @@ float D_GGX(float NoH, float roughness) {
 
   return alpha2 / (pi * b * b);
 }
-float G1_GGX_Schlick(float NoV, float roughness) {
+float G1_GGX_Schlick(float cosine, float roughness) {
   float r = 0.5 + 0.5 * roughness; // Disney remapping
   float k = (r * r) / 2.0;
-  float denom = NoV * (1.0 - k) + k;
+  float denom = cosine * (1.0 - k) + k;
 
-  return max(NoV, 0.001) / denom;
+  return max(cosine, 0.001) / denom;
+}
+
+float G1_GGX(float cosine, float roughness) {
+  float alpha = roughness * roughness;
+  float alpha2 = alpha * alpha;
+
+  float b = alpha2 + (1 - alpha2) * cosine * cosine;
+  return 2 * cosine / sqrt(cosine + sqrt(b));
 }
 
 float G_Smith(float NoV, float NoL, float roughness) {
-  float g1_l = G1_GGX_Schlick(NoL, roughness);
-  float g1_v = G1_GGX_Schlick(NoV, roughness);
+  float g1_l = G1_GGX(NoL, roughness);
+  float g1_v = G1_GGX(NoV, roughness);
 
   return g1_l * g1_v;
 }
