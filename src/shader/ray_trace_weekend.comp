@@ -2,7 +2,7 @@
 
 // ------------- layout -------------
 
-#define NSAMPLE 8
+#define NSAMPLE 4
 #define SHININESS 64
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;

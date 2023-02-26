@@ -13,8 +13,8 @@ float stepAndOutputRNGFloat(inout uint rngState) {
 }
 
 uint rngStateXY =  (1000000 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
-uint rngStateXZ =  (1000000 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
-uint rngStateYZ =  (1000000 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateXZ =  (4 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateYZ =  (4 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
 
 float randomFloat(uint index) {
   float randNum = 0.0;
