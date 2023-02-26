@@ -377,8 +377,8 @@ float G_Smith(float NoV, float NoL, float roughness) {
 
 // ------------- GGX Random -------------
 
-float ggxPdfValue(float NoH, float roughness) {
-  return D_GGX(NoH, roughness) * NoH;
+float ggxPdfValue(float NoH, float NoL, float roughness) {
+  return D_GGX(NoH, roughness) * NoH / (4.0 * NoL);
 }
 
 vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
@@ -424,12 +424,12 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   }
   
   vec3 unitLightDirection = normalize(scat.raySpecular.direction);
-  vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
+  vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
 
-  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
-  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.0, 1.0);
-  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
-  float VoH = clamp(dot(unitDirection, H), 0.0, 1.0);
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.001, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.001, 1.0);
+  float VoH = clamp(dot(unitDirection, H), 0.001, 1.0);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
@@ -440,7 +440,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   // diffuse
   float diff = 1.0 / pi;
 
-  float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, materials[materialIndex].roughness) 
+  float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, NoL, materials[materialIndex].roughness) 
     + (1.0 - materials[materialIndex].metallicness) / 2 * cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) 
     + (1.0 - materials[materialIndex].metallicness) / 2 * triangleListPdfValue(scat.raySpecular);
   
