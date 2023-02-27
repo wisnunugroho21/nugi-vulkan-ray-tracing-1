@@ -2,7 +2,7 @@
 
 // ------------- layout -------------
 
-#define NSAMPLE 8
+#define NSAMPLE 4
 #define SHININESS 64
 
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
@@ -30,6 +30,7 @@ struct Material {
 struct Light {
   Triangle triangle;
   vec3 color;
+  float radius;
 };
 
 struct BvhNode {
@@ -107,6 +108,10 @@ struct ShadeRecord {
   vec3 colorEmitted;
 
   Ray raySpecular;
+};
+
+struct RadianceRecord {
+  vec3 colorIrradiance;
 };
 
 // ------------- function ------------- 
@@ -339,33 +344,41 @@ float fresnelSchlick(float VoH, float F0) {
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float r = max(roughness, 0.05);
+  
   float alpha = r * r;
   float alpha2 = alpha * alpha;
-  float NoH2 = NoH * NoH;
-  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
-
+  
+  float b = (NoH * NoH * (alpha2 - 1.0) + 1.0);
   return alpha2 / (pi * b * b);
 }
-float G1_GGX_Schlick(float NoV, float roughness) {
+float G1_GGX_Schlick(float cosine, float roughness) {
   float r = 0.5 + 0.5 * roughness; // Disney remapping
   float k = (r * r) / 2.0;
-  float denom = NoV * (1.0 - k) + k;
 
-  return max(NoV, 0.001) / denom;
+  float denom = cosine * (1.0 - k) + k;
+  return cosine / denom;
+}
+
+float G1_GGX(float cosine, float roughness) {
+  float alpha = roughness * roughness;
+  float alpha2 = alpha * alpha;
+
+  float b = alpha2 + (1 - alpha2) * cosine * cosine;
+  return 2 * cosine / (cosine + sqrt(b));
 }
 
 float G_Smith(float NoV, float NoL, float roughness) {
-  float g1_l = G1_GGX_Schlick(NoL, roughness);
-  float g1_v = G1_GGX_Schlick(NoV, roughness);
+  float g1_l = G1_GGX(NoL, roughness);
+  float g1_v = G1_GGX(NoV, roughness);
 
   return g1_l * g1_v;
 }
 
 // ------------- GGX Random -------------
 
-float ggxPdfValue(float NoH, float roughness) {
-  return D_GGX(NoH, roughness) * NoH;
+float ggxPdfValue(float NoH, float NoL, float roughness) {
+  return D_GGX(NoH, roughness) * NoH / (4.0 * NoL);
 }
 
 vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
@@ -411,12 +424,12 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   }
   
   vec3 unitLightDirection = normalize(scat.raySpecular.direction);
-  vec3 H = normalize(scat.raySpecular.direction - unitDirection); // half vector
+  vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
 
-  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.0, 1.0);
-  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.0, 1.0);
-  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.0, 1.0);
-  float VoH = clamp(dot(unitDirection, H), 0.0, 1.0);
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.001, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.001, 1.0);
+  float VoH = clamp(dot(unitDirection, H), 0.001, 1.0);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
@@ -427,7 +440,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   // diffuse
   float diff = 1.0 / pi;
 
-  float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, materials[materialIndex].roughness) 
+  float pdfVal = materials[materialIndex].metallicness * ggxPdfValue(NoH, NoL, materials[materialIndex].roughness) 
     + (1.0 - materials[materialIndex].metallicness) / 2 * cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) 
     + (1.0 - materials[materialIndex].metallicness) / 2 * triangleListPdfValue(scat.raySpecular);
   
@@ -436,6 +449,22 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 
   scat.colorAttenuation = reflectedLight / pdfVal;  
   return scat;
+}
+
+// ------------- Light -------------
+
+RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
+  RadianceRecord rad;
+
+  float distance = length(rayAt(r, hit.t)) / 1000.0;
+
+  float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
+  float denom = pow(distance, 2) + 1.0;
+
+  float falloff = nom * nom / denom;
+
+  rad.colorIrradiance = lights[lightIndex].color * falloff;
+  return rad;
 }
 
 // ------------- Main -------------
@@ -473,7 +502,9 @@ void main() {
 
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
+      lastNum = vec4(rad.colorIrradiance, 1.0);
+
       break;
     }
 

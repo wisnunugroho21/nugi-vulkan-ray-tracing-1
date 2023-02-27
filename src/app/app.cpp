@@ -173,8 +173,8 @@ namespace nugiEngine {
 		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.1f, 0.5f });
 		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
 
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(10.0f, 10.0f, 10.0f)} );
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(10.0f, 10.0f, 10.0f)} );
+		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
+		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
 
 		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
 	}
@@ -236,7 +236,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
-		uint32_t nSample = 8;
+		uint32_t nSample = 4;
 
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();

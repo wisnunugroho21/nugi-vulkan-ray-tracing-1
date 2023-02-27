@@ -45,6 +45,7 @@ namespace nugiEngine {
   struct Light {
     Triangle triangle{};
     alignas(16) glm::vec3 color;
+    alignas(4) float radius;
   };
 
   struct RayTraceUbo {
@@ -56,6 +57,6 @@ namespace nugiEngine {
   };
 
   struct RayTracePushConstant {
-     alignas(4) uint32_t randomSeed;
+    alignas(4) uint32_t randomSeed;
   };
 }
