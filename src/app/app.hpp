@@ -36,7 +36,7 @@ namespace nugiEngine {
 			void loadObjects();
 			void loadQuadModels();
 
-			RayTraceUbo updateCamera();
+			RayTraceUbo updateCamera(uint32_t width, uint32_t height);
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
