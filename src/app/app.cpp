@@ -75,8 +75,6 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		this->globalUbo = this->updateCamera();
-
 		if (!this->traceRayRender->isFrameUpdated[0]) {
 			this->traceRayRender->writeGlobalData(0, this->globalUbo);
 			this->traceRayRender->isFrameUpdated[0] = true;
@@ -204,10 +202,7 @@ namespace nugiEngine {
 		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::updateCamera() {
-		uint32_t width = this->renderer->getSwapChain()->getSwapChainExtent().width;
-		uint32_t height = this->renderer->getSwapChain()->getSwapChainExtent().height;
-
+	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
 		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
@@ -240,6 +235,9 @@ namespace nugiEngine {
 
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
+
+		this->globalUbo = this->updateCamera(width, height);
+
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
