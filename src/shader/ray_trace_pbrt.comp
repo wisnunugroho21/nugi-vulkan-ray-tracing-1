@@ -461,7 +461,7 @@ RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
   float denom = pow(distance, 2) + 1.0;
 
-  float cosine = clamp(dot(hit.faceNormal.normal, normalize(r.direction)), 0.0, 1.0);
+  float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
   float falloff = nom * nom / denom;
 
   rad.colorIrradiance = lights[lightIndex].color * falloff * cosine;
@@ -474,7 +474,11 @@ void main() {
   uint imgIndex = gl_GlobalInvocationID.z;
   uvec2 imgPosition = gl_GlobalInvocationID.xy;
 
-  vec2 imgSize = vec2(imageSize(targetImage[imgIndex]));
+  uvec2 imgSize = uvec2(imageSize(targetImage[imgIndex]));
+
+  rngStateXY =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
+  rngStateXZ =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+  rngStateYZ =  (imgSize.y * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
 
   float noiseX = randomFloat(1) * 2.0 - 1.0;
   float noiseY = randomFloat(2) * 2.0 - 1.0;

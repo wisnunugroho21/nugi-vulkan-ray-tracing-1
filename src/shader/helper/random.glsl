@@ -12,9 +12,9 @@ float stepAndOutputRNGFloat(inout uint rngState) {
   return float(word) / 4294967295.0;
 }
 
-uint rngStateXY =  (1000000 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
-uint rngStateXZ =  (4 * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
-uint rngStateYZ =  (4 * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateXY =  0;
+uint rngStateXZ =  0;
+uint rngStateYZ =  0;
 
 float randomFloat(uint index) {
   float randNum = 0.0;
