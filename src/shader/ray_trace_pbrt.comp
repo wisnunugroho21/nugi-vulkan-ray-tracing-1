@@ -461,9 +461,10 @@ RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
   float denom = pow(distance, 2) + 1.0;
 
+  float cosine = clamp(dot(hit.faceNormal.normal, normalize(r.direction)), 0.0, 1.0);
   float falloff = nom * nom / denom;
 
-  rad.colorIrradiance = lights[lightIndex].color * falloff;
+  rad.colorIrradiance = lights[lightIndex].color * falloff * cosine;
   return rad;
 }
 
