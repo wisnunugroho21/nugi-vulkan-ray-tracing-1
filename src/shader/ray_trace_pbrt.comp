@@ -454,15 +454,14 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
-  float distance = length(rayAt(r, hit.t)) / 1000.0;
+  float distance = length(rayAt(r, hit.t)) / 10.0;
 
   float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
-  float denom = pow(distance, 2) + 1.0;
-
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
-  float falloff = nom * nom / denom;
 
-  rad.colorIrradiance = lights[lightIndex].color * falloff * cosine;
+  float falloff = (nom * nom + 1.0) / (pow(distance, 2) + 1.0);
+
+  rad.colorIrradiance = lights[lightIndex].color * falloff * cosine * areaTriangle(lights[lightIndex].triangle);
   return rad;
 }
 
