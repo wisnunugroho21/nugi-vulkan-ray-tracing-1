@@ -26,11 +26,13 @@ class EngineBuffer {
   void unmap();
  
   void writeToBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+  void readFromBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
   VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
   VkDescriptorBufferInfo descriptorInfo(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
   VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
  
   void writeToIndex(void* data, int index);
+  void readFromIndex(void* data, int index);
   VkResult flushIndex(int index);
   VkDescriptorBufferInfo descriptorInfoForIndex(int index);
   VkResult invalidateIndex(int index);
