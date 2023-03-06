@@ -101,6 +101,27 @@ namespace nugiEngine {
       memcpy(memOffset, data, size);
     }
   }
+
+  /**
+   * Copies the specified data from the mapped buffer. Default value writes whole buffer range
+   *
+   * @param data Pointer to the data to copy
+   * @param size (Optional) Size of the data to copy. Pass VK_WHOLE_SIZE to flush the complete buffer
+   * range.
+   * @param offset (Optional) Byte offset from beginning of mapped region
+   *
+   */
+  void EngineBuffer::readFromBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+    assert(this->mapped && "Cannot copy from unmapped buffer");
+  
+    if (size == VK_WHOLE_SIZE) {
+      memcpy(data, this->mapped, this->bufferSize);
+    } else {
+      char *memOffset = (char *)this->mapped;
+      memOffset += offset;
+      memcpy(data, memOffset, size);
+    }
+  }
   
   /**
    * Flush a memory range of the buffer to make it visible to the device
@@ -167,6 +188,17 @@ namespace nugiEngine {
    */
   void EngineBuffer::writeToIndex(void *data, int index) {
     this->writeToBuffer(data, this->instanceSize, index * this->alignmentSize);
+  }
+
+  /**
+   * Copies "instanceSize" bytes of data from the mapped buffer at an offset of index * alignmentSize
+   *
+   * @param data Pointer to the data to copy
+   * @param index Used in offset calculation
+   *
+   */
+  void EngineBuffer::readFromIndex(void* data, int index) {
+    this->readFromBuffer(data, this->instanceSize, index * this->alignmentSize);
   }
   
   /**
