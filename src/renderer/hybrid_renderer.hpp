@@ -49,6 +49,8 @@ namespace nugiEngine {
 			bool acquireFrame();
 			bool presentFrame();
 
+			void waitUntilRenderFinished();
+
 		private:
 			void recreateSwapChain();
 			void createSyncObjects(uint32_t imageCount);

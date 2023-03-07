@@ -135,9 +135,7 @@ namespace nugiEngine {
 
 	bool EngineRasterRenderer::acquireFrame() {
 		assert(!this->isFrameStarted && "can't acquire frame while frame still in progress");
-
-		std::vector<VkFence> acquireFrameFences = { this->inFlightFences[this->currentFrameIndex] };
-		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, acquireFrameFences, this->imageAvailableSemaphores[this->currentFrameIndex]);
+		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, this->imageAvailableSemaphores[this->currentFrameIndex]);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			this->recreateSwapChain();

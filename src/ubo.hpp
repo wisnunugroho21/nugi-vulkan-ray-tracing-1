@@ -19,11 +19,8 @@ namespace nugiEngine {
 
   struct Object {
     Triangle triangle{};
-
-    alignas(4) uint32_t materialType;
     alignas(4) uint32_t materialIndex;
   };
-  
 
   struct BvhNode {
     alignas(4) int leftNode = -1;
@@ -48,6 +45,11 @@ namespace nugiEngine {
     alignas(4) float radius;
   };
 
+  struct nRayTraceSample {
+    alignas(16) uint32_t nDiffuseSample;
+    alignas(16) uint32_t nLightSample;
+  };
+
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
     alignas(16) glm::vec3 horizontal;
@@ -58,5 +60,13 @@ namespace nugiEngine {
 
   struct RayTracePushConstant {
     alignas(4) uint32_t randomSeed;
+  };
+
+  struct AccumulateUbo {
+    nRayTraceSample nSample[2560000];
+  };
+
+  struct StatUbo {
+    alignas(4) float diffuseProb = 0.5f;
   };
 }

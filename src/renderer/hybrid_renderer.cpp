@@ -1,5 +1,5 @@
 #include "hybrid_renderer.hpp"
-#include "../ray_ubo.hpp"
+#include "../ubo.hpp"
 
 #include <stdexcept>
 #include <array>
@@ -81,9 +81,7 @@ namespace nugiEngine {
 
 	bool EngineHybridRenderer::acquireFrame() {
 		assert(!this->isFrameStarted && "can't acquire frame while frame still in progress");
-
-		std::vector<VkFence> acquireFrameFences = { this->inFlightFences[this->currentFrameIndex] };
-		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, acquireFrameFences, this->imageAvailableSemaphores[this->currentFrameIndex]);
+		auto result = this->swapChain->acquireNextImage(&this->currentImageIndex, this->imageAvailableSemaphores[this->currentFrameIndex]);
 		
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			this->recreateSwapChain();
@@ -153,5 +151,17 @@ namespace nugiEngine {
 		}
 
 		return true;
+	}
+
+	void EngineHybridRenderer::waitUntilRenderFinished() {
+		std::vector<VkFence> renderFrameFences = { this->inFlightFences[this->currentFrameIndex] };
+
+		vkWaitForFences(
+      this->appDevice.getLogicalDevice(),
+      static_cast<uint32_t>(renderFrameFences.size()),
+      renderFrameFences.data(),
+      VK_TRUE,
+      std::numeric_limits<uint64_t>::max()
+    );
 	}
 }

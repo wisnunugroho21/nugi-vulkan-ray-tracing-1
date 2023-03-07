@@ -1,7 +1,7 @@
 #include "trace_ray_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
-#include "../ray_ubo.hpp"
+#include "../ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -17,7 +17,9 @@ namespace nugiEngine {
 		uint32_t width, uint32_t height, uint32_t nSample, std::vector<VkDescriptorBufferInfo> buffersInfo) : appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createImageStorages();
-		this->createUniformBuffer();
+		this->createRayTraceBuffers();
+		this->createAccumulateBuffers();
+		this->createStatsBuffers();
 
 		this->createDescriptor(descriptorPool, buffersInfo);
 
@@ -74,11 +76,11 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::createUniformBuffer() {
-		this->uniformBuffers.clear();
+	void EngineTraceRayRenderSystem::createRayTraceBuffers() {
+		this->rayTraceBuffers.clear();
 
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto uniformBuffer = std::make_shared<EngineBuffer>(
+			auto rayTraceBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
 				sizeof(RayTraceUbo),
 				1,
@@ -86,8 +88,42 @@ namespace nugiEngine {
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 			);
 
-			uniformBuffer->map();
-			this->uniformBuffers.emplace_back(uniformBuffer);
+			rayTraceBuffer->map();
+			this->rayTraceBuffers.emplace_back(rayTraceBuffer);
+		}
+	}
+
+	void EngineTraceRayRenderSystem::createAccumulateBuffers() {
+		this->accumulateBuffers.clear();
+
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			auto accumulateBuffer = std::make_shared<EngineBuffer>(
+				this->appDevice,
+				sizeof(AccumulateUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+
+			accumulateBuffer->map();
+			this->accumulateBuffers.emplace_back(accumulateBuffer);
+		}
+	}
+
+	void EngineTraceRayRenderSystem::createStatsBuffers() {
+		this->statsBuffers.clear();
+
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			auto statBuffer = std::make_shared<EngineBuffer>(
+				this->appDevice,
+				sizeof(StatUbo),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+
+			statBuffer->map();
+			this->statsBuffers.emplace_back(statBuffer);
 		}
 	}
 
@@ -100,6 +136,8 @@ namespace nugiEngine {
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(6, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(7, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 
 		this->descriptorSets.clear();
@@ -114,16 +152,19 @@ namespace nugiEngine {
 				imageInfos.emplace_back(imageInfo);
 			}
 
-			auto uniformBuffer = this->uniformBuffers[i];
-			auto uniformBufferInfo = uniformBuffer->descriptorInfo();
+			auto rayTraceBufferInfo = this->rayTraceBuffers[i]->descriptorInfo();
+			auto accumulateBufferInfo = this->accumulateBuffers[i]->descriptorInfo();
+			auto statsBufferInfo = this->statsBuffers[i]->descriptorInfo();
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, imageInfos.data(), this->nSample) 
-				.writeBuffer(1, &uniformBufferInfo)
-				.writeBuffer(2, &buffersInfo[0])
-				.writeBuffer(3, &buffersInfo[1])
-				.writeBuffer(4, &buffersInfo[2])
-				.writeBuffer(5, &buffersInfo[3])
+				.writeBuffer(1, &rayTraceBufferInfo)
+				.writeBuffer(2, &accumulateBufferInfo)
+				.writeBuffer(3, &statsBufferInfo)
+				.writeBuffer(4, &buffersInfo[0])
+				.writeBuffer(5, &buffersInfo[1])
+				.writeBuffer(6, &buffersInfo[2])
+				.writeBuffer(7, &buffersInfo[3])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
@@ -131,9 +172,18 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo) {
-		this->uniformBuffers[frameIndex]->writeToBuffer(&ubo);
-		this->uniformBuffers[frameIndex]->flush();
+	void EngineTraceRayRenderSystem::writeRayTraceData(uint32_t frameIndex, RayTraceUbo ubo) {
+		this->rayTraceBuffers[frameIndex]->writeToBuffer(&ubo);
+		this->rayTraceBuffers[frameIndex]->flush();
+	}
+
+	void EngineTraceRayRenderSystem::readAccumulateData(uint32_t frameIndex, AccumulateUbo* ubo) {
+		this->accumulateBuffers[frameIndex]->readFromBuffer(ubo);
+	}
+
+	void EngineTraceRayRenderSystem::writeStatsData(uint32_t frameIndex, StatUbo ubo) {
+		this->statsBuffers[frameIndex]->writeToBuffer(&ubo);
+		this->statsBuffers[frameIndex]->flush();
 	}
 
 	void EngineTraceRayRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, uint32_t randomSeed) {

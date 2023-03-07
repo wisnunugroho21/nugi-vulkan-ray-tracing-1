@@ -6,9 +6,6 @@
 #define SHININESS 64
 #define KEPSILON 0.00001
 
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
-layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
-
 struct Triangle {
   vec3 point0;
   vec3 point1;
@@ -17,7 +14,6 @@ struct Triangle {
 
 struct Object {
   Triangle triangle;
-  uint materialType;
   uint materialIndex;
 };
 
@@ -44,6 +40,14 @@ struct BvhNode {
   vec3 minimum;
 };
 
+struct nRayTraceSample {
+  uint nDiffuseSample;
+  uint nLightSample;
+};
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
+
 layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 origin;
   vec3 horizontal;
@@ -52,19 +56,27 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 background;
 } ubo;
 
-layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+layout(set = 0, binding = 2) buffer writeonly AccumulateUbo {
+  nRayTraceSample nSample[2560000];
+};
+
+layout(set = 0, binding = 3) buffer readonly StatUbo {
+  float diffuseProb;
+};
+
+layout(set = 0, binding = 4) buffer readonly ObjectSsbo {
   Object objects[100];
 };
 
-layout(set = 0, binding = 3) buffer readonly BvhSsbo {
+layout(set = 0, binding = 5) buffer readonly BvhSsbo {
   BvhNode bvhNodes[100];
 };
 
-layout(set = 0, binding = 4) buffer readonly materialSsbo {
+layout(set = 0, binding = 6) buffer readonly materialSsbo {
   Material materials[100];
 };
 
-layout(set = 0, binding = 5) buffer readonly lightSsbo {
+layout(set = 0, binding = 7) buffer readonly lightSsbo {
   Light lights[100];
 };
 
@@ -109,6 +121,9 @@ struct ShadeRecord {
   vec3 colorEmitted;
 
   Ray raySpecular;
+
+  uint nDiffuseSample;
+  uint nLightSample;
 };
 
 struct RadianceRecord {
@@ -333,7 +348,7 @@ float triangleListPdfValue(Ray r) {
 }
 
 vec3 triangleListGenerateRandom(vec3 origin) {
-  return triangleGenerateRandom(lights[randomInt(0, 1, 1)].triangle, origin);
+  return triangleGenerateRandom(lights[randomInt(0, 1, 3)].triangle, origin);
 }
 
 // ------------- GGX -------------
@@ -407,18 +422,21 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
 
   scat.raySpecular.origin = hit.point;
-  float rand = randomFloat(0);
+  float rand = randomFloat(3);
 
   if (materials[materialIndex].metallicness >= rand) {
     vec3[3] globalOnb = buildOnb(reflected);
     scat.raySpecular.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness);
   } else {
     vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
-    int chooseRandom = randomInt(0, 1, 0);
+    float chooseRandom = randomFloat(3);
 
-    switch(chooseRandom) {
-      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
-      case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
+    if (diffuseProb >= chooseRandom) {
+      scat.raySpecular.direction = cosineGenerateRandom(globalOnb);
+      scat.nLightSample = 1;
+    } else {
+      scat.raySpecular.direction = triangleListGenerateRandom(hit.point);
+      scat.nLightSample = 1;
     }
   }
   
@@ -490,6 +508,9 @@ void main() {
     0.0, 0.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0
   );
+
+  uint nDiffuseSample = 0;
+  uint nLightSample = 0;
   
   for(int i = 0; i < 50; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
@@ -524,8 +545,18 @@ void main() {
 
     rayTransform = emitTransf * attentTransf * rayTransform;
     curRay = scat.raySpecular;
+
+    nDiffuseSample += scat.nDiffuseSample;
+    nLightSample += scat.nLightSample;
   }
   
   vec4 curColor = rayTransform * lastNum;
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
+
+  uint index = gl_GlobalInvocationID.z + 
+    gl_GlobalInvocationID.y * imgSize.z +
+    gl_GlobalInvocationID.x * imgSize.z * imgSize.y;
+
+  nSample[index].nDiffuseSample = scat.nDiffuseSample;
+  nSample[index].nLightSample = scat.nLightSample;
 }

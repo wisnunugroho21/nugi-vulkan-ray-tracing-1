@@ -9,7 +9,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../frame_info.hpp"
-#include "../ray_ubo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>
@@ -29,7 +29,10 @@ namespace nugiEngine {
 			std::vector<std::shared_ptr<EngineImage>> getStorageImages() { return this->storageImages; }
 			bool getFramesUpdated(uint32_t index) const { return this->isFrameUpdated[index]; }
 
-			void writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo);
+			void writeRayTraceData(uint32_t frameIndex, RayTraceUbo ubo);
+			void readAccumulateData(uint32_t frameIndex, AccumulateUbo *ubo);
+			void writeStatsData(uint32_t frameIndex, StatUbo ubo);
+
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, uint32_t randomSeed = 1);
 
 			bool prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
@@ -42,7 +45,9 @@ namespace nugiEngine {
 			void createPipelineLayout();
 			void createPipeline();
 
-			void createUniformBuffer();
+			void createRayTraceBuffers();
+			void createAccumulateBuffers();
+			void createStatsBuffers();
 			void createImageStorages();
 
 			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
@@ -52,7 +57,9 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
 			std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
 
-			std::vector<std::shared_ptr<EngineBuffer>> uniformBuffers;
+			std::vector<std::shared_ptr<EngineBuffer>> rayTraceBuffers;
+			std::vector<std::shared_ptr<EngineBuffer>> accumulateBuffers;
+			std::vector<std::shared_ptr<EngineBuffer>> statsBuffers;
 			std::vector<std::shared_ptr<EngineImage>> storageImages;
 			
 			VkPipelineLayout pipelineLayout;

@@ -35,7 +35,7 @@ namespace nugiEngine {
       return static_cast<float>(this->swapChainExtent.width) / static_cast<float>(this->swapChainExtent.height);
     }
 
-    VkResult acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFences, VkSemaphore imageAvailableSemaphore);
+    VkResult acquireNextImage(uint32_t *imageIndex, VkSemaphore imageAvailableSemaphore);
     VkResult presentRenders(VkQueue queue, uint32_t *imageIndex, std::vector<VkSemaphore> waitSemaphores);
 
     bool compareSwapFormat(const EngineSwapChain& swapChain) {
