@@ -31,9 +31,7 @@ namespace nugiEngine {
 
 	EngineApp::~EngineApp() {}
 
-	void EngineApp::renderLoop() {
-		StatUbo statUbo { 0.5f };
-		
+	void EngineApp::renderLoop() {		
 		while (this->isRendering) {
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
@@ -44,7 +42,7 @@ namespace nugiEngine {
 					this->traceRayRender->isFrameUpdated[frameIndex] = true;
 				}
 
-				this->traceRayRender->writeStatsData(frameIndex, statUbo);
+				this->traceRayRender->writeStatsData(frameIndex, this->statUbo);
 
 				auto commandBuffer = this->renderer->beginCommand();
 				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
@@ -69,9 +67,7 @@ namespace nugiEngine {
 				}
 
 				this->renderer->waitUntilRenderFinished();
-
-				AccumulateUbo accumulateUbo{};
-				this->traceRayRender->readAccumulateData(frameIndex, &accumulateUbo);
+				this->traceRayRender->readAccumulateData(frameIndex, &this->accumulateUbo);
 
 				uint64_t totalDiffSample = 0;
 				uint64_t totalLightSample = 0;
@@ -90,13 +86,14 @@ namespace nugiEngine {
 				lightNW = 1.0 / lightNW;
 
 				double totalNewWight = diffuseNw + lightNW;
-				double newWight = diffuseNw / totalNewWight;
-
-				statUbo.diffuseProb = static_cast<float>(newWight);
+				double newWight = diffuseNw / totalNewWight;				
 
 				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
+					statUbo.diffuseProb = (statUbo.diffuseProb + static_cast<float>(newWight)) / 2.0f;
 					this->randomSeed++;
-				}				
+				} else {
+					statUbo.diffuseProb = static_cast<float>(newWight);
+				}
 			}
 		}
 	}

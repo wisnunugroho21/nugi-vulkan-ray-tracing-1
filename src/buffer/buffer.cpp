@@ -111,7 +111,7 @@ namespace nugiEngine {
    * @param offset (Optional) Byte offset from beginning of mapped region
    *
    */
-  void EngineBuffer::readFromBuffer(void* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+  void EngineBuffer::readFromBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
     assert(this->mapped && "Cannot copy from unmapped buffer");
   
     if (size == VK_WHOLE_SIZE) {

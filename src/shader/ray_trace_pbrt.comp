@@ -416,6 +416,8 @@ vec3 cosineGenerateRandom(vec3[3] globalOnb) {
 
 ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
+  scat.nDiffuseSample = 0;
+  scat.nLightSample = 0;
 
   float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
   vec3 unitDirection = normalize(r.direction);
@@ -433,7 +435,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 
     if (diffuseProb >= chooseRandom) {
       scat.raySpecular.direction = cosineGenerateRandom(globalOnb);
-      scat.nLightSample = 1;
+      scat.nDiffuseSample = 1;
     } else {
       scat.raySpecular.direction = triangleListGenerateRandom(hit.point);
       scat.nLightSample = 1;
@@ -458,7 +460,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float diff = 1.0 / pi;
 
   float specPdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  float diffPdf = 0.5 * (cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) + triangleListPdfValue(scat.raySpecular));
+  float diffPdf = cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) * diffuseProb + triangleListPdfValue(scat.raySpecular) * (1.0 - diffuseProb);
 
   float pdfVal = mix(diffPdf, specPdf, materials[materialIndex].metallicness);
   float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
@@ -554,9 +556,9 @@ void main() {
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
 
   uint index = gl_GlobalInvocationID.z + 
-    gl_GlobalInvocationID.y * imgSize.z +
-    gl_GlobalInvocationID.x * imgSize.z * imgSize.y;
+    gl_GlobalInvocationID.y * NSAMPLE +
+    gl_GlobalInvocationID.x * NSAMPLE * imgSize.y;
 
-  nSample[index].nDiffuseSample = scat.nDiffuseSample;
-  nSample[index].nLightSample = scat.nLightSample;
+  nSample[index].nDiffuseSample = nDiffuseSample;
+  nSample[index].nLightSample = nLightSample;
 }

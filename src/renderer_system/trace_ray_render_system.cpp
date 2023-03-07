@@ -101,7 +101,7 @@ namespace nugiEngine {
 				this->appDevice,
 				sizeof(AccumulateUbo),
 				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 			);
 
@@ -118,7 +118,7 @@ namespace nugiEngine {
 				this->appDevice,
 				sizeof(StatUbo),
 				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 			);
 
