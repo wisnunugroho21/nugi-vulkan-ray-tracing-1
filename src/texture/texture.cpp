@@ -1,7 +1,7 @@
 #include "texture.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../lib/stb_image.h"
+#include <stb_image.h>
 
 #include <vulkan/vulkan.h>
 #include <stdexcept>
