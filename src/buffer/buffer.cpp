@@ -236,14 +236,6 @@ namespace nugiEngine {
     return this->invalidate(this->alignmentSize, index * this->alignmentSize);
   }
 
-  VkDeviceAddress EngineBuffer::getDeviceAddress() const {
-    VkBufferDeviceAddressInfo bufferDeviceAddressInfo{};
-    bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-    bufferDeviceAddressInfo.buffer = this->buffer;
-
-    return vkGetBufferDeviceAddress(this->engineDevice.getLogicalDevice(), &bufferDeviceAddressInfo);
-  }
-
   void EngineBuffer::copyBuffer(VkBuffer srcBuffer, VkDeviceSize size) {
     EngineCommandBuffer commandBuffer{this->engineDevice};
     commandBuffer.beginSingleTimeCommand();

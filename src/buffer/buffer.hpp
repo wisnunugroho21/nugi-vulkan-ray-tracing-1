@@ -56,7 +56,6 @@ class EngineBuffer {
   void* mapped = nullptr;
   VkBuffer buffer = VK_NULL_HANDLE;
   VkDeviceMemory memory = VK_NULL_HANDLE;
-  VkDeviceAddress deviceAddress;
  
   VkDeviceSize bufferSize;
   uint32_t instanceCount;
