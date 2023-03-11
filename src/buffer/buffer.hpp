@@ -12,13 +12,13 @@ class EngineBuffer {
       uint32_t instanceCount,
       VkBufferUsageFlags usageFlags,
       VkMemoryPropertyFlags memoryPropertyFlags,
-      VkDeviceSize minOffsetAlignment = 1);
+      VkDeviceSize minOffsetAlignment = 1,
+      bool hasDeviceAddress = false);
   ~EngineBuffer();
  
   EngineBuffer(const EngineBuffer&) = delete;
   EngineBuffer& operator=(const EngineBuffer&) = delete;
-
-  void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
+  
   void copyBuffer(VkBuffer srcBuffer, VkDeviceSize size);
   void copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
  
@@ -45,8 +45,10 @@ class EngineBuffer {
   VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
   VkMemoryPropertyFlags getMemoryPropertyFlags() const { return memoryPropertyFlags; }
   VkDeviceSize getBufferSize() const { return bufferSize; }
+  VkDeviceAddress getDeviceAddress() const { return this->deviceAddress; }
  
  private:
+  void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, bool hasDeviceAddress);
   static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
  
   EngineDevice& engineDevice;
@@ -54,6 +56,7 @@ class EngineBuffer {
   void* mapped = nullptr;
   VkBuffer buffer = VK_NULL_HANDLE;
   VkDeviceMemory memory = VK_NULL_HANDLE;
+  VkDeviceAddress deviceAddress;
  
   VkDeviceSize bufferSize;
   uint32_t instanceCount;
@@ -61,6 +64,7 @@ class EngineBuffer {
   VkDeviceSize alignmentSize;
   VkBufferUsageFlags usageFlags;
   VkMemoryPropertyFlags memoryPropertyFlags;
+  VkDeviceAddress deviceAddress;
 };
  
 }  // namespace lve

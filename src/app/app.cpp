@@ -3,6 +3,8 @@
 #include "../camera/camera.hpp"
 #include "../mouse_controller/mouse_controller.hpp"
 #include "../keyboard_controller/keyboard_controller.hpp"
+#include "../acceleration_structure/bottom_level_acceleration_structure.hpp"
+#include "../acceleration_structure/top_level_acceleration_structure.hpp"
 #include "../buffer/buffer.hpp"
 #include "../frame_info.hpp"
 
@@ -22,10 +24,10 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
+		this->renderer = std::make_unique<EngineRayTraceRenderer>(this->window, this->device);
 
 		this->loadObjects();
-		this->loadQuadModels();
+		// this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
 
@@ -35,24 +37,11 @@ namespace nugiEngine {
 		while (this->isRendering) {
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
-				uint32_t imageIndex = this->renderer->getImageIndex();				
-
-				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
-					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
-					this->traceRayRender->isFrameUpdated[frameIndex] = true;
-				}
+				uint32_t imageIndex = this->renderer->getImageIndex();
 
 				auto commandBuffer = this->renderer->beginCommand();
-				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
-
-				this->traceRayRender->render(commandBuffer, frameIndex, this->randomSeed);
-				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
 				
-				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
-				this->swapChainSubRenderer->endRenderPass(commandBuffer);
-
-				this->traceRayRender->finishFrame(commandBuffer, frameIndex);				
+				this->rayTracingRenderSystem->render(commandBuffer, imageIndex, this->renderer->getSwapChain()->getswapChainImages()[imageIndex]);
 
 				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
@@ -74,11 +63,6 @@ namespace nugiEngine {
 	void EngineApp::run() {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
-
-		if (!this->traceRayRender->isFrameUpdated[0]) {
-			this->traceRayRender->writeGlobalData(0, this->globalUbo);
-			this->traceRayRender->isFrameUpdated[0] = true;
-		}
 
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
@@ -107,77 +91,28 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		RayTraceModelData modeldata{};
+		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/flat_vase.obj");
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 1 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1, 1 });
+		auto flatVase = EngineGameObject::createSharedGameObject();
+		flatVase->model = flatVaseModel;
+		flatVase->transform.translation = {-0.5f, 0.5f, 0.0f};
+		flatVase->transform.scale = {3.0f, 1.5f, 3.0f};
+		flatVase->color = {1.0f, 1.0f, 1.0f};
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 1, 2});
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} } , 1, 2 }); 
+		this->gameObjects.push_back(std::move(flatVase)); 
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }  , 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} } , 1, 0 }); 
+		std::shared_ptr<EngineModel> smoothVaseModel = EngineModel::createModelFromFile(this->device, "models/smooth_vase.obj");
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 1, 0 });  
+		auto smoothVase = EngineGameObject::createSharedGameObject();
+		smoothVase->model = smoothVaseModel;
+		smoothVase->transform.translation = {0.5f, 0.5f, 0.0f};
+		smoothVase->transform.scale = {3.0f, 1.5f, 3.0f};
+		smoothVase->color = {1.0f, 1.0f, 1.0f};
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 1, 0 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 2, 3 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} } , 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 1, 0 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.05f, 0.65f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
-
-		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
+		this->gameObjects.push_back(std::move(smoothVase));
 	}
 
-	void EngineApp::loadQuadModels() {
+	/* void EngineApp::loadQuadModels() {
 		ModelData modelData{};
 
 		std::vector<Vertex> vertices;
@@ -200,58 +135,22 @@ namespace nugiEngine {
 		};
 
 		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
-	}
-
-	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
-		RayTraceUbo ubo{};
-
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
-		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
-		
-		float vfov = 40.0f;
-		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-		float theta = glm::radians(vfov);
-		float h = glm::tan(theta / 2.0f);
-		float viewportHeight = 2.0f * h;
-		float viewportWidth = aspectRatio * viewportHeight;
-
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::normalize(glm::cross(vup, w));
-		glm::vec3 v = glm::cross(w, u);
-
-		ubo.origin = lookFrom;
-		ubo.horizontal = viewportWidth * u;
-		ubo.vertical = viewportHeight * v;
-		ubo.lowerLeftCorner = ubo.origin - ubo.horizontal / 2.0f + ubo.vertical / 2.0f - w;
-		ubo.background = glm::vec3(0.0f, 0.0f, 0.0f);
-
-		return ubo;
-	}
+	} */
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
-		uint32_t nSample = 4;
+		std::vector<EngineTopLevelAccelerationStructure> topAccelStructs;
 
-		uint32_t width = this->renderer->getSwapChain()->width();
-		uint32_t height = this->renderer->getSwapChain()->height();
+		for (auto &&obj : this->gameObjects) {
+			EngineBottomLevelAccelerationStructure bottomStruct{this->device, deviceProcedure, obj->model};
+			EngineTopLevelAccelerationStructure topStruct{this->device, deviceProcedure, bottomStruct};
 
-		this->globalUbo = this->updateCamera(width, height);
+			topAccelStructs.emplace_back(topStruct);
+		}
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
-
-		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
-			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
-			width, height);
-
-		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getMaterialInfo(), this->models->getLightInfo() };
-
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			width, height, nSample, buffersInfo);
-
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
-			this->renderer->getDescriptorPool(), width, height, this->traceRayRender->getStorageImages(), 
-			nSample, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		this->rayTracingRenderSystem = std::make_unique<EngineRayTracingRenderSystem>(
+			this->device, this->deviceProcedure, *this->renderer->getDescriptorPool(), topAccelStructs, 
+			this->renderer->getSwapChain()->imageCount(), this->renderer->getSwapChain()->width(), 
+			this->renderer->getSwapChain()->height()
+		);
 	}
 }

@@ -16,7 +16,8 @@ namespace std {
 	struct hash<nugiEngine::Vertex> {
 		size_t operator () (nugiEngine::Vertex const &vertex) const {
 			size_t seed = 0;
-			nugiEngine::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+			nugiEngine::hashCombine(seed, vertex.position);
+			
 			return seed;
 		}
 	};
@@ -55,7 +56,7 @@ namespace nugiEngine {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void *) vertices.data());
 
-		this->vertexBuffer = std::make_unique<EngineBuffer>(
+		this->vertexBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
 			vertexSize,
 			this->vertextCount,
@@ -88,7 +89,7 @@ namespace nugiEngine {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void *) indices.data());
 
-		this->indexBuffer = std::make_unique<EngineBuffer>(
+		this->indexBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
 			indexSize,
 			this->indexCount,
@@ -132,20 +133,6 @@ namespace nugiEngine {
 		attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescription[0].offset = offsetof(Vertex, position);
 
-		attributeDescription[1].binding = 0;
-		attributeDescription[1].location = 1;
-		attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[1].offset = offsetof(Vertex, color);
-
-		attributeDescription[2].binding = 0;
-		attributeDescription[2].location = 2;
-		attributeDescription[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[2].offset = offsetof(Vertex, normal);
-
-		attributeDescription[3].binding = 0;
-		attributeDescription[3].location = 3;
-		attributeDescription[3].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescription[3].offset = offsetof(Vertex, uv);
 		return attributeDescription;
 	}
 
@@ -172,27 +159,6 @@ namespace nugiEngine {
 						attrib.vertices[3 * index.vertex_index + 0],
 						attrib.vertices[3 * index.vertex_index + 1],
 						attrib.vertices[3 * index.vertex_index + 2]
-					};
-
-					vertex.color = {
-						attrib.colors[3 * index.vertex_index + 0],
-						attrib.colors[3 * index.vertex_index + 1],
-						attrib.colors[3 * index.vertex_index + 2]
-					};
-				}
-
-				if (index.normal_index >= 0) {
-					vertex.normal = {
-						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
-						attrib.normals[3 * index.normal_index + 2]
-					};
-				}
-
-				if (index.texcoord_index >= 0) {
-					vertex.uv = { // temoirary. for OBJ object only
-						attrib.texcoords[2 * index.texcoord_index + 0],
-    				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
 					};
 				}
 

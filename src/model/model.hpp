@@ -15,29 +15,23 @@ namespace nugiEngine
 {
 	struct Vertex {
 		glm::vec3 position{};
-		glm::vec3 color{};
-		glm::vec3 normal{};
-		glm::vec2 uv{};
 
 		static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
 
 		bool operator == (const Vertex &other) const {
-			return this->position == other.position && this->color == other.color && this->normal == other.normal 
-				&& this->uv == other.uv;
+			return this->position == other.position;
 		}
 	};
 
-	struct ModelData
-	{
+	struct ModelData {
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 
 		void loadModel(const std::string &filePath);
 	};
 
-	class EngineModel
-	{
+	class EngineModel {
 	public:
 		EngineModel(EngineDevice &device, const ModelData &data);
 		~EngineModel();
@@ -45,18 +39,24 @@ namespace nugiEngine
 		EngineModel(const EngineModel&) = delete;
 		EngineModel& operator = (const EngineModel&) = delete;
 
-		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
+		std::shared_ptr<EngineBuffer> getVertexBuffer() const { return this->vertexBuffer; }
+		std::shared_ptr<EngineBuffer> getIndexBuffer() const { return this->indexBuffer; }
+
+		uint32_t getVertexCount() const { return this->vertextCount; }
+		uint32_t getIndexCount() const { return this->indexCount; }
 
 		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+
+		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
 		
 	private:
 		EngineDevice &engineDevice;
 		
-		std::unique_ptr<EngineBuffer> vertexBuffer;
-		uint32_t vertextCount;
+		std::shared_ptr<EngineBuffer> vertexBuffer;
+		std::shared_ptr<EngineBuffer> indexBuffer;
 
-		std::unique_ptr<EngineBuffer> indexBuffer;
+		uint32_t vertextCount;
 		uint32_t indexCount;
 
 		bool hasIndexBuffer = false;

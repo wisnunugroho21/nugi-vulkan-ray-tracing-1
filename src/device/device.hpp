@@ -61,6 +61,7 @@ namespace nugiEngine {
       
       VkPhysicalDeviceProperties getProperties() { return this->properties; }
       VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
+      VkPhysicalDeviceRayTracingPipelinePropertiesKHR getRayTracingProperties() { return this->rayTracingProperties; }
 
       SwapChainSupportDetails getSwapChainSupport() { return this->querySwapChainSupport(this->physicalDevice); }
       QueueFamilyIndices findPhysicalQueueFamilies() { return this->findQueueFamilies(this->physicalDevice); }
@@ -74,6 +75,7 @@ namespace nugiEngine {
       void createSurface();
       void pickPhysicalDevice();
       void createLogicalDevice();
+      void initRayTracing();
       void createCommandPool();
 
       // helper creation functions
@@ -91,10 +93,13 @@ namespace nugiEngine {
       VkInstance instance;
       VkDebugUtilsMessengerEXT debugMessenger;
 
-      // device & its property
+      // device
       VkDevice device;
       VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+
+      // property
       VkPhysicalDeviceProperties properties;
+      VkPhysicalDeviceRayTracingPipelinePropertiesKHR rayTracingProperties;
 
       // window system
       EngineWindow &window;
@@ -116,7 +121,16 @@ namespace nugiEngine {
       VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
       const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
-      const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+      const std::vector<const char *> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+        VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+        VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+        VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+        VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+        VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+        VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
+      };
   };
 
 }  // namespace lve

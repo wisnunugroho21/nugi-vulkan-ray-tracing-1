@@ -166,6 +166,22 @@ namespace nugiEngine {
     writes.push_back(write);
     return *this;
   }
+
+  EngineDescriptorWriter &EngineDescriptorWriter::writeAccelStruct(uint32_t binding, VkWriteDescriptorSetAccelerationStructureKHR *descriptorAccelStructInfo, uint32_t count) {
+    assert(setLayout.bindings.count(binding) == 1 && "Layout does not contain specified binding");
+  
+    auto &bindingDescription = setLayout.bindings[binding];
+  
+    VkWriteDescriptorSet write{};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.descriptorType = bindingDescription.descriptorType;
+    write.dstBinding = binding;
+    write.descriptorCount = count;
+    write.pNext = descriptorAccelStructInfo;
+  
+    writes.push_back(write);
+    return *this;
+  }
   
   bool EngineDescriptorWriter::build(VkDescriptorSet *set) {
     bool success = this->pool.allocateDescriptor(this->setLayout.getDescriptorSetLayout(), set);
