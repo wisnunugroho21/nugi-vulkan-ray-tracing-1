@@ -23,7 +23,6 @@ namespace nugiEngine {
 		this->createDescriptor(descriptorPool);
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
-    
 	}
 
 	EngineForwardPassRenderSystem::~EngineForwardPassRenderSystem() {

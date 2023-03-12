@@ -62,6 +62,8 @@ namespace nugiEngine {
 				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
+				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
+
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->defferedRenderSystem->render(commandBuffer, frameIndex, this->quadModels);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
