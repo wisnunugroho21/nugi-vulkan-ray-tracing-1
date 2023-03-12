@@ -1,4 +1,4 @@
-#include "hybrid_renderer.hpp"
+#include "deferred_renderer.hpp"
 #include "../ray_ubo.hpp"
 
 #include <stdexcept>
@@ -6,7 +6,7 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineHybridRenderer::EngineHybridRenderer(EngineWindow& window, EngineDevice& device) : appDevice{device}, appWindow{window} {
+	EngineDefferedRenderer::EngineDefferedRenderer(EngineWindow& window, EngineDevice& device) : appDevice{device}, appWindow{window} {
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
 
@@ -14,7 +14,7 @@ namespace nugiEngine {
 		this->createDescriptorPool(this->swapChain->imageCount());
 	}
 
-	EngineHybridRenderer::~EngineHybridRenderer() {
+	EngineDefferedRenderer::~EngineDefferedRenderer() {
 		this->descriptorPool->resetPool();
 		
     for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -24,7 +24,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineHybridRenderer::recreateSwapChain() {
+	void EngineDefferedRenderer::recreateSwapChain() {
 		auto extent = this->appWindow.getExtent();
 		while(extent.width == 0 || extent.height == 0) {
 			extent = this->appWindow.getExtent();
@@ -45,7 +45,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineHybridRenderer::createDescriptorPool(uint32_t imageCount) {
+	void EngineDefferedRenderer::createDescriptorPool(uint32_t imageCount) {
 		uint32_t nSample = 8;
 
 		this->descriptorPool = 
@@ -56,7 +56,7 @@ namespace nugiEngine {
 				.build();
 	}
 
-	void EngineHybridRenderer::createSyncObjects(uint32_t imageCount) {
+	void EngineDefferedRenderer::createSyncObjects(uint32_t imageCount) {
 		imageAvailableSemaphores.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 		renderFinishedSemaphores.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
 		inFlightFences.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
@@ -68,16 +68,16 @@ namespace nugiEngine {
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-			for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-				if (vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->imageAvailableSemaphores[i]) != VK_SUCCESS ||
-					vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->renderFinishedSemaphores[i]) != VK_SUCCESS ||
-					vkCreateFence(this->appDevice.getLogicalDevice(), &fenceInfo, nullptr, &this->inFlightFences[i]) != VK_SUCCESS) {
-						throw std::runtime_error("failed to create synchronization objects for a frame!");
-				}
+		for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			if (vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->imageAvailableSemaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->renderFinishedSemaphores[i]) != VK_SUCCESS ||
+				vkCreateFence(this->appDevice.getLogicalDevice(), &fenceInfo, nullptr, &this->inFlightFences[i]) != VK_SUCCESS) {
+					throw std::runtime_error("failed to create synchronization objects for a frame!");
 			}
-	  }
+		}
+	}
 
-	bool EngineHybridRenderer::acquireFrame() {
+	bool EngineDefferedRenderer::acquireFrame() {
 		assert(!this->isFrameStarted && "can't acquire frame while frame still in progress");
 
 		std::vector<VkFence> acquireFrameFences = { this->inFlightFences[this->currentFrameIndex] };
@@ -96,41 +96,41 @@ namespace nugiEngine {
 		return true;
 	}
 
-	std::shared_ptr<EngineCommandBuffer> EngineHybridRenderer::beginCommand() {
+	std::shared_ptr<EngineCommandBuffer> EngineDefferedRenderer::beginCommand() {
 		assert(this->isFrameStarted && "can't start command while frame still in progress");
 
 		this->commandBuffers[this->currentFrameIndex]->beginReccuringCommand();
 		return this->commandBuffers[this->currentFrameIndex];
 	}
 
-	void EngineHybridRenderer::endCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+	void EngineDefferedRenderer::endCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't start command while frame still in progress");
 		commandBuffer->endCommand();
 	}
 
-	void EngineHybridRenderer::submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer) {
+	void EngineDefferedRenderer::submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
 		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
-		std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
-		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
+		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
-	void EngineHybridRenderer::submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+	void EngineDefferedRenderer::submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
 		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
-		std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
-		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
+		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 		commandBuffer->submitCommand(this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
 	}
 
-	bool EngineHybridRenderer::presentFrame() {
+	bool EngineDefferedRenderer::presentFrame() {
 		assert(this->isFrameStarted && "can't present frame if frame is not in progress");
 
 		std::vector<VkSemaphore> waitSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};

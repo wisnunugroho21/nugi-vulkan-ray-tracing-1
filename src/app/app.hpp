@@ -5,11 +5,9 @@
 #include "../model/ray_trace_model.hpp"
 #include "../model/model.hpp"
 #include "../descriptor/descriptor.hpp"
-#include "../renderer/hybrid_renderer.hpp"
+#include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
-#include "../renderer_system/trace_ray_render_system.hpp"
-#include "../renderer_system/sampling_ray_raster_render_system.hpp"
-
+#include "../renderer_system/forward_pass_render_system.hpp"
 
 #include <memory>
 #include <vector>
@@ -35,23 +33,19 @@ namespace nugiEngine {
 		private:
 			void loadObjects();
 			void loadQuadModels();
-
-			RayTraceUbo updateCamera(uint32_t width, uint32_t height);
+			
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
 			EngineDevice device{window};
 			
-			std::unique_ptr<EngineHybridRenderer> renderer{};
+			std::unique_ptr<EngineDefferedRenderer> renderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
-			std::unique_ptr<EngineTraceRayRenderSystem> traceRayRender{};
-			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
+			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
 
-			std::unique_ptr<EngineRayTraceModel> models;
 			std::shared_ptr<EngineModel> quadModels;
+			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;
 
-			uint32_t randomSeed = 0;
 			bool isRendering = true;
-			RayTraceUbo globalUbo;
 	};
 }

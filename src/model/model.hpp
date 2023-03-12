@@ -15,16 +15,12 @@ namespace nugiEngine
 {
 	struct Vertex {
 		glm::vec3 position{};
-		glm::vec3 color{};
-		glm::vec3 normal{};
-		glm::vec2 uv{};
 
 		static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
 
 		bool operator == (const Vertex &other) const {
-			return this->position == other.position && this->color == other.color && this->normal == other.normal 
-				&& this->uv == other.uv;
+			return this->position == other.position;
 		}
 	};
 

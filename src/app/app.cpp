@@ -22,51 +22,53 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
+		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device);
 
 		this->loadObjects();
-		this->loadQuadModels();
+		// this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
 
 	EngineApp::~EngineApp() {}
 
 	void EngineApp::renderLoop() {
+		auto viewObject = EngineGameObject::createGameObject();
+		viewObject.transform.translation.z = -2.5f;
+
+		EngineCamera camera{};
+		EngineMouseController mouseController{};
+		EngineKeyboardController keyboardController{};
+
 		while (this->isRendering) {
+			auto aspect = this->renderer->getSwapChain()->extentAspectRatio();
+
+			camera.setViewYXZ(viewObject.transform.translation, viewObject.transform.rotation);
+			camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
-				uint32_t imageIndex = this->renderer->getImageIndex();				
+				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
-					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
-					this->traceRayRender->isFrameUpdated[frameIndex] = true;
-				}
+				GlobalUBO ubo{};
+				ubo.projection = camera.getProjectionMatrix();
+				ubo.view = camera.getViewMatrix();
+				ubo.inverseView = camera.getInverseViewMatrix();
+
+				this->forwardPassRenderSystem->writeUniformBuffer(frameIndex, &ubo);
 
 				auto commandBuffer = this->renderer->beginCommand();
-				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
-
-				this->traceRayRender->render(commandBuffer, frameIndex, this->randomSeed);
-				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
-				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
+
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);			
+
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
+				this->renderer->endCommand(commandBuffer);	
 
-				this->traceRayRender->finishFrame(commandBuffer, frameIndex);				
-
-				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
-
+				
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
-					this->randomSeed = 0;
-
-					continue;
-				}				
-
-				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
-					this->randomSeed++;
-				}				
+				}			
 			}
 		}
 	}
@@ -74,11 +76,6 @@ namespace nugiEngine {
 	void EngineApp::run() {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
-
-		if (!this->traceRayRender->isFrameUpdated[0]) {
-			this->traceRayRender->writeGlobalData(0, this->globalUbo);
-			this->traceRayRender->isFrameUpdated[0] = true;
-		}
 
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
@@ -107,74 +104,23 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		RayTraceModelData modeldata{};
+		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/flat_vase.obj");
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 1 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1, 1 });
+		auto flatVase = EngineGameObject::createSharedGameObject();
+		flatVase->model = flatVaseModel;
+		flatVase->transform.translation = {-0.5f, 0.5f, 0.0f};
+		flatVase->transform.scale = {3.0f, 1.5f, 3.0f};
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 1, 2});
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} } , 1, 2 }); 
+		this->gameObjects.push_back(std::move(flatVase)); 
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }  , 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} } , 1, 0 }); 
+		std::shared_ptr<EngineModel> smoothVaseModel = EngineModel::createModelFromFile(this->device, "models/smooth_vase.obj");
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 1, 0 });  
+		auto smoothVase = EngineGameObject::createSharedGameObject();
+		smoothVase->model = smoothVaseModel;
+		smoothVase->transform.translation = {0.5f, 0.5f, 0.0f};
+		smoothVase->transform.scale = {3.0f, 1.5f, 3.0f};
 
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 1, 0 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 2, 3 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 2, 3 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 2, 3 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} } , 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 1, 0 });
-
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 1, 0 });
-		modeldata.objects.emplace_back(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 1, 0 });
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.05f, 0.65f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
-		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
-
-		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
+		this->gameObjects.push_back(std::move(smoothVase));
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -182,16 +128,16 @@ namespace nugiEngine {
 
 		std::vector<Vertex> vertices;
 
-		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f) };
 		vertices.emplace_back(vertex1);
 
-		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f) };
 		vertices.emplace_back(vertex2);
 
-		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f) };
 		vertices.emplace_back(vertex3);
 
-		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f) };
 		vertices.emplace_back(vertex4);
 
 		modelData.vertices = vertices;
@@ -202,56 +148,18 @@ namespace nugiEngine {
 		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
-		RayTraceUbo ubo{};
-
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
-		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
-		
-		float vfov = 40.0f;
-		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-		float theta = glm::radians(vfov);
-		float h = glm::tan(theta / 2.0f);
-		float viewportHeight = 2.0f * h;
-		float viewportWidth = aspectRatio * viewportHeight;
-
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::normalize(glm::cross(vup, w));
-		glm::vec3 v = glm::cross(w, u);
-
-		ubo.origin = lookFrom;
-		ubo.horizontal = viewportWidth * u;
-		ubo.vertical = viewportHeight * v;
-		ubo.lowerLeftCorner = ubo.origin - ubo.horizontal / 2.0f + ubo.vertical / 2.0f - w;
-		ubo.background = glm::vec3(0.0f, 0.0f, 0.0f);
-
-		return ubo;
-	}
-
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t nSample = 4;
 
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 
-		this->globalUbo = this->updateCamera(width, height);
-
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
-			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
-			width, height);
+			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), width, height);
 
-		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getMaterialInfo(), this->models->getLightInfo() };
-
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			width, height, nSample, buffersInfo);
-
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
-			this->renderer->getDescriptorPool(), width, height, this->traceRayRender->getStorageImages(), 
-			nSample, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }

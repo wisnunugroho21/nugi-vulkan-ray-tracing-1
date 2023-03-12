@@ -12,14 +12,13 @@
 #include <cassert>
 
 namespace nugiEngine {
-	class EngineHybridRenderer
-	{
+	class EngineDefferedRenderer {
 		public:
-			EngineHybridRenderer(EngineWindow& window, EngineDevice& device);
-			~EngineHybridRenderer();
+			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device);
+			~EngineDefferedRenderer();
 
-			EngineHybridRenderer(const EngineHybridRenderer&) = delete;
-			EngineHybridRenderer& operator = (const EngineHybridRenderer&) = delete;
+			EngineDefferedRenderer(const EngineDefferedRenderer&) = delete;
+			EngineDefferedRenderer& operator = (const EngineDefferedRenderer&) = delete;
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
