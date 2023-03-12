@@ -1,44 +1,39 @@
-#include "swapchain_sub_renderer.hpp"
+#include "forward_pass_sub_renderer.hpp"
 
 #include <assert.h>
 #include <array>
 
 namespace nugiEngine {
-  EngineSwapChainSubRenderer::EngineSwapChainSubRenderer(EngineDevice &device, std::vector<std::shared_ptr<EngineImage>> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height) 
-    : device{device}, swapChainImages{swapChainImages}, width{width}, height{height}
+  EngineForwardPassSubRenderer::EngineForwardPassSubRenderer(EngineDevice &device, int imageCount, int width, int height) 
+    : device{device}, width{width}, height{height}
   {
-    this->createColorResources(swapChainImageFormat, imageCount);
+    this->createPositionResources(imageCount);
     this->createDepthResources(imageCount);
-    this->createRenderPass(swapChainImageFormat, imageCount);
+    this->createRenderPass(imageCount);
   }
 
-  void EngineSwapChainSubRenderer::createColorResources(VkFormat swapChainImageFormat, int imageCount) {
-    VkFormat colorFormat = swapChainImageFormat;
-
-    auto msaaSamples = this->device.getMSAASamples();
-    this->colorImages.clear();
+  void EngineForwardPassSubRenderer::createPositionResources(int imageCount) {
+    this->positionImages.clear();
 
     for (int i = 0; i < imageCount; i++) {
       auto colorImage = std::make_shared<EngineImage>(
-        this->device, this->width, this->height, 1, msaaSamples, colorFormat,
-        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
       );
 
-      this->colorImages.push_back(colorImage);
+      this->positionImages.push_back(colorImage);
     }
   }
 
-  void EngineSwapChainSubRenderer::createDepthResources(int imageCount) {
+  void EngineForwardPassSubRenderer::createDepthResources(int imageCount) {
     VkFormat depthFormat = this->findDepthFormat();
-    
-    auto msaaSamples = this->device.getMSAASamples();
     this->depthImages.clear();
 
     for (int i = 0; i < imageCount; i++) {
       auto depthImage = std::make_shared<EngineImage>(
-        this->device, this->width, this->height, 1, msaaSamples, depthFormat, 
-        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, depthFormat, 
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT
       );
 
@@ -46,28 +41,30 @@ namespace nugiEngine {
     }
   }
 
-  void EngineSwapChainSubRenderer::createRenderPass(VkFormat swapChainImageFormat, int imageCount) {
+  void EngineForwardPassSubRenderer::createRenderPass(int imageCount) {
     auto msaaSamples = this->device.getMSAASamples();
 
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = swapChainImageFormat;
-    colorAttachment.samples = msaaSamples;
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentDescription positionAttachment{};
+    positionAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    positionAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    positionAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    positionAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    positionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    positionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    positionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    positionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference positionAttachmentRef = {};
+    positionAttachmentRef.attachment = 0;
+    positionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef };
 
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = this->findDepthFormat();
-    depthAttachment.samples = msaaSamples;
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -77,26 +74,11 @@ namespace nugiEngine {
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    VkAttachmentDescription colorResolveAttachment{};
-    colorResolveAttachment.format = swapChainImageFormat;
-    colorResolveAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorResolveAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorResolveAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorResolveAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorResolveAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorResolveAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorResolveAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference colorResolveAttachmentRef{};
-    colorResolveAttachmentRef.attachment = 2;
-    colorResolveAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
+    subpass.pColorAttachments = colorAttachmentRefs.data();
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
-    subpass.pResolveAttachments = &colorResolveAttachmentRef;
 
     VkSubpassDependency colorDependency{};
     colorDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -115,32 +97,30 @@ namespace nugiEngine {
     depthDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
-			.addAttachments(colorAttachment)
+			.addAttachments(positionAttachment)
 			.addAttachments(depthAttachment)
-			.addAttachments(colorResolveAttachment)
 			.addSubpass(subpass)
 			.addDependency(colorDependency)
       .addDependency(depthDependency);
 
     for (int i = 0; i < imageCount; i++) {
 			renderPassBuilder.addViewImages({
-        this->colorImages[i]->getImageView(), 
+        this->positionImages[i]->getImageView(), 
         this->depthImages[i]->getImageView(),
-        this->swapChainImages[i]->getImageView()
       });
     }
 
 		this->renderPass = renderPassBuilder.build();
   }
 
-  VkFormat EngineSwapChainSubRenderer::findDepthFormat() {
+  VkFormat EngineForwardPassSubRenderer::findDepthFormat() {
     return this->device.findSupportedFormat(
       {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
       VK_IMAGE_TILING_OPTIMAL,
       VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
   }
 
-  void EngineSwapChainSubRenderer::beginRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer, int currentImageIndex) {
+  void EngineForwardPassSubRenderer::beginRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer, int currentImageIndex) {
 		VkRenderPassBeginInfo renderBeginInfo{};
 		renderBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderBeginInfo.renderPass = this->getRenderPass()->getRenderPass();
@@ -150,8 +130,9 @@ namespace nugiEngine {
 		renderBeginInfo.renderArea.extent = { static_cast<uint32_t>(this->width), static_cast<uint32_t>(this->height) };
 
 		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {0.01f, 0.01f, 0.01f, 1.0f};
-		clearValues[1].depthStencil = {1.0f, 0};
+		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
 		renderBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderBeginInfo.pClearValues = clearValues.data();
 
@@ -170,7 +151,7 @@ namespace nugiEngine {
 		vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &scissor);
 	}
 
-	void EngineSwapChainSubRenderer::endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+	void EngineForwardPassSubRenderer::endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
 	}
   

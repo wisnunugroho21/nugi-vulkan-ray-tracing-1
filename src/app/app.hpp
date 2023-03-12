@@ -7,7 +7,9 @@
 #include "../descriptor/descriptor.hpp"
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
+#include "../renderer_sub/forward_pass_sub_renderer.hpp"
 #include "../renderer_system/forward_pass_render_system.hpp"
+#include "../renderer_system/deferred_render_system.hpp"
 
 #include <memory>
 #include <vector>
@@ -40,8 +42,10 @@ namespace nugiEngine {
 			EngineDevice device{window};
 			
 			std::unique_ptr<EngineDefferedRenderer> renderer{};
+			std::unique_ptr<EngineForwardPassSubRenderer> forwardPassSubRenderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
+			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
 
 			std::shared_ptr<EngineModel> quadModels;
 			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;

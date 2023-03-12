@@ -57,13 +57,16 @@ namespace nugiEngine {
 				this->forwardPassRenderSystem->writeUniformBuffer(frameIndex, &ubo);
 
 				auto commandBuffer = this->renderer->beginCommand();
+
+				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, frameIndex);
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);
+				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
+
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);			
-
+				this->defferedRenderSystem->render(commandBuffer, frameIndex, this->quadModels);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
-				this->renderer->endCommand(commandBuffer);	
-
+				
+				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
 				
 				if (!this->renderer->presentFrame()) {
@@ -153,13 +156,17 @@ namespace nugiEngine {
 
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
+		uint32_t imageCount = this->renderer->getSwapChain()->imageCount();
+		auto imageFormat = this->renderer->getSwapChain()->getSwapChainImageFormat();
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+		auto descriptorPool = this->renderer->getDescriptorPool();
+		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
-			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), width, height);
+		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
+		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
 		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass(), descriptorPool);
+		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, 
+			this->forwardPassSubRenderer->getPositionImages(), this->forwardPassSubRenderer->getRenderPass());
 	}
 }
