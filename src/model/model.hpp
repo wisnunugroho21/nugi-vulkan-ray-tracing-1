@@ -14,7 +14,7 @@
 namespace nugiEngine
 {
 	struct Vertex {
-		glm::vec3 position{};
+		alignas(16) glm::vec3 position{};
 
 		static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();

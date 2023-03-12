@@ -160,6 +160,6 @@ namespace nugiEngine {
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), width, height);
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass(), descriptorPool);
 	}
 }

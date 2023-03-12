@@ -15,14 +15,15 @@ namespace nugiEngine {
 	struct SimplePushConstantData {
 		glm::mat4 modelMatrix{1.0f};
 	};
-
+	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
     std::shared_ptr<EngineDescriptorPool> descriptorPool) : appDevice{device} {
 
+		this->createUniformBuffer();
+		this->createDescriptor(descriptorPool);
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
-    this->createUniformBuffer();
-    this->createDescriptor(descriptorPool);
+    
 	}
 
 	EngineForwardPassRenderSystem::~EngineForwardPassRenderSystem() {
