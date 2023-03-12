@@ -165,8 +165,8 @@ namespace nugiEngine {
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass(), descriptorPool);
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass()->getRenderPass(), descriptorPool);
 		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, 
-			this->forwardPassSubRenderer->getPositionImages(), this->forwardPassSubRenderer->getRenderPass());
+			this->forwardPassSubRenderer->getPositionImages(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }

@@ -28,11 +28,12 @@ namespace nugiEngine {
 
   void EngineForwardPassSubRenderer::createDepthResources(int imageCount) {
     VkFormat depthFormat = this->findDepthFormat();
+
     this->depthImages.clear();
 
     for (int i = 0; i < imageCount; i++) {
       auto depthImage = std::make_shared<EngineImage>(
-        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, depthFormat, 
+        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, depthFormat,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT
       );
@@ -42,8 +43,6 @@ namespace nugiEngine {
   }
 
   void EngineForwardPassSubRenderer::createRenderPass(int imageCount) {
-    auto msaaSamples = this->device.getMSAASamples();
-
     VkAttachmentDescription positionAttachment{};
     positionAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     positionAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -101,7 +100,7 @@ namespace nugiEngine {
 			.addAttachments(depthAttachment)
 			.addSubpass(subpass)
 			.addDependency(colorDependency)
-      .addDependency(depthDependency);
+            .addDependency(depthDependency);
 
     for (int i = 0; i < imageCount; i++) {
 			renderPassBuilder.addViewImages({

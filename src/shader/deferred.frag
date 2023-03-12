@@ -8,5 +8,5 @@ layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 0, rgba8) uniform image2D positionImage;
 
 void main() {
-  outColor = imageLoad(accumulateImage, ivec2(gl_FragCoord.xy));
+  outColor = imageLoad(positionImage, ivec2(gl_FragCoord.xy));
 }
