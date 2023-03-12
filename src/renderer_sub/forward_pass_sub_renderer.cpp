@@ -51,7 +51,7 @@ namespace nugiEngine {
     positionAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     positionAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     positionAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    positionAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    positionAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference positionAttachmentRef = {};
     positionAttachmentRef.attachment = 0;
