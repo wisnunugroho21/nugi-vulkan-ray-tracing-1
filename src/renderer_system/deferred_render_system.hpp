@@ -23,7 +23,7 @@ namespace nugiEngine {
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
 			EngineDeffereRenderSystem& operator = (const EngineDeffereRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects);
 		
 		private:
 			void createPipelineLayout();

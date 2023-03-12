@@ -68,7 +68,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model) {
+	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 		std::vector<VkDescriptorSet> descpSet = { *this->descriptorSets[frameIndex] };
 
@@ -83,7 +83,9 @@ namespace nugiEngine {
 			nullptr
 		);
 
-		model->bind(commandBuffer);
-		model->draw(commandBuffer);
+		for (auto &&obj : gameObjects) {
+			obj->model->bind(commandBuffer);
+			obj->model->draw(commandBuffer);
+		}
 	}
 }

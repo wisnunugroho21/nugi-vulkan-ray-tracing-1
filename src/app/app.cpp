@@ -65,7 +65,7 @@ namespace nugiEngine {
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->defferedRenderSystem->render(commandBuffer, frameIndex, this->quadModels);
+				this->defferedRenderSystem->render(commandBuffer, frameIndex, this->quadModelObjects);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 				
 				this->renderer->endCommand(commandBuffer);
@@ -150,7 +150,10 @@ namespace nugiEngine {
 			0, 1, 2, 2, 3, 0
 		};
 
-		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
+		auto quadObject = EngineGameObject::createSharedGameObject();
+		quadObject->model = std::make_shared<EngineModel>(this->device, modelData);
+
+		this->quadModelObjects.emplace_back(quadObject);
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {

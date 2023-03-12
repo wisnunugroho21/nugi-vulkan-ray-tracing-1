@@ -55,12 +55,8 @@ namespace nugiEngine {
 
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
 		multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		multisampleInfo.sampleShadingEnable = VK_TRUE;
+		multisampleInfo.sampleShadingEnable = VK_FALSE;
 		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		multisampleInfo.minSampleShading = 0.2f;
-		multisampleInfo.pSampleMask = nullptr;             // Optional
-		multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
-		multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
 
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
 			.setDefault("shader/forward_pass.vert.spv", "shader/forward_pass.frag.spv")

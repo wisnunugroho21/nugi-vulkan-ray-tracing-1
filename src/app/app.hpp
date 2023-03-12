@@ -47,7 +47,7 @@ namespace nugiEngine {
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
 			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
 
-			std::shared_ptr<EngineModel> quadModels;
+			std::vector<std::shared_ptr<EngineGameObject>> quadModelObjects;
 			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;
 
 			bool isRendering = true;
