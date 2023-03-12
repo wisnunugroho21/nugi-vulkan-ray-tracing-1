@@ -24,8 +24,7 @@ namespace nugiEngine
 		}
 	};
 
-	struct ModelData
-	{
+	struct ModelData {
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 

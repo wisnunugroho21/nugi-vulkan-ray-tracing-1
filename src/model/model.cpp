@@ -118,21 +118,24 @@ namespace nugiEngine {
 	}
 
 	std::vector<VkVertexInputBindingDescription> Vertex::getVertexBindingDescriptions() {
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-		bindingDescriptions[0].binding = 0;
-		bindingDescriptions[0].stride = sizeof(Vertex);
-		bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		VkVertexInputBindingDescription bindingDescription{};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(Vertex);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions = { bindingDescription };
 		return bindingDescriptions;
 	}
 
 	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(1);
-		attributeDescription[0].binding = 0;
-		attributeDescription[0].location = 0;
-		attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[0].offset = offsetof(Vertex, position);
+		VkVertexInputAttributeDescription attributeDescription{};
+		attributeDescription.binding = 0;
+		attributeDescription.location = 0;
+		attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescription.offset = offsetof(Vertex, position);
 
-		return attributeDescription;
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions = { attributeDescription };
+		return attributeDescriptions;
 	}
 
 	void ModelData::loadModel(const std::string &filePath) {
