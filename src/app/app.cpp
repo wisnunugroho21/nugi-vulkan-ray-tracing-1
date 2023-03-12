@@ -58,7 +58,7 @@ namespace nugiEngine {
 
 				auto commandBuffer = this->renderer->beginCommand();
 
-				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, frameIndex);
+				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
