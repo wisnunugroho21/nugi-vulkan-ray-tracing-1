@@ -30,7 +30,7 @@ namespace nugiEngine {
 
 	EngineModel::~EngineModel() {}
 
-	std::unique_ptr<EngineModel> EngineModel::createModelFromFile(EngineDevice &device, const std::string &filePath, u_int32_t materialIndex) {
+	std::unique_ptr<EngineModel> EngineModel::createModelFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
 		ModelData modelData;
 		modelData.loadModel(filePath, materialIndex);
 
@@ -142,7 +142,7 @@ namespace nugiEngine {
 		return attributeDescription;
 	}
 
-	void ModelData::loadModel(const std::string &filePath, u_int32_t materialIndex) {
+	void ModelData::loadModel(const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;

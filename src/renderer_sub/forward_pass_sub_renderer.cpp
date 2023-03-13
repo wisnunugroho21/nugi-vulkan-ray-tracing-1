@@ -8,6 +8,7 @@ namespace nugiEngine {
     : device{device}, width{width}, height{height}
   {
     this->createPositionResources(imageCount);
+    this->createAlbedoResources(imageCount);
     this->createDepthResources(imageCount);
     this->createRenderPass(imageCount);
   }
@@ -143,11 +144,11 @@ namespace nugiEngine {
 
 		EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
 			.addAttachments(positionAttachment)
-      .addAttachments(albedoAttachment)
+            .addAttachments(albedoAttachment)
 			.addAttachments(depthAttachment)
 			.addSubpass(subpass)
 			.addDependency(colorDependency)
-      .addDependency(depthDependency);
+            .addDependency(depthDependency);
 
     for (int i = 0; i < imageCount; i++) {
 			renderPassBuilder.addViewImages({
