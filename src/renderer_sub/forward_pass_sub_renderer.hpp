@@ -16,6 +16,9 @@ namespace nugiEngine {
       std::vector<std::shared_ptr<EngineImage>> getPositionResources() { return this->positionResources; }
       std::vector<std::shared_ptr<EngineImage>> getAlbedoResources() { return this->albedoResources; }
 
+      std::vector<VkDescriptorImageInfo> getPositionInfoResources();
+      std::vector<VkDescriptorImageInfo> getAlbedoInfoResources();
+
       void beginRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer, int currentImageIndex);
 			void endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 

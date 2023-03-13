@@ -14,12 +14,10 @@
 
 namespace nugiEngine {
 	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t width, uint32_t height, VkRenderPass renderPass, 
-		std::vector<std::shared_ptr<EngineImage>> positionResources, 
-		std::vector<std::shared_ptr<EngineImage>> albedoResources) 
+		uint32_t width, uint32_t height, VkRenderPass renderPass, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo) 
 		: appDevice{device}
 	{
-		this->createDescriptor(descriptorPool, positionResources, albedoResources);
+		this->createDescriptor(descriptorPool, forwardPassResourcesInfo);
 
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
@@ -50,10 +48,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		std::vector<std::shared_ptr<EngineImage>> positionResources,
-		std::vector<std::shared_ptr<EngineImage>> albedoResources) 
-	{
+	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo)  {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -62,15 +57,12 @@ namespace nugiEngine {
 				
 		this->descriptorSets.clear();
 
-		for (size_t i = 0; i < positionResources.size(); i++) {
+		for (size_t i = 0; i < forwardPassResourcesInfo.size(); i++) {
 			auto descSet = std::make_shared<VkDescriptorSet>();
 
-			auto positionResourceInfo = positionResources[i]->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL);
-			auto albedoResourceInfo = albedoResources[i]->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL);
-
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeImage(0, &positionResourceInfo)
-				.writeImage(1, &albedoResourceInfo)
+				.writeImage(0, &forwardPassResourcesInfo[i][0])
+				.writeImage(1, &forwardPassResourcesInfo[i][1])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

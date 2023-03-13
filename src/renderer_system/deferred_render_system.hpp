@@ -17,9 +17,7 @@ namespace nugiEngine {
 	class EngineDeffereRenderSystem {
 		public:
 			EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-				uint32_t width, uint32_t height, VkRenderPass renderPass, 
-				std::vector<std::shared_ptr<EngineImage>> positionResources,
-				std::vector<std::shared_ptr<EngineImage>> albedoResources);
+				uint32_t width, uint32_t height, VkRenderPass renderPass, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo);
 			~EngineDeffereRenderSystem();
 
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
@@ -31,9 +29,7 @@ namespace nugiEngine {
 			void createPipelineLayout();
 			void createPipeline(VkRenderPass renderPass);
 
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				std::vector<std::shared_ptr<EngineImage>> positionResources,
-				std::vector<std::shared_ptr<EngineImage>> albedoResources);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo);
 
 			EngineDevice& appDevice;
 			
