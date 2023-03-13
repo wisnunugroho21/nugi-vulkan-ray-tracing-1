@@ -31,8 +31,8 @@ namespace nugiEngine {
 		return object;
 	}
 
-	MaterialData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
-		MaterialData materials;
+	MaterialRayTraceData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
+		MaterialRayTraceData materials;
 		for (int i = 0; i < data.materials.size(); i++) {
 			materials.materials[i] = data.materials[i];
 		}
@@ -66,7 +66,7 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light) {
+	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh, MaterialRayTraceData &material, LightData &light) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
 			sizeof(ObjectData),
@@ -111,7 +111,7 @@ namespace nugiEngine {
 
 		EngineBuffer materialStagingBuffer {
 			this->engineDevice,
-			sizeof(MaterialData),
+			sizeof(MaterialRayTraceData),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -122,13 +122,13 @@ namespace nugiEngine {
 
 		this->materialBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(MaterialData),
+			sizeof(MaterialRayTraceData),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), sizeof(MaterialData));
+		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), sizeof(MaterialRayTraceData));
 
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,

@@ -49,6 +49,7 @@ namespace nugiEngine {
 
 			std::vector<std::shared_ptr<EngineGameObject>> quadModelObjects;
 			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;
+			std::shared_ptr<EngineMaterial> materials;
 
 			bool isRendering = true;
 	};

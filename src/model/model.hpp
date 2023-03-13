@@ -15,12 +15,13 @@ namespace nugiEngine
 {
 	struct Vertex {
 		alignas(16) glm::vec3 position{};
+		alignas(4) uint32_t materialIndex = 0;
 
 		static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
 
 		bool operator == (const Vertex &other) const {
-			return this->position == other.position;
+			return this->position == other.position && this->materialIndex == other.materialIndex;
 		}
 	};
 
@@ -28,7 +29,7 @@ namespace nugiEngine
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 
-		void loadModel(const std::string &filePath);
+		void loadModel(const std::string &filePath, u_int32_t materialIndex);
 	};
 
 	class EngineModel
@@ -40,7 +41,7 @@ namespace nugiEngine
 		EngineModel(const EngineModel&) = delete;
 		EngineModel& operator = (const EngineModel&) = delete;
 
-		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
+		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath, u_int32_t materialIndex);
 
 		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);

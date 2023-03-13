@@ -29,7 +29,7 @@ namespace nugiEngine {
     BvhNode bvhNodes[100];
 	};
 
-  struct MaterialData {
+  struct MaterialRayTraceData {
     Material materials[100];
   };
 
@@ -62,9 +62,9 @@ namespace nugiEngine {
 
 	  ObjectData createObjectData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
-    MaterialData createMaterialData(const RayTraceModelData &data);
+    MaterialRayTraceData createMaterialData(const RayTraceModelData &data);
     LightData createLightData(const RayTraceModelData &data);
 
-    void createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light);
+    void createBuffers(ObjectData &data, BvhData &bvh, MaterialRayTraceData &material, LightData &light);
 	};
 } // namespace nugiEngine

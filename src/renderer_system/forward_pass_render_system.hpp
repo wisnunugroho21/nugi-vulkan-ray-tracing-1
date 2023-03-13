@@ -9,6 +9,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../globalUbo.hpp"
+#include "../model/material.hpp"
 
 #include <memory>
 #include <vector>
@@ -16,7 +17,7 @@
 namespace nugiEngine {
 	class EngineForwardPassRenderSystem {
 		public:
-			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::shared_ptr<EngineDescriptorPool> descriptorPool);
+			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
 			~EngineForwardPassRenderSystem();
 
 			EngineForwardPassRenderSystem(const EngineForwardPassRenderSystem&) = delete;
@@ -28,9 +29,9 @@ namespace nugiEngine {
 		private:
 			void createPipelineLayout();
 			void createPipeline(VkRenderPass renderPass);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
 
       void createUniformBuffer();
-      void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool);
 
 			EngineDevice& appDevice;
       std::vector<std::shared_ptr<EngineBuffer>> uniformBuffers;

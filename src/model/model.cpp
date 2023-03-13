@@ -16,7 +16,7 @@ namespace std {
 	struct hash<nugiEngine::Vertex> {
 		size_t operator () (nugiEngine::Vertex const &vertex) const {
 			size_t seed = 0;
-			nugiEngine::hashCombine(seed, vertex.position);
+			nugiEngine::hashCombine(seed, vertex.position, vertex.materialIndex);
 			return seed;
 		}
 	};
@@ -30,9 +30,9 @@ namespace nugiEngine {
 
 	EngineModel::~EngineModel() {}
 
-	std::unique_ptr<EngineModel> EngineModel::createModelFromFile(EngineDevice &device, const std::string &filePath) {
+	std::unique_ptr<EngineModel> EngineModel::createModelFromFile(EngineDevice &device, const std::string &filePath, u_int32_t materialIndex) {
 		ModelData modelData;
-		modelData.loadModel(filePath);
+		modelData.loadModel(filePath, materialIndex);
 
 		return std::make_unique<EngineModel>(device, modelData);
 	}
@@ -128,17 +128,21 @@ namespace nugiEngine {
 	}
 
 	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		VkVertexInputAttributeDescription attributeDescription{};
-		attributeDescription.binding = 0;
-		attributeDescription.location = 0;
-		attributeDescription.format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription.offset = offsetof(Vertex, position);
+		std::vector<VkVertexInputAttributeDescription> attributeDescription(2);
+		attributeDescription[0].binding = 0;
+		attributeDescription[0].location = 0;
+		attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescription[0].offset = offsetof(Vertex, position);
 
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions = { attributeDescription };
-		return attributeDescriptions;
+		attributeDescription[1].binding = 0;
+		attributeDescription[1].location = 1;
+		attributeDescription[1].format = VK_FORMAT_R32_UINT;
+		attributeDescription[1].offset = offsetof(Vertex, materialIndex);
+
+		return attributeDescription;
 	}
 
-	void ModelData::loadModel(const std::string &filePath) {
+	void ModelData::loadModel(const std::string &filePath, u_int32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -162,6 +166,8 @@ namespace nugiEngine {
 						attrib.vertices[3 * index.vertex_index + 1],
 						attrib.vertices[3 * index.vertex_index + 2]
 					};
+
+					vertex.materialIndex = materialIndex;
 				}
 
 				if (uniqueVertices.count(vertex) == 0) {

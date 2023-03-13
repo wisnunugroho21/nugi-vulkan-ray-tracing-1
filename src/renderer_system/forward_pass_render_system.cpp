@@ -17,10 +17,10 @@ namespace nugiEngine {
 	};
 	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
-    std::shared_ptr<EngineDescriptorPool> descriptorPool) : appDevice{device} {
+    std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo) : appDevice{device} {
 
 		this->createUniformBuffer();
-		this->createDescriptor(descriptorPool);
+		this->createDescriptor(descriptorPool, buffersInfo);
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
 	}
@@ -81,20 +81,22 @@ namespace nugiEngine {
 		}
   }
 
-  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool) {
+  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 
 		this->descriptorSets.resize(this->uniformBuffers.size());
 		
 		for (int i = 0; i < this->uniformBuffers.size(); i++) {
 			this->descriptorSets[i] = std::make_shared<VkDescriptorSet>();
-			auto bufferInfo = this->uniformBuffers[i]->descriptorInfo();
+			auto uniformBufferInfo = this->uniformBuffers[i]->descriptorInfo();
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeBuffer(0, &bufferInfo)
+				.writeBuffer(0, &uniformBufferInfo)
+				.writeBuffer(1, &buffersInfo[0])
 				.build(this->descriptorSets[i].get());
 		}
   }

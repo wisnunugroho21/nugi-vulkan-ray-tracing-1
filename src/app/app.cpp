@@ -109,7 +109,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/flat_vase.obj");
+		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/flat_vase.obj", 0);
 
 		auto flatVase = EngineGameObject::createSharedGameObject();
 		flatVase->model = flatVaseModel;
@@ -118,7 +118,7 @@ namespace nugiEngine {
 
 		this->gameObjects.push_back(std::move(flatVase)); 
 
-		std::shared_ptr<EngineModel> smoothVaseModel = EngineModel::createModelFromFile(this->device, "models/smooth_vase.obj");
+		std::shared_ptr<EngineModel> smoothVaseModel = EngineModel::createModelFromFile(this->device, "models/smooth_vase.obj", 0);
 
 		auto smoothVase = EngineGameObject::createSharedGameObject();
 		smoothVase->model = smoothVaseModel;
@@ -126,6 +126,12 @@ namespace nugiEngine {
 		smoothVase->transform.scale = {3.0f, 1.5f, 3.0f};
 
 		this->gameObjects.push_back(std::move(smoothVase));
+
+		MaterialItem matItem { glm::vec3(1.0, 0.0, 0.0) };
+		MaterialData materialData{};
+		materialData.data[0] = matItem;
+
+		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -167,11 +173,14 @@ namespace nugiEngine {
 		auto descriptorPool = this->renderer->getDescriptorPool();
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
+		std::vector<VkDescriptorBufferInfo> buffersInfo = { this->materials->getMaterialInfo() };
+
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass()->getRenderPass(), descriptorPool);
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass()->getRenderPass(), descriptorPool, buffersInfo);
 		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, 
-			this->forwardPassSubRenderer->getPositionImages(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+			this->swapChainSubRenderer->getRenderPass()->getRenderPass(), this->forwardPassSubRenderer->getPositionResources(), 
+			this->forwardPassSubRenderer->getAlbedoResources());
 	}
 }

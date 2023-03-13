@@ -13,7 +13,21 @@ namespace nugiEngine {
   }
 
   void EngineForwardPassSubRenderer::createPositionResources(int imageCount) {
-    this->positionImages.clear();
+    this->positionResources.clear();
+
+    for (int i = 0; i < imageCount; i++) {
+      auto positionResource = std::make_shared<EngineImage>(
+        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+      );
+
+      this->positionResources.push_back(positionResource);
+    }
+  }
+
+  void EngineForwardPassSubRenderer::createAlbedoResources(int imageCount) {
+    this->albedoResources.clear();
 
     for (int i = 0; i < imageCount; i++) {
       auto colorImage = std::make_shared<EngineImage>(
@@ -22,7 +36,7 @@ namespace nugiEngine {
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
       );
 
-      this->positionImages.push_back(colorImage);
+      this->albedoResources.push_back(colorImage);
     }
   }
 
@@ -57,7 +71,21 @@ namespace nugiEngine {
     positionAttachmentRef.attachment = 0;
     positionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef };
+    VkAttachmentDescription albedoAttachment{};
+    albedoAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    albedoAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    albedoAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    albedoAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    albedoAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    albedoAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    albedoAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    albedoAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference albedoAttachmentRef = {};
+    albedoAttachmentRef.attachment = 1;
+    albedoAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef, albedoAttachmentRef };
 
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = this->findDepthFormat();
@@ -70,7 +98,7 @@ namespace nugiEngine {
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.attachment = 2;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass = {};
@@ -97,6 +125,7 @@ namespace nugiEngine {
 
 		EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
 			.addAttachments(positionAttachment)
+      .addAttachments(albedoAttachment)
 			.addAttachments(depthAttachment)
 			.addSubpass(subpass)
 			.addDependency(colorDependency)
@@ -104,7 +133,8 @@ namespace nugiEngine {
 
     for (int i = 0; i < imageCount; i++) {
 			renderPassBuilder.addViewImages({
-        this->positionImages[i]->getImageView(), 
+        this->positionResources[i]->getImageView(), 
+        this->albedoResources[i]->getImageView(),
         this->depthImages[i]->getImageView(),
       });
     }
@@ -125,12 +155,13 @@ namespace nugiEngine {
 		renderBeginInfo.renderPass = this->getRenderPass()->getRenderPass();
 		renderBeginInfo.framebuffer = this->getRenderPass()->getFramebuffers(currentImageIndex);
 
-		renderBeginInfo.renderArea.offset = {0, 0};
+		renderBeginInfo.renderArea.offset = { 0, 0 };
 		renderBeginInfo.renderArea.extent = { static_cast<uint32_t>(this->width), static_cast<uint32_t>(this->height) };
 
-		std::array<VkClearValue, 2> clearValues{};
+		std::array<VkClearValue, 3> clearValues{};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+    clearValues[1].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+		clearValues[2].depthStencil = { 1.0f, 0 };
 
 		renderBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderBeginInfo.pClearValues = clearValues.data();
@@ -155,7 +186,13 @@ namespace nugiEngine {
 	}
 
   void EngineForwardPassSubRenderer::transferFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex) {
-    this->positionImages[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 
+    this->positionResources[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
+      VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
+      commandBuffer);
+
+    this->albedoResources[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, 
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
       VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,

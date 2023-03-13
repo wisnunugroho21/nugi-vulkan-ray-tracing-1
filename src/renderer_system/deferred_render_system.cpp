@@ -14,10 +14,12 @@
 
 namespace nugiEngine {
 	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t width, uint32_t height, std::vector<std::shared_ptr<EngineImage>> positionImages, VkRenderPass renderPass) 
+		uint32_t width, uint32_t height, VkRenderPass renderPass, 
+		std::vector<std::shared_ptr<EngineImage>> positionResources, 
+		std::vector<std::shared_ptr<EngineImage>> albedoResources) 
 		: appDevice{device}
 	{
-		this->createDescriptor(descriptorPool, positionImages);
+		this->createDescriptor(descriptorPool, positionResources, albedoResources);
 
 		this->createPipelineLayout();
 		this->createPipeline(renderPass);
@@ -48,20 +50,27 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::shared_ptr<EngineImage>> positionImages) {
+	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+		std::vector<std::shared_ptr<EngineImage>> positionResources,
+		std::vector<std::shared_ptr<EngineImage>> albedoResources) 
+	{
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 				
 		this->descriptorSets.clear();
 
-		for (auto &&positionImage : positionImages) {
+		for (size_t i = 0; i < positionResources.size(); i++) {
 			auto descSet = std::make_shared<VkDescriptorSet>();
-			auto positionImageInfo = positionImage->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL);
+
+			auto positionResourceInfo = positionResources[i]->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL);
+			auto albedoResourceInfo = albedoResources[i]->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL);
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeImage(0, &positionImageInfo)
+				.writeImage(0, &positionResourceInfo)
+				.writeImage(1, &albedoResourceInfo)
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
