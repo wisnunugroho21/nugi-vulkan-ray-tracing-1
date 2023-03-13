@@ -18,10 +18,11 @@ namespace nugiEngine {
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		VkPipelineRasterizationStateCreateInfo rasterizationInfo{};
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
-		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo{};
 	};
 	
@@ -43,7 +44,7 @@ namespace nugiEngine {
 					Builder setInputAssemblyInfo(VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo);
 					Builder setRasterizationInfo(VkPipelineRasterizationStateCreateInfo rasterizationInfo);
 					Builder setMultisampleInfo(VkPipelineMultisampleStateCreateInfo multisampleInfo);
-					Builder setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment);
+					Builder setColorBlendAttachments(std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments);
 					Builder setColorBlendInfo(VkPipelineColorBlendStateCreateInfo colorBlendInfo);
 					Builder setDepthStencilInfo(VkPipelineDepthStencilStateCreateInfo depthStencilInfo);
 					Builder setDynamicStateInfo(VkPipelineDynamicStateCreateInfo dynamicStateInfo);

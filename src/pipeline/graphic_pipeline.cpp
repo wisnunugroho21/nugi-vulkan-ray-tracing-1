@@ -39,21 +39,23 @@ namespace nugiEngine {
 		this->configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
 		this->configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
 		
-		this->configInfo.colorBlendAttachment.colorWriteMask =
-			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		this->configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
-		this->configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-		this->configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-		this->configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-		this->configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-		this->configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-		this->configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
+		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+		colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachment.blendEnable = VK_FALSE;
+		colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+		colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+		colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
+		colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+		colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+		colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
+
+		this->configInfo.colorBlendAttachments = { colorBlendAttachment };
 		
 		this->configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		this->configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
 		this->configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
-		this->configInfo.colorBlendInfo.attachmentCount = 1;
-		this->configInfo.colorBlendInfo.pAttachments = &this->configInfo.colorBlendAttachment;
+		this->configInfo.colorBlendInfo.attachmentCount = static_cast<uint32_t>(this->configInfo.colorBlendAttachments.size());
+		this->configInfo.colorBlendInfo.pAttachments = this->configInfo.colorBlendAttachments.data();
 		this->configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
 		this->configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
 		this->configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
@@ -143,8 +145,8 @@ namespace nugiEngine {
 		return *this;
 	}
 
-	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment) {
-		this->configInfo.colorBlendAttachment = colorBlendAttachment;
+	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setColorBlendAttachments(std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments) {
+		this->configInfo.colorBlendAttachments = colorBlendAttachments;
 		return *this;
 	}
 

@@ -58,8 +58,26 @@ namespace nugiEngine {
 		multisampleInfo.sampleShadingEnable = VK_FALSE;
 		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
+		VkPipelineColorBlendAttachmentState positionBlendAttachment{};
+		positionBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		positionBlendAttachment.blendEnable = VK_FALSE;
+
+		VkPipelineColorBlendAttachmentState albedoBlendAttachment{};
+		albedoBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		albedoBlendAttachment.blendEnable = VK_FALSE;
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { positionBlendAttachment, albedoBlendAttachment };
+
+		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
+		colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		colorBlendInfo.logicOpEnable = VK_FALSE;
+		colorBlendInfo.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
+		colorBlendInfo.pAttachments = colorBlendAttachments.data();
+
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
 			.setDefault("shader/forward_pass.vert.spv", "shader/forward_pass.frag.spv")
+			.setColorBlendAttachments(colorBlendAttachments)
+			.setColorBlendInfo(colorBlendInfo)
 			.setMultisampleInfo(multisampleInfo)
 			.build();
 	}
