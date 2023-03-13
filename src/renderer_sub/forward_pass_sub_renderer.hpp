@@ -23,6 +23,7 @@ namespace nugiEngine {
 			void endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 
       void transferFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);
+      void finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex);
       
     private:
       int width, height;

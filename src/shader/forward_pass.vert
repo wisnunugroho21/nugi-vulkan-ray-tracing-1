@@ -3,7 +3,8 @@
 layout(location = 0) in vec3 position;
 layout(location = 1) in uint materialIndex;
 
-layout(location = 0) out vec3 fragColor;
+layout(location = 0) out vec4 positionFrag;
+layout(location = 1) out vec4 albedoFrag;
 
 struct Material {
   vec3 color;
@@ -24,8 +25,9 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
-	gl_Position = ubo.projection * ubo.view * positionWorld;
+	vec4 position = ubo.projection * ubo.view * push.modelMatrix * vec4(position, 1.0);
+	gl_Position = position;
 
-	fragColor = materials[materialIndex].color;
+	positionFrag = position;
+	albedoFrag = vec4(materials[materialIndex].color, 1.0);
 }

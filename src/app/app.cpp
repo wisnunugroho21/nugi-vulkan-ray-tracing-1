@@ -67,6 +67,8 @@ namespace nugiEngine {
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->defferedRenderSystem->render(commandBuffer, frameIndex, this->quadModelObjects);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
+
+				this->forwardPassSubRenderer->finishFrame(commandBuffer, imageIndex);
 				
 				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
