@@ -57,12 +57,12 @@ namespace nugiEngine {
 				
 		this->descriptorSets.clear();
 
-		for (size_t i = 0; i < forwardPassResourcesInfo.size(); i++) {
+		for (size_t i = 0; i < forwardPassResourcesInfo[0].size(); i++) {
 			auto descSet = std::make_shared<VkDescriptorSet>();
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeImage(0, &forwardPassResourcesInfo[i][0])
-				.writeImage(1, &forwardPassResourcesInfo[i][1])
+				.writeImage(0, &forwardPassResourcesInfo[0][i])
+				.writeImage(1, &forwardPassResourcesInfo[1][i])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
