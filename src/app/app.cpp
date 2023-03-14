@@ -33,7 +33,6 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		auto viewObject = EngineGameObject::createGameObject();
-		viewObject.transform.translation.z = -2.5f;
 
 		EngineCamera camera{};
 		EngineMouseController mouseController{};
@@ -42,8 +41,9 @@ namespace nugiEngine {
 		while (this->isRendering) {
 			auto aspect = this->renderer->getSwapChain()->extentAspectRatio();
 
-			camera.setViewYXZ(viewObject.transform.translation, viewObject.transform.rotation);
-			camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1f, 10.0f);
+			// camera.setViewYXZ(viewObject.transform.translation, viewObject.transform.rotation);
+			camera.setViewDirection({ 0.0, 1.0, 6.0 }, { 0.0, 0.0, -1.0 });
+			camera.setPerspectiveProjection(glm::radians(30.0f), aspect, 0.1f, 500.0f);
 
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
@@ -109,23 +109,15 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/flat_vase.obj", 0);
+		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
 
 		auto flatVase = EngineGameObject::createSharedGameObject();
 		flatVase->model = flatVaseModel;
-		flatVase->transform.translation = {-0.5f, 0.5f, 0.0f};
-		flatVase->transform.scale = {3.0f, 1.5f, 3.0f};
+		flatVase->transform.translation = {0.0f, 0.0f, 0.0f};
+		flatVase->transform.scale = {1.0f, 1.0f, 1.0f};
+		flatVase->transform.rotation = {0.0f, 0.0f, 0.0f};
 
-		this->gameObjects.push_back(std::move(flatVase)); 
-
-		std::shared_ptr<EngineModel> smoothVaseModel = EngineModel::createModelFromFile(this->device, "models/smooth_vase.obj", 0);
-
-		auto smoothVase = EngineGameObject::createSharedGameObject();
-		smoothVase->model = smoothVaseModel;
-		smoothVase->transform.translation = {0.5f, 0.5f, 0.0f};
-		smoothVase->transform.scale = {3.0f, 1.5f, 3.0f};
-
-		this->gameObjects.push_back(std::move(smoothVase));
+		this->gameObjects.push_back(std::move(flatVase));
 
 		MaterialItem matItem { glm::vec3(1.0, 0.0, 0.0) };
 		MaterialData materialData{};
