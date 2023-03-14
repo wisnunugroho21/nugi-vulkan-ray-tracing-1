@@ -2,7 +2,7 @@
 
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
-layout(location = 1) in uint materialIndex;
+layout(location = 2) in uint materialIndex;
 
 layout(location = 0) out vec4 albedoFrag;
 layout(location = 1) out vec4 normalFrag;
@@ -32,5 +32,5 @@ void main() {
 	gl_Position = position;
 
 	albedoFrag = vec4(materials[materialIndex].color, 1.0);
-	normalFrag = normalize(mat3(push.normalMatrix) * normal);
+	normalFrag = normalize(push.normalMatrix * vec4(normal, 1.0));
 }

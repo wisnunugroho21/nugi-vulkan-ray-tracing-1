@@ -87,7 +87,7 @@ namespace nugiEngine {
     albedoAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference albedoAttachmentRef = {};
-    albedoAttachmentRef.attachment = 1;
+    albedoAttachmentRef.attachment = 0;
     albedoAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkAttachmentDescription normalAttachment{};
@@ -101,7 +101,7 @@ namespace nugiEngine {
     normalAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference normalAttachmentRef = {};
-    normalAttachmentRef.attachment = 0;
+    normalAttachmentRef.attachment = 1;
     normalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     std::vector<VkAttachmentReference> colorAttachmentRefs = { albedoAttachmentRef, normalAttachmentRef };
