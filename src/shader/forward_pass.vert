@@ -7,7 +7,6 @@ layout(location = 2) in uint materialIndex;
 layout(location = 0) out vec4 albedoFrag;
 layout(location = 1) out vec4 normalFrag;
 
-
 struct Material {
   vec3 color;
 };

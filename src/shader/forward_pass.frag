@@ -26,5 +26,5 @@ layout(push_constant) uniform Push {
 
 void main() {
   albedoResource = albedoFrag;
-  normalResource = normalFrag
+  normalResource = normalFrag;
 }
