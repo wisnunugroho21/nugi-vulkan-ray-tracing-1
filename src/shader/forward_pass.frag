@@ -1,10 +1,10 @@
 #version 450
 
-layout(location = 0) in vec4 positionFrag;
-layout(location = 1) in vec4 albedoFrag;
+layout(location = 0) in vec4 albedoFrag;
+layout(location = 1) in vec4 normalFrag;
 
-layout(location = 0) out vec4 positionResource;
-layout(location = 1) out vec4 albedoResource;
+layout(location = 0) out vec4 albedoResource;
+layout(location = 1) out vec4 normalResource;
 
 struct Material {
   vec3 albedo;
@@ -25,6 +25,6 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-  positionResource = positionFrag;
   albedoResource = albedoFrag;
+  normalResource = normalFrag
 }

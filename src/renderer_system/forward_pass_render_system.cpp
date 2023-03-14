@@ -14,6 +14,7 @@
 namespace nugiEngine {
 	struct SimplePushConstantData {
 		glm::mat4 modelMatrix{1.0f};
+		glm::mat4 normalMatrix{1.0f};
 	};
 	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
@@ -58,15 +59,15 @@ namespace nugiEngine {
 		multisampleInfo.sampleShadingEnable = VK_FALSE;
 		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-		VkPipelineColorBlendAttachmentState positionBlendAttachment{};
-		positionBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		positionBlendAttachment.blendEnable = VK_FALSE;
-
 		VkPipelineColorBlendAttachmentState albedoBlendAttachment{};
 		albedoBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		albedoBlendAttachment.blendEnable = VK_FALSE;
 
-		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { positionBlendAttachment, albedoBlendAttachment };
+		VkPipelineColorBlendAttachmentState normalBlendAttachment{};
+		normalBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		normalBlendAttachment.blendEnable = VK_FALSE;
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { albedoBlendAttachment, normalBlendAttachment };
 
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -142,6 +143,7 @@ namespace nugiEngine {
 		for (auto& obj : gameObjects) {
 			SimplePushConstantData pushConstant{};
 			pushConstant.modelMatrix = obj->transform.mat4();
+			pushConstant.normalMatrix = obj->transform.normalMatrix();
 
 			vkCmdPushConstants(
 				commandBuffer->getCommandBuffer(), 

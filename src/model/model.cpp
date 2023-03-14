@@ -128,7 +128,8 @@ namespace nugiEngine {
 	}
 
 	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(2);
+		std::vector<VkVertexInputAttributeDescription> attributeDescription(3);
+
 		attributeDescription[0].binding = 0;
 		attributeDescription[0].location = 0;
 		attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -136,8 +137,13 @@ namespace nugiEngine {
 
 		attributeDescription[1].binding = 0;
 		attributeDescription[1].location = 1;
-		attributeDescription[1].format = VK_FORMAT_R32_UINT;
-		attributeDescription[1].offset = offsetof(Vertex, materialIndex);
+		attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescription[1].offset = offsetof(Vertex, normal);
+
+		attributeDescription[2].binding = 0;
+		attributeDescription[2].location = 2;
+		attributeDescription[2].format = VK_FORMAT_R32_UINT;
+		attributeDescription[2].offset = offsetof(Vertex, materialIndex);
 
 		return attributeDescription;
 	}
@@ -166,14 +172,22 @@ namespace nugiEngine {
 						attrib.vertices[3 * index.vertex_index + 1],
 						attrib.vertices[3 * index.vertex_index + 2]
 					};
+				}
 
-					vertex.materialIndex = materialIndex;
+				if (index.normal_index >= 0) {
+					vertex.normal = {
+						attrib.normals[3 * index.normal_index + 0],
+						attrib.normals[3 * index.normal_index + 1],
+						attrib.normals[3 * index.normal_index + 2]
+					};
 				}
 
 				if (uniqueVertices.count(vertex) == 0) {
 					uniqueVertices[vertex] = static_cast<uint32_t>(this->vertices.size());
 					this->vertices.push_back(vertex);
 				}
+
+				vertex.materialIndex = materialIndex;
 
 				this->indices.push_back(uniqueVertices[vertex]);
 			}

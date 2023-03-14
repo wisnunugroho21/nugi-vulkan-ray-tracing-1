@@ -178,7 +178,7 @@ namespace nugiEngine {
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
-		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { this->forwardPassSubRenderer->getPositionInfoResources(), this->forwardPassSubRenderer->getAlbedoInfoResources() };
+		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { this->forwardPassSubRenderer->getAlbedoInfoResources(), this->forwardPassSubRenderer->getNormalInfoResources() };
 
 		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass()->getRenderPass(), descriptorPool, buffersInfo);
 		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, 
