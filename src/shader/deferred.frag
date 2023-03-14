@@ -9,5 +9,5 @@ layout(set = 0, binding = 0, rgba8) uniform image2D albedoResource;
 layout(set = 0, binding = 1, rgba8) uniform image2D normalResource;
 
 void main() {
-  outColor = imageLoad(albedoResource, ivec2(gl_FragCoord.xy));
+  outColor = imageLoad(normalResource, ivec2(gl_FragCoord.xy));
 }
