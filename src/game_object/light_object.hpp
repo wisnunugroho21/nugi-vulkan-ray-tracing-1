@@ -24,11 +24,13 @@ namespace nugiEngine {
 
 			id_t getId() { return this->objectId; }
 
-			TransformComponent transform{};
-			std::shared_ptr<EngineModel> model{};
+			glm::vec3 position{};
+			float radius;
+
+			glm::vec3 color{};
+			float intensity;
 
 		private:
 			id_t objectId;
 	};
-	
 }

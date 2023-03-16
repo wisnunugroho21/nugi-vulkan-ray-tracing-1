@@ -8,6 +8,7 @@
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
 #include "../renderer_sub/forward_pass_sub_renderer.hpp"
+#include "../renderer_system/forward_light_render_system.hpp"
 #include "../renderer_system/forward_pass_render_system.hpp"
 #include "../renderer_system/deferred_render_system.hpp"
 
@@ -45,10 +46,12 @@ namespace nugiEngine {
 			std::unique_ptr<EngineForwardPassSubRenderer> forwardPassSubRenderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
+			std::unique_ptr<EngineForwardLightRenderSystem> forwardLightRenderSystem{};
 			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
 
 			std::vector<std::shared_ptr<EngineGameObject>> quadModelObjects;
 			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;
+			std::vector<std::shared_ptr<EngineLightObject>> lightObjects;
 			std::shared_ptr<EngineMaterial> materials;
 
 			bool isRendering = true;

@@ -12,6 +12,10 @@ namespace nugiEngine {
 
 		this->commandBuffers = EngineCommandBuffer::createCommandBuffers(device, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 		this->createDescriptorPool(this->swapChain->imageCount());
+
+		this->createGlobalBuffer();
+		this->createLightBuffer();
+		this->createDescriptor();
 	}
 
 	EngineDefferedRenderer::~EngineDefferedRenderer() {
@@ -46,13 +50,11 @@ namespace nugiEngine {
 	}
 
 	void EngineDefferedRenderer::createDescriptorPool(uint32_t imageCount) {
-		uint32_t nSample = 8;
-
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
-				.setMaxSets(imageCount * nSample + imageCount)
-				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageCount * nSample + imageCount * 2)
-				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * imageCount * nSample)
+				.setMaxSets(2)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 50)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100)
 				.build();
 	}
 
@@ -94,6 +96,74 @@ namespace nugiEngine {
 
 		this->isFrameStarted = true;
 		return true;
+	}
+
+	void EngineDefferedRenderer::createGlobalBuffer() {
+		this->globalBuffers.clear();
+
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			auto globalBuffer = std::make_shared<EngineBuffer>(
+				this->appDevice,
+				sizeof(GlobalUBO),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+
+			globalBuffer->map();
+			this->globalBuffers.emplace_back(globalBuffer);
+		}
+	}
+
+	void EngineDefferedRenderer::createLightBuffer() {
+		this->lightBuffers.clear();
+
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			auto lightBuffer = std::make_shared<EngineBuffer>(
+				this->appDevice,
+				sizeof(GlobalLight),
+				1,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+			);
+
+			lightBuffer->map();
+			this->lightBuffers.emplace_back(lightBuffer);
+		}
+	}
+
+	void EngineDefferedRenderer::createDescriptor() {
+		this->globalDescSetLayout = 
+			EngineDescriptorSetLayout::Builder(this->appDevice)
+				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.build();
+
+		this->globalDescriptorSets.clear();
+
+		for (uint32_t i = 0; i < this->globalBuffers.size(); i++) {
+			auto descSet = std::make_shared<VkDescriptorSet>();
+
+			auto globalBufferInfo =  this->globalBuffers[i]->descriptorInfo();
+			auto lightBufferInfo =  this->lightBuffers[i]->descriptorInfo();
+
+			EngineDescriptorWriter(*this->globalDescSetLayout, *this->descriptorPool)
+				.writeBuffer(0, &globalBufferInfo)
+				.writeBuffer(1, &lightBufferInfo) 
+				.build(descSet.get());
+
+			this->globalDescriptorSets.emplace_back(descSet);
+		}
+	}
+
+	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, GlobalUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+		this->globalBuffers[frameIndex]->writeToBuffer(data, size, offset);
+		this->globalBuffers[frameIndex]->flush(size, offset);
+	}
+
+	void EngineDefferedRenderer::writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+		this->lightBuffers[frameIndex]->writeToBuffer(data, size, offset);
+		this->lightBuffers[frameIndex]->flush(size, offset);
 	}
 
 	std::shared_ptr<EngineCommandBuffer> EngineDefferedRenderer::beginCommand() {

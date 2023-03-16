@@ -17,24 +17,22 @@
 namespace nugiEngine {
 	class EngineForwardPassRenderSystem {
 		public:
-			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
+			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+				VkDescriptorSetLayout globalDescSetLayout, std::vector<VkDescriptorBufferInfo> modelBuffersInfo);
 			~EngineForwardPassRenderSystem();
 
 			EngineForwardPassRenderSystem(const EngineForwardPassRenderSystem&) = delete;
 			EngineForwardPassRenderSystem& operator = (const EngineForwardPassRenderSystem&) = delete;
 
-			void writeUniformBuffer(int frameIndex, GlobalUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects);
+      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+				VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects);
 
 		private:
-			void createPipelineLayout();
+			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);
 			void createPipeline(VkRenderPass renderPass);
 			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo);
 
-      void createUniformBuffer();
-
 			EngineDevice& appDevice;
-      std::vector<std::shared_ptr<EngineBuffer>> uniformBuffers;
 
       std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
       std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;

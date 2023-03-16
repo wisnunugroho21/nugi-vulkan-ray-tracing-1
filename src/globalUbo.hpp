@@ -8,8 +8,9 @@
 namespace nugiEngine {
   #define MAX_LIGHTS 10
 
-  struct pointLight {
+  struct PointLight {
     glm::vec4 position{};
+    float radius = 0;
     glm::vec4 color{};
   };
 
@@ -20,8 +21,7 @@ namespace nugiEngine {
   };
 
   struct GlobalLight {
-    glm::vec4 ambientLightColor{1.0f, 1.0f, 1.0f, 0.02f};
-    pointLight pointLights[MAX_LIGHTS];
-    int numLights;
+    PointLight pointLights[10];
+    uint32_t numLight = 0;
   };
 }

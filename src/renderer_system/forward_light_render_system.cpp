@@ -1,4 +1,4 @@
-#include "forward_pass_render_system.hpp"
+#include "forward_light_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
 
@@ -12,32 +12,30 @@
 #include <string>
 
 namespace nugiEngine {
-	struct SimplePushConstantData {
-		glm::mat4 modelMatrix{1.0f};
-		glm::mat4 normalMatrix{1.0f};
+	struct PointLightPushConstant {
+		glm::vec4 position{};
+		glm::vec4 color{};
+		float radius;
 	};
 	 
-	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
-    std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorSetLayout globalDescSetLayout, 
-		std::vector<VkDescriptorBufferInfo> modelBuffersInfo) 
-		: appDevice{device} 
+	EngineForwardLightRenderSystem::EngineForwardLightRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
+    VkDescriptorSetLayout globalDescSetLayout) : appDevice{device} 
 	{
-		this->createDescriptor(descriptorPool, modelBuffersInfo);
 		this->createPipelineLayout(globalDescSetLayout);
 		this->createPipeline(renderPass);
 	}
 
-	EngineForwardPassRenderSystem::~EngineForwardPassRenderSystem() {
+	EngineForwardLightRenderSystem::~EngineForwardLightRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineForwardPassRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
+	void EngineForwardLightRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(SimplePushConstantData);
+		pushConstantRange.size = sizeof(PointLightPushConstant);
 
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout, this->descSetLayout->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout };
     std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -52,7 +50,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineForwardPassRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void EngineForwardLightRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
@@ -72,7 +70,7 @@ namespace nugiEngine {
 		normalBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		normalBlendAttachment.blendEnable = VK_FALSE;
 
-		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { positionBlendAttachment, albedoBlendAttachment, normalBlendAttachment };
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { albedoBlendAttachment, normalBlendAttachment };
 
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -81,33 +79,35 @@ namespace nugiEngine {
 		colorBlendInfo.pAttachments = colorBlendAttachments.data();
 
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
-			.setDefault("shader/forward_pass.vert.spv", "shader/forward_pass.frag.spv")
+			.setDefault("shader/forward_light.vert.spv", "shader/forward_light.frag.spv")
+			.setBindingDescriptions({})
+			.setAttributeDescriptions({})
 			.setColorBlendAttachments(colorBlendAttachments)
 			.setColorBlendInfo(colorBlendInfo)
 			.setMultisampleInfo(multisampleInfo)
 			.build();
 	}
 
-  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo) {
-		this->descSetLayout = 
-			EngineDescriptorSetLayout::Builder(this->appDevice)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-				.build();
-		
-		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			this->descriptorSets[i] = std::make_shared<VkDescriptorSet>();
+	void EngineForwardLightRenderSystem::update(std::vector<std::shared_ptr<EngineLightObject>> &pointLightObjects, GlobalLight &globalLight) {
+		int lightIndex = 0;
 
-			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeBuffer(1, &buffersInfo[0])
-				.build(this->descriptorSets[i].get());
+		for (auto& plo : pointLightObjects) {
+			// copy light to ubo
+			globalLight.pointLights[lightIndex].position = glm::vec4{ plo->position, 1.0f };
+			globalLight.pointLights[lightIndex].color = glm::vec4{ plo->color, plo->intensity };
+			globalLight.pointLights[lightIndex].radius = plo->radius;
+
+			lightIndex++;
 		}
-  }
 
-	void EngineForwardPassRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) 
+		globalLight.numLight = lightIndex;
+	}
+
+	void EngineForwardLightRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineLightObject>> &pointLights) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-    std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };
+    std::vector<VkDescriptorSet> descSets = { globalDescSet };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),
@@ -120,22 +120,22 @@ namespace nugiEngine {
 			nullptr
 		);
 
-		for (auto& obj : gameObjects) {
-			SimplePushConstantData pushConstant{};
-			pushConstant.modelMatrix = obj->transform.mat4();
-			pushConstant.normalMatrix = obj->transform.normalMatrix();
+		for (auto& pl : pointLights) {
+			PointLightPushConstant pushConstant{};
+			pushConstant.position = glm::vec4{ pl->position, 1.0f };
+			pushConstant.color = glm::vec4{ pl->color, pl->intensity };
+			pushConstant.radius = pl->radius;
 
 			vkCmdPushConstants(
 				commandBuffer->getCommandBuffer(), 
 				pipelineLayout, 
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 				0,
-				sizeof(SimplePushConstantData),
+				sizeof(PointLightPushConstant),
 				&pushConstant
 			);
 
-			obj->model->bind(commandBuffer);
-			obj->model->draw(commandBuffer);
+			vkCmdDraw(commandBuffer->getCommandBuffer(), 6, 1, 0, 0);
 		}
 	}
 }

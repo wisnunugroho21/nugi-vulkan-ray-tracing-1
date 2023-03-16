@@ -13,9 +13,11 @@ namespace nugiEngine {
       EngineForwardPassSubRenderer(EngineDevice &device, int imageCount, int width, int height);
       std::shared_ptr<EngineRenderPass> getRenderPass() const { return this->renderPass; }
 
+      std::vector<std::shared_ptr<EngineImage>> getPositionResources() { return this->positionResources; }
       std::vector<std::shared_ptr<EngineImage>> getAlbedoResources() { return this->albedoResources; }
       std::vector<std::shared_ptr<EngineImage>> getNormalResources() { return this->normalResources; }
       
+      std::vector<VkDescriptorImageInfo> getPositionInfoResources();
       std::vector<VkDescriptorImageInfo> getAlbedoInfoResources();
       std::vector<VkDescriptorImageInfo> getNormalInfoResources();
 
@@ -28,6 +30,7 @@ namespace nugiEngine {
       int width, height;
       EngineDevice &device;
 
+      std::vector<std::shared_ptr<EngineImage>> positionResources;
       std::vector<std::shared_ptr<EngineImage>> albedoResources;
       std::vector<std::shared_ptr<EngineImage>> normalResources;
       std::vector<std::shared_ptr<EngineImage>> depthImages;
@@ -36,9 +39,11 @@ namespace nugiEngine {
 
       VkFormat findDepthFormat();
       
+      void createPositionResources(int imageCount);
       void createAlbedoResources(int imageCount);
       void createNormalResources(int imageCount);
       void createDepthResources(int imageCount);
+      
       void createRenderPass(int imageCount);
   };
   

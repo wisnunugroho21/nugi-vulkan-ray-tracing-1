@@ -53,13 +53,18 @@ namespace nugiEngine {
 				ubo.projection = camera.getProjectionMatrix();
 				ubo.view = camera.getViewMatrix();
 				ubo.inverseView = camera.getInverseViewMatrix();
+				this->renderer->writeGlobalBuffer(frameIndex, &ubo);
 
-				this->forwardPassRenderSystem->writeUniformBuffer(frameIndex, &ubo);
+				GlobalLight lightUbo{};
+				this->forwardLightRenderSystem->update(this->lightObjects, lightUbo);
+				this->renderer->writeLightBuffer(frameIndex, &lightUbo);
 
+				auto globalDescSet = *this->renderer->getGlobalDescriptorSets(frameIndex);
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, this->gameObjects);
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObjects);
+				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObjects);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
@@ -109,15 +114,15 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		std::shared_ptr<EngineModel> flatVaseModel = EngineModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
+		std::shared_ptr<EngineModel> roomModel = EngineModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
 
-		auto flatVase = EngineGameObject::createSharedGameObject();
-		flatVase->model = flatVaseModel;
-		flatVase->transform.translation = {0.0f, 0.0f, 0.0f};
-		flatVase->transform.scale = {1.0f, 1.0f, 1.0f};
-		flatVase->transform.rotation = {0.0f, 0.0f, 0.0f};
+		auto roomObject = EngineGameObject::createSharedGameObject();
+		roomObject->model = roomModel;
+		roomObject->transform.translation = {0.0f, 0.0f, 0.0f};
+		roomObject->transform.scale = {1.0f, 1.0f, 1.0f};
+		roomObject->transform.rotation = {0.0f, 0.0f, 0.0f};
 
-		this->gameObjects.push_back(std::move(flatVase));
+		this->gameObjects.push_back(std::move(roomObject));
 
 		MaterialItem matItem { glm::vec3(1.0, 0.0, 0.0) };
 		MaterialData materialData{};
@@ -163,17 +168,25 @@ namespace nugiEngine {
 		auto imageFormat = this->renderer->getSwapChain()->getSwapChainImageFormat();
 
 		auto descriptorPool = this->renderer->getDescriptorPool();
+		auto globalDescLayout = this->renderer->getGlobalDescSetLayout();
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+
+		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
+		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();
 
 		std::vector<VkDescriptorBufferInfo> buffersInfo = { this->materials->getMaterialInfo() };
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
-		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { this->forwardPassSubRenderer->getAlbedoInfoResources(), this->forwardPassSubRenderer->getNormalInfoResources() };
+		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { 
+			this->forwardPassSubRenderer->getPositionInfoResources(), 
+			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
+			this->forwardPassSubRenderer->getNormalInfoResources() 
+		};
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass()->getRenderPass(), descriptorPool, buffersInfo);
-		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, 
-			this->swapChainSubRenderer->getRenderPass()->getRenderPass(), forwardPassResourcesInfo);
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout, buffersInfo);
+		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout);
+		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, swapChainRenderPass, forwardPassResourcesInfo);
 	}
 }

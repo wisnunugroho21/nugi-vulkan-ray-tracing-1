@@ -53,6 +53,7 @@ namespace nugiEngine {
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 				
 		this->descriptorSets.clear();
@@ -63,6 +64,7 @@ namespace nugiEngine {
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, &forwardPassResourcesInfo[0][i])
 				.writeImage(1, &forwardPassResourcesInfo[1][i])
+				.writeImage(2, &forwardPassResourcesInfo[2][i])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
