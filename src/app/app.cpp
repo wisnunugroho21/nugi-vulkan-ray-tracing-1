@@ -122,11 +122,19 @@ namespace nugiEngine {
 		roomObject->transform.scale = {1.0f, 1.0f, 1.0f};
 		roomObject->transform.rotation = {0.0f, 0.0f, 0.0f};
 
-		this->gameObjects.push_back(std::move(roomObject));
+		this->gameObjects.emplace_back(std::move(roomObject));
 
 		MaterialItem matItem { glm::vec3(1.0, 0.0, 0.0) };
 		MaterialData materialData{};
 		materialData.data[0] = matItem;
+
+		auto pointLight = EngineLightObject::createSharedLightObject();
+		pointLight->color = glm::vec3(1.0f);
+		pointLight->intensity = 1.0f;
+		pointLight->position = glm::vec3(0.0f, 1.9f, 0.0f);
+		pointLight->radius = 1.0f;
+
+		this->lightObjects.emplace_back(std::move(pointLight));
 
 		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
 	}
