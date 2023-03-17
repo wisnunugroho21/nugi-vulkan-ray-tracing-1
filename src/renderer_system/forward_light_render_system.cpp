@@ -13,9 +13,9 @@
 
 namespace nugiEngine {
 	struct PointLightPushConstant {
-		glm::vec4 position{};
-		glm::vec4 color{};
-		float radius;
+		alignas(16) glm::vec4 position{};
+		alignas(4) float radius;
+		alignas(16) glm::vec4 color{};		
 	};
 	 
 	EngineForwardLightRenderSystem::EngineForwardLightRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
