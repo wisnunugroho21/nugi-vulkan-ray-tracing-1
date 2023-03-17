@@ -5,9 +5,11 @@
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
 
-layout(set = 0, binding = 0, rgba32) uniform writeonly image2D positionResource;
-layout(set = 0, binding = 1, rgba32) uniform writeonly image2D albedoResource;
-layout(set = 0, binding = 2, rgba32) uniform writeonly image2D normalResource;
+struct PointLight {
+	vec4 position;
+  float radius;
+  vec4 color;
+};
 
 layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 	mat4 projection;
@@ -20,19 +22,23 @@ layout(set = 0, binding = 1) uniform readonly GlobalLight {
 	uint numLight;
 } globalLight;
 
+layout(set = 1, binding = 0, rgba8) uniform readonly image2D positionResource;
+layout(set = 1, binding = 1, rgba8) uniform readonly image2D albedoResource;
+layout(set = 1, binding = 2, rgba8) uniform readonly image2D normalResource;
+
 void main() {
   vec3 fragPosWorld = imageLoad(positionResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragColor = imageLoad(albedoResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragNormalWorld = imageLoad(normalResource, ivec2(gl_FragCoord.xy)).xyz;
 
-  vec3 diffuseLight = vec4(0.0);
+  vec3 diffuseLight = vec3(0.0);
   vec3 specularLight = vec3(0.0);
 
   vec3 surfaceNormal = normalize(fragNormalWorld);
   vec3 cameraPosWorld = ubo.inverseView[3].xyz;
   vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
 
-  for (int i = 0; i < globalLight.numLights; i++) {
+  for (int i = 0; i < globalLight.numLight; i++) {
     PointLight light = globalLight.pointLights[i];
 
     vec3 directionToLight = light.position.xyz - fragPosWorld;
@@ -51,5 +57,5 @@ void main() {
     specularLight += intensity * blinnTerm;
   }
 
-  outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
+  outColor = vec4(fragColor, 1.0);
 }

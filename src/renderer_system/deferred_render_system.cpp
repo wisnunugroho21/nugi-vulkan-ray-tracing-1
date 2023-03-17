@@ -14,12 +14,12 @@
 
 namespace nugiEngine {
 	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t width, uint32_t height, VkRenderPass renderPass, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo) 
+		uint32_t width, uint32_t height, VkRenderPass renderPass, VkDescriptorSetLayout globalDescSetLayout, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo)
 		: appDevice{device}
 	{
 		this->createDescriptor(descriptorPool, forwardPassResourcesInfo);
 
-		this->createPipelineLayout();
+		this->createPipelineLayout(globalDescSetLayout);
 		this->createPipeline(renderPass);
 	}
 
@@ -27,8 +27,8 @@ namespace nugiEngine {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineDeffereRenderSystem::createPipelineLayout() {
-		std::vector<VkDescriptorSetLayout> descSetLayouts = { this->descSetLayout->getDescriptorSetLayout() };
+	void EngineDeffereRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
+		std::vector<VkDescriptorSetLayout> descSetLayouts = { globalDescSetLayout, this->descSetLayout->getDescriptorSetLayout() };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -71,9 +71,11 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) {
+	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+		VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) 
+	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-		std::vector<VkDescriptorSet> descpSet = { *this->descriptorSets[frameIndex] };
+		std::vector<VkDescriptorSet> descpSet = { globalDescSet, *this->descriptorSets[frameIndex] };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

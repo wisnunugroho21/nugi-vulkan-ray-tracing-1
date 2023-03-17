@@ -70,7 +70,7 @@ namespace nugiEngine {
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->defferedRenderSystem->render(commandBuffer, imageIndex, this->quadModelObjects);
+				this->defferedRenderSystem->render(commandBuffer, imageIndex, globalDescSet, this->quadModelObjects);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);				
 								
 				this->renderer->endCommand(commandBuffer);
@@ -131,8 +131,8 @@ namespace nugiEngine {
 		auto pointLight = EngineLightObject::createSharedLightObject();
 		pointLight->color = glm::vec3(1.0f);
 		pointLight->intensity = 1.0f;
-		pointLight->position = glm::vec3(0.0f, 1.9f, 0.0f);
-		pointLight->radius = 1.0f;
+		pointLight->position = glm::vec3(0.0f, 1.0f, 0.0f);
+		pointLight->radius = 0.001f;
 
 		this->lightObjects.emplace_back(std::move(pointLight));
 
@@ -175,18 +175,18 @@ namespace nugiEngine {
 		uint32_t imageCount = this->renderer->getSwapChain()->imageCount();
 		auto imageFormat = this->renderer->getSwapChain()->getSwapChainImageFormat();
 
-		auto descriptorPool = this->renderer->getDescriptorPool();
-		auto globalDescLayout = this->renderer->getGlobalDescSetLayout();
-		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
-
-		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
-		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();
+		auto globalDescLayout = this->renderer->getGlobalDescSetLayout()->getDescriptorSetLayout();
+		auto descriptorPool = this->renderer->getDescriptorPool();		
+		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();		
 
 		std::vector<VkDescriptorBufferInfo> buffersInfo = { this->materials->getMaterialInfo() };
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
+		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
+		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();		
+		
 		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { 
 			this->forwardPassSubRenderer->getPositionInfoResources(), 
 			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
@@ -194,7 +194,7 @@ namespace nugiEngine {
 		};
 
 		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout, buffersInfo);
-		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout);
-		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, swapChainRenderPass, forwardPassResourcesInfo);
+		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, globalDescLayout);
+		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, swapChainRenderPass, globalDescLayout, forwardPassResourcesInfo);
 	}
 }

@@ -36,7 +36,7 @@ namespace nugiEngine {
 		pushConstantRange.size = sizeof(PointLightPushConstant);
 
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout };
-    std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
+		std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -70,7 +70,7 @@ namespace nugiEngine {
 		normalBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		normalBlendAttachment.blendEnable = VK_FALSE;
 
-		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { albedoBlendAttachment, normalBlendAttachment };
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = { positionBlendAttachment, albedoBlendAttachment, normalBlendAttachment };
 
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -107,7 +107,7 @@ namespace nugiEngine {
 		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineLightObject>> &pointLights) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-    std::vector<VkDescriptorSet> descSets = { globalDescSet };
+		std::vector<VkDescriptorSet> descSets = { globalDescSet };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

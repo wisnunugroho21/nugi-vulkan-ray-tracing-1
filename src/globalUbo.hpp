@@ -9,9 +9,9 @@ namespace nugiEngine {
   #define MAX_LIGHTS 10
 
   struct PointLight {
-    glm::vec4 position{};
-    float radius = 0;
-    glm::vec4 color{};
+    alignas(16) glm::vec4 position{};
+    alignas(16) float radius = 0;
+    alignas(16) glm::vec4 color{};
   };
 
   struct GlobalUBO {

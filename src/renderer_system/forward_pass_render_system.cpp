@@ -38,7 +38,7 @@ namespace nugiEngine {
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout, this->descSetLayout->getDescriptorSetLayout() };
-    std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
+		std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -95,11 +95,13 @@ namespace nugiEngine {
 				.build();
 		
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			this->descriptorSets[i] = std::make_shared<VkDescriptorSet>();
+			VkDescriptorSet descSet{};
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeBuffer(1, &buffersInfo[0])
-				.build(this->descriptorSets[i].get());
+				.writeBuffer(0, &buffersInfo[0])
+				.build(&descSet);
+
+			this->descriptorSets.emplace_back(descSet);
 		}
   }
 
@@ -107,7 +109,7 @@ namespace nugiEngine {
 		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-    std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };
+		std::vector<VkDescriptorSet> descSets = { globalDescSet, this->descriptorSets[frameIndex] };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

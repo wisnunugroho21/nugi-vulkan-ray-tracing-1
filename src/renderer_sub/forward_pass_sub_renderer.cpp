@@ -24,6 +24,15 @@ namespace nugiEngine {
     return descInfos;
   }
 
+  std::vector<VkDescriptorImageInfo> EngineForwardPassSubRenderer::getAlbedoInfoResources() {
+      std::vector<VkDescriptorImageInfo> descInfos{};
+      for (auto&& albedoInfo : this->albedoResources) {
+          descInfos.emplace_back(albedoInfo->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL));
+      }
+
+      return descInfos;
+  }
+
   std::vector<VkDescriptorImageInfo> EngineForwardPassSubRenderer::getNormalInfoResources() {
     std::vector<VkDescriptorImageInfo> descInfos{};
     for (auto &&normalInfo : this->normalResources) {
@@ -31,16 +40,7 @@ namespace nugiEngine {
     }
 
     return descInfos;
-  }
-
-  std::vector<VkDescriptorImageInfo> EngineForwardPassSubRenderer::getAlbedoInfoResources() {
-    std::vector<VkDescriptorImageInfo> descInfos{};
-    for (auto &&albedoInfo : this->albedoResources) {
-      descInfos.emplace_back(albedoInfo->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL));
-    }
-
-    return descInfos;
-  }
+  }  
 
   void EngineForwardPassSubRenderer::createPositionResources(int imageCount) {
     this->positionResources.clear();

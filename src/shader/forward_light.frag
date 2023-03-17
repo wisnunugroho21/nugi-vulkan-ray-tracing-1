@@ -3,7 +3,7 @@
 layout (location = 0) in vec2 fragOffset;
 layout(location = 1) in vec4 positionFrag;
 
-layout(location = 0) out vec4 positionFrag;
+layout(location = 0) out vec4 positionResource;
 layout(location = 1) out vec4 albedoResource;
 layout(location = 2) out vec4 normalResource;
 

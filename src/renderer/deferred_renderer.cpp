@@ -52,7 +52,7 @@ namespace nugiEngine {
 	void EngineDefferedRenderer::createDescriptorPool(uint32_t imageCount) {
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
-				.setMaxSets(2)
+				.setMaxSets(10)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 50)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100)
 				.build();
@@ -135,8 +135,8 @@ namespace nugiEngine {
 	void EngineDefferedRenderer::createDescriptor() {
 		this->globalDescSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 
 		this->globalDescriptorSets.clear();
@@ -156,12 +156,12 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, GlobalUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, GlobalUBO* data, VkDeviceSize size, VkDeviceSize offset) {
 		this->globalBuffers[frameIndex]->writeToBuffer(data, size, offset);
 		this->globalBuffers[frameIndex]->flush(size, offset);
 	}
 
-	void EngineDefferedRenderer::writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0) {
+	void EngineDefferedRenderer::writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size, VkDeviceSize offset) {
 		this->lightBuffers[frameIndex]->writeToBuffer(data, size, offset);
 		this->lightBuffers[frameIndex]->flush(size, offset);
 	}
