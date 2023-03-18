@@ -35,7 +35,7 @@ namespace nugiEngine {
 			EngineDevice& appDevice;
 
 		  std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
-		  std::vector<VkDescriptorSet> descriptorSets;
+		  std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
 			
 			VkPipelineLayout pipelineLayout;
 			std::unique_ptr<EngineGraphicPipeline> pipeline;

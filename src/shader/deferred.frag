@@ -31,7 +31,7 @@ void main() {
   vec3 fragColor = imageLoad(albedoResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragNormalWorld = imageLoad(normalResource, ivec2(gl_FragCoord.xy)).xyz;
 
-  vec3 diffuseLight = vec3(0.0);
+  vec3 diffuseLight = vec3(1.0);
   vec3 specularLight = vec3(0.0);
 
   vec3 surfaceNormal = normalize(fragNormalWorld);
@@ -57,5 +57,5 @@ void main() {
     specularLight += intensity * blinnTerm;
   }
 
-  outColor = vec4(fragColor, 1.0);
+  outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
 }

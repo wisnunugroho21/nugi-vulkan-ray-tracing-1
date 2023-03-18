@@ -95,11 +95,11 @@ namespace nugiEngine {
 				.build();
 		
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			VkDescriptorSet descSet{};
+			auto descSet = std::make_shared<VkDescriptorSet>();
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeBuffer(0, &buffersInfo[0])
-				.build(&descSet);
+				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
 		}
@@ -109,7 +109,7 @@ namespace nugiEngine {
 		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-		std::vector<VkDescriptorSet> descSets = { globalDescSet, this->descriptorSets[frameIndex] };
+		std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),
