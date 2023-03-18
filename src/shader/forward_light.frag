@@ -15,8 +15,8 @@ layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 
 layout(push_constant) uniform Push {
   vec4 position;
-  vec4 color;
   float radius;
+  vec4 color;
 } push;
 
 void main() {
