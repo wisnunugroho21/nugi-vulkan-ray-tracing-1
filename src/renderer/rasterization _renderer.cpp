@@ -12,7 +12,7 @@ namespace nugiEngine {
 
 		this->commandBuffers = EngineCommandBuffer::createCommandBuffers(device, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
-		this->createGlobalBuffers(sizeof(GlobalUBO), sizeof(GlobalLight));
+		this->createGlobalBuffers(sizeof(RasterUBO), sizeof(GlobalLight));
 		this->createGlobalUboDescriptor();
 	}
 

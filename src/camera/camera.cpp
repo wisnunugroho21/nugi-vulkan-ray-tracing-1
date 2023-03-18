@@ -57,6 +57,8 @@ namespace nugiEngine {
     this->inverseViewMatrix[3][0] = position.x;
     this->inverseViewMatrix[3][1] = position.y;
     this->inverseViewMatrix[3][2] = position.z;
+
+    this->realCameraPos = position;
   }
 
   void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
@@ -102,6 +104,8 @@ namespace nugiEngine {
     this->inverseViewMatrix[3][0] = position.x;
     this->inverseViewMatrix[3][1] = position.y;
     this->inverseViewMatrix[3][2] = position.z;
+
+    this->realCameraPos = position;
   }
   
 } // namespace nugiEngine

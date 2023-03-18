@@ -15,7 +15,7 @@ layout(location = 1) out vec4 positionFrag;
 layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 	mat4 projection;
 	mat4 view;
-	mat4 inverseView;
+	vec3 realCameraPos;
 } ubo;
 
 layout(push_constant) uniform Push {
@@ -33,8 +33,6 @@ void main() {
     + push.radius * fragOffset.x * cameraRightWorld
     + push.radius * fragOffset.y * cameraUpWorld;
 
-  vec4 position = ubo.projection * ubo.view * vec4(positionWorld, 1.0);
-
-  gl_Position = position;
-  positionFrag = position;
+  gl_Position = ubo.projection * ubo.view * vec4(positionWorld, 1.0);
+  positionFrag = positionWorld;
 }

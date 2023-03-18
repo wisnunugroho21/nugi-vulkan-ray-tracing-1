@@ -21,7 +21,7 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 	mat4 projection;
 	mat4 view;
-	mat4 inverseView;
+	vec3 realCameraPos;
 } ubo;
 
 layout(set = 0, binding = 1) uniform readonly GlobalLight {

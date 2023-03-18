@@ -21,7 +21,7 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 	mat4 projection;
 	mat4 view;
-	mat4 inverseView;
+	vec3 realCameraPos;
 } ubo;
 
 layout(set = 0, binding = 1) uniform readonly GlobalLight {
@@ -39,10 +39,9 @@ layout(push_constant) uniform Push {
 } push;
 
 void main() {
-	vec4 position = ubo.projection * ubo.view * push.modelMatrix * vec4(position, 1.0);
-	gl_Position = position;
+	gl_Position = ubo.projection * ubo.view * push.modelMatrix * vec4(position, 1.0);
 
-	positionFrag = position;
+	positionFrag = vec4(position, 1.0);
 	albedoFrag = vec4(materials[materialIndex].color, 1.0);
 	normalFrag = normalize(push.normalMatrix * vec4(normal, 1.0));
 }

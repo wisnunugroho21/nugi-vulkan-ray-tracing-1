@@ -14,7 +14,7 @@ struct PointLight {
 layout(set = 0, binding = 0) uniform readonly GlobalUbo {
 	mat4 projection;
 	mat4 view;
-	mat4 inverseView;
+	vec3 realCameraPos;
 } ubo;
 
 layout(set = 0, binding = 1) uniform readonly GlobalLight {
@@ -34,8 +34,8 @@ void main() {
   vec3 diffuseLight = vec3(1.0);
   vec3 specularLight = vec3(0.0);
 
+  vec3 cameraPosWorld = realCameraPos;
   vec3 surfaceNormal = normalize(fragNormalWorld);
-  vec3 cameraPosWorld = ubo.inverseView[3].xyz;
   vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
 
   for (int i = 0; i < globalLight.numLight; i++) {

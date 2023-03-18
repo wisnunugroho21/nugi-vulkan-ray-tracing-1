@@ -104,7 +104,7 @@ namespace nugiEngine {
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			auto globalBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
-				sizeof(GlobalUBO),
+				sizeof(RasterUBO),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
@@ -156,7 +156,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, GlobalUBO* data, VkDeviceSize size, VkDeviceSize offset) {
+	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size, VkDeviceSize offset) {
 		this->globalBuffers[frameIndex]->writeToBuffer(data, size, offset);
 		this->globalBuffers[frameIndex]->flush(size, offset);
 	}

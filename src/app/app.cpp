@@ -49,10 +49,10 @@ namespace nugiEngine {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				GlobalUBO ubo{};
+				RasterUBO ubo{};
 				ubo.projection = camera.getProjectionMatrix();
 				ubo.view = camera.getViewMatrix();
-				ubo.inverseView = camera.getInverseViewMatrix();
+				ubo.realCameraPos = camera.getRealCameraPos();
 				this->renderer->writeGlobalBuffer(frameIndex, &ubo);
 
 				GlobalLight lightUbo{};
