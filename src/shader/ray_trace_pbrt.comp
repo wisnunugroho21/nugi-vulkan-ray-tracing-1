@@ -15,6 +15,11 @@ struct Triangle {
   vec3 point2;
 };
 
+struct Sphere {
+  vec3 center;
+  float radius;
+};
+
 struct Object {
   Triangle triangle;
   uint materialType;
@@ -29,9 +34,8 @@ struct Material {
 };
 
 struct Light {
-  Triangle triangle;
+  Sphere sphere;
   vec3 color;
-  float radius;
 };
 
 struct BvhNode {
@@ -147,6 +151,43 @@ FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   faceNormal.normal = faceNormal.frontFace ? outwardNormal : -1.0 * outwardNormal;
 
   return faceNormal;
+}
+
+HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+
+  vec3 oc = r.origin - obj.center;
+
+  float a = dot(r.direction, r.direction);
+  float half_b = dot(oc, r.direction);
+  float c = dot(oc, oc) - obj.radius * obj.radius;
+
+  float discriminant = half_b * half_b - a * c;
+
+  if (discriminant < 0.0) {
+    return hit;
+  }
+
+  float sqrtd = sqrt(discriminant);
+
+  // Find the nearest root that lies in the acceptable range.
+  float root = (-half_b - sqrtd) / a;
+  if (root < tMin || root > tMax) {
+    root = (-half_b + sqrtd) / a;
+    if (root < tMin || root > tMax) {
+      return hit;
+    }
+  }
+
+  hit.isHit = true;
+  hit.t = root;
+  hit.point = rayAt(r, hit.t);
+
+  vec3 outwardNormal = (hit.point - obj.center) / obj.radius;
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
+  
+  return hit;
 }
 
 HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
@@ -272,7 +313,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   for (int i = 0; i < 2; i++) {
-    HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
+    HitRecord tempHit = hitSphere(lights[i].sphere, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
       hit.objIndex = i;
@@ -403,8 +444,8 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
 
   float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
-  vec3 unitDirection = normalize(r.direction);
-  vec3 reflected = reflect(unitDirection, hit.faceNormal.normal);
+  vec3 unitViewDirection = normalize(r.direction);
+  vec3 reflected = reflect(unitViewDirection, hit.faceNormal.normal);
 
   scat.raySpecular.origin = hit.point;
   float rand = randomFloat(0);
@@ -423,12 +464,12 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   }
   
   vec3 unitLightDirection = normalize(scat.raySpecular.direction);
-  vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
+  vec3 HalAngle = normalize(scat.raySpecular.direction - r.direction); // half vector
 
-  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitDirection), 0.001, 1.0);
-  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
-  float NoH = clamp(dot(hit.faceNormal.normal, H), 0.001, 1.0);
-  float VoH = clamp(dot(unitDirection, H), 0.001, 1.0);
+  float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.0, 1.0);
+  float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.0, 1.0);
+  float NoH = clamp(dot(hit.faceNormal.normal, HalAngle), 0.0, 1.0);
+  float VoH = clamp(dot(unitViewDirection, HalAngle), 0.0, 1.0);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
@@ -455,13 +496,9 @@ RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
   float distance = length(rayAt(r, hit.t)) / 10.0;
-
-  float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
 
-  float falloff = (nom * nom + 1.0) / (pow(distance, 2) + 1.0);
-
-  rad.colorIrradiance = lights[lightIndex].color * falloff * cosine * areaTriangle(lights[lightIndex].triangle);
+  rad.colorIrradiance = areaTriangle(lights[lightIndex].triangle) * lights[lightIndex].color * cosine / pow(distance, 2);
   return rad;
 }
 

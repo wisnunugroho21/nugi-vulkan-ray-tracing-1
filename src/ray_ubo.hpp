@@ -43,9 +43,8 @@ namespace nugiEngine {
   };
 
   struct Light {
-    Triangle triangle{};
+    Sphere sphere{};
     alignas(16) glm::vec3 color;
-    alignas(4) float radius;
   };
 
   struct RayTraceUbo {
