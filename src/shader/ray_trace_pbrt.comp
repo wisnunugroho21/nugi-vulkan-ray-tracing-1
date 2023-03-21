@@ -376,7 +376,7 @@ vec3 sphereListGenerateRandom(vec3 origin) {
   return sphereGenerateRandom(lights[0].sphere, origin);
 }
 
-float areaTriangle(Triangle obj) {
+/* float areaTriangle(Triangle obj) {
   vec3 v0v1 = obj.point1 - obj.point0;
   vec3 v0v2 = obj.point2 - obj.point0;
 
@@ -384,7 +384,7 @@ float areaTriangle(Triangle obj) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-/* float trianglePdfValue(Triangle obj, Ray r) {
+ float trianglePdfValue(Triangle obj, Ray r) {
   HitRecord hit = hitTriangle(obj, r, 0.001, 1000000.0);
   if (!hit.isHit) {
     return 0.0;
@@ -546,7 +546,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
-  float distance = length(rayAt(r, hit.t)) / 10.0;
+  float distance = length(rayAt(r, hit.t)) / 100.0;
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
 
   rad.colorIrradiance = areaSphere(lights[lightIndex].sphere) * lights[lightIndex].color * cosine / pow(distance, 2);
