@@ -384,7 +384,7 @@ float areaTriangle(Triangle obj) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-float trianglePdfValue(Triangle obj, Ray r) {
+/* float trianglePdfValue(Triangle obj, Ray r) {
   HitRecord hit = hitTriangle(obj, r, 0.001, 1000000.0);
   if (!hit.isHit) {
     return 0.0;
@@ -426,7 +426,7 @@ float triangleListPdfValue(Ray r) {
 
 vec3 triangleListGenerateRandom(vec3 origin) {
   return triangleGenerateRandom(lights[randomInt(0, 1, 1)].triangle, origin);
-}
+} */
 
 // ------------- GGX -------------
 
