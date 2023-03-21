@@ -325,6 +325,57 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
 
 // ------------- Denoiser Shape ------------- 
 
+float areaSphere(Sphere obj) {
+  return 4 * pi * obj.radius * obj.radius;
+}
+
+float spherePdfValue(Sphere sphere, Ray r) {
+  HitRecord hit = hitSphere(sphere, r, 0.001, 1000000.0);
+  if (!hit.isHit) {
+    return 0.0;
+  }
+
+  vec3 dist = sphere.center - r.origin;
+
+  float cosThetaMax = sqrt(1 - sphere.radius * sphere.radius / dot(dist, dist));
+  float solidAngle = 2 * pi * (1 - cosThetaMax);
+
+  return  1 / solidAngle;
+}
+
+vec3 sphereGenerateRandom(Sphere sphere, vec3 origin) {
+  vec3 dist = sphere.center - origin;
+  float distSqr = dot(dist, dist);
+
+  vec3[3] globalOnb = buildOnb(dist);
+
+  float r1 = randomFloat(1);
+  float r2 = randomFloat(2);
+  float z = 1 + r2 * (sqrt(1 - sphere.radius * sphere.radius / distSqr) - 1);
+
+  float phi = 2 * pi * r1;
+  float x = cos(phi) * sqrt(1 - z * z);
+  float y = sin(phi) * sqrt(1 - z * z);
+
+  return x * globalOnb[0] + y * globalOnb[1] + z * globalOnb[2];
+}
+
+float sphereListPdfValue(Ray r) {
+  float weight = 1.0 / 1;
+  float sum = 0.0;
+
+  for (int i = 0; i < 1; i++) {
+    sum += weight * spherePdfValue(lights[i].sphere, r);
+  }
+
+  return sum;
+}
+
+vec3 sphereListGenerateRandom(vec3 origin) {
+  // return sphereGenerateRandom(lights[randomInt(0, 1, 1)].sphere, origin);
+  return sphereGenerateRandom(lights[0].sphere, origin);
+}
+
 float areaTriangle(Triangle obj) {
   vec3 v0v1 = obj.point1 - obj.point0;
   vec3 v0v2 = obj.point2 - obj.point0;
@@ -334,7 +385,7 @@ float areaTriangle(Triangle obj) {
 }
 
 float trianglePdfValue(Triangle obj, Ray r) {
-  HitRecord hit = hitTriangle(obj, r, 0.001, 1000.0);
+  HitRecord hit = hitTriangle(obj, r, 0.001, 1000000.0);
   if (!hit.isHit) {
     return 0.0;
   }
@@ -458,7 +509,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     int chooseRandom = randomInt(0, 1, 0);
 
     switch(chooseRandom) {
-      case 0: scat.raySpecular.direction = triangleListGenerateRandom(hit.point); break;
+      case 0: scat.raySpecular.direction = sphereListGenerateRandom(hit.point); break;
       case 1: scat.raySpecular.direction = cosineGenerateRandom(globalOnb); break;
     }
   }
@@ -481,7 +532,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float diff = 1.0 / pi;
 
   float specPdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  float diffPdf = 0.5 * (cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) + triangleListPdfValue(scat.raySpecular));
+  float diffPdf = 0.5 * (cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) + sphereListPdfValue(scat.raySpecular));
 
   float pdfVal = mix(diffPdf, specPdf, materials[materialIndex].metallicness);
   float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
@@ -498,7 +549,7 @@ RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   float distance = length(rayAt(r, hit.t)) / 10.0;
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
 
-  rad.colorIrradiance = areaTriangle(lights[lightIndex].triangle) * lights[lightIndex].color * cosine / pow(distance, 2);
+  rad.colorIrradiance = areaSphere(lights[lightIndex].sphere) * lights[lightIndex].color * cosine / pow(distance, 2);
   return rad;
 }
 
