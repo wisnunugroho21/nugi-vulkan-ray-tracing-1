@@ -340,18 +340,16 @@ float spherePdfValue(Sphere sphere, Ray r) {
   float cosThetaMax = sqrt(1 - sphere.radius * sphere.radius / dot(dist, dist));
   float solidAngle = 2 * pi * (1 - cosThetaMax);
 
-  return  1 / solidAngle;
+  return  1.0 / solidAngle;
 }
 
 vec3 sphereGenerateRandom(Sphere sphere, vec3 origin) {
   vec3 dist = sphere.center - origin;
-  float distSqr = dot(dist, dist);
-
   vec3[3] globalOnb = buildOnb(dist);
 
   float r1 = randomFloat(1);
   float r2 = randomFloat(2);
-  float z = 1 + r2 * (sqrt(1 - sphere.radius * sphere.radius / distSqr) - 1);
+  float z = 1 + r2 * (sqrt(1 - sphere.radius * sphere.radius /  dot(dist, dist)) - 1);
 
   float phi = 2 * pi * r1;
   float x = cos(phi) * sqrt(1 - z * z);
@@ -546,10 +544,10 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
-  float distance = length(rayAt(r, hit.t)) / 100.0;
+  vec3 distance = (hit.point - r.origin) / 100;
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
 
-  rad.colorIrradiance = areaSphere(lights[lightIndex].sphere) * lights[lightIndex].color * cosine / pow(distance, 2);
+  rad.colorIrradiance = areaSphere(lights[lightIndex].sphere) * lights[lightIndex].color * cosine / dot(distance, distance);
   return rad;
 }
 

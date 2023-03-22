@@ -166,10 +166,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.05f, 0.65f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.05f, 0.65f, 0.05f), 0.2f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.0f, 0.5f });
 
 		modeldata.lights.emplace_back(Light{ Sphere{ glm::vec3(277.5f, 540.0f, 277.5f), 10.0f }, glm::vec3(10.0f, 10.0f, 10.0f) });
 
