@@ -6,7 +6,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../command/command_buffer.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>
@@ -15,7 +15,8 @@
 namespace nugiEngine {
 	class EngineDefferedRenderer {
 		public:
-			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device);
+			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
+				VkDescriptorBufferInfo rayTraceModelInfo[2]);
 			~EngineDefferedRenderer();
 
 			EngineDefferedRenderer(const EngineDefferedRenderer&) = delete;
@@ -43,10 +44,10 @@ namespace nugiEngine {
 				return this->currentImageIndex;
 			}
 
-			void createGlobalBuffer();
+			void createRasterBuffer();
 			void createLightBuffer();
 
-			void createDescriptor();
+			void createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[2]);
 			
 			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 			void writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
@@ -71,7 +72,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineSwapChain> swapChain;
 			std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers;
 
-			std::vector<std::shared_ptr<EngineBuffer>> globalBuffers;
+			std::vector<std::shared_ptr<EngineBuffer>> rasterBuffers;
 			std::vector<std::shared_ptr<EngineBuffer>> lightBuffers;
 
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;

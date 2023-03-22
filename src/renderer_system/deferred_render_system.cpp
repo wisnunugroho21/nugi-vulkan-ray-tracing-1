@@ -1,7 +1,7 @@
 #include "deferred_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
-#include "../ray_ubo.hpp"
+#include "../ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -14,8 +14,8 @@
 
 namespace nugiEngine {
 	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		uint32_t width, uint32_t height, VkRenderPass renderPass, VkDescriptorSetLayout globalDescSetLayout, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo)
-		: appDevice{device}
+		uint32_t width, uint32_t height, VkRenderPass renderPass, VkDescriptorSetLayout globalDescSetLayout, 
+		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]) : appDevice{device}
 	{
 		this->createDescriptor(descriptorPool, forwardPassResourcesInfo);
 
@@ -48,7 +48,9 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo)  {
+	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3])  
+	{
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)

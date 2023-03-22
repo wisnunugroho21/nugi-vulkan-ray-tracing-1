@@ -8,7 +8,7 @@
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>
@@ -19,7 +19,7 @@ namespace nugiEngine {
 			EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				uint32_t width, uint32_t height, VkRenderPass renderPass, 
 				VkDescriptorSetLayout globalDescSetLayout,
-				std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo);
+				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]);
 			~EngineDeffereRenderSystem();
 
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
@@ -31,7 +31,8 @@ namespace nugiEngine {
 			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);
 			void createPipeline(VkRenderPass renderPass);
 
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo);
+			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]);
 
 			EngineDevice& appDevice;
 			

@@ -25,23 +25,23 @@ namespace nugiEngine {
 		}
 	};
 
-	struct ModelData {
+	struct RasterModelData {
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 
 		void loadModel(const std::string &filePath, uint32_t materialIndex);
 	};
 
-	class EngineModel
+	class EngineRasterModel
 	{
 	public:
-		EngineModel(EngineDevice &device, const ModelData &data);
-		~EngineModel();
+		EngineRasterModel(EngineDevice &device, const RasterModelData &data);
+		~EngineRasterModel();
 
-		EngineModel(const EngineModel&) = delete;
-		EngineModel& operator = (const EngineModel&) = delete;
+		EngineRasterModel(const EngineRasterModel&) = delete;
+		EngineRasterModel& operator = (const EngineRasterModel&) = delete;
 
-		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex);
+		static std::unique_ptr<EngineRasterModel> createModelFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex);
 
 		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);
