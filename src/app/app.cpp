@@ -32,7 +32,7 @@ namespace nugiEngine {
 	EngineApp::~EngineApp() {}
 
 	void EngineApp::renderLoop() {
-		auto viewObject = EngineGameObject::createGameObject();
+		auto viewObject = EngineGeometry::createGeometry();
 
 		EngineCamera camera{};
 
@@ -117,7 +117,7 @@ namespace nugiEngine {
 	/* void EngineApp::loadObjects() {
 		std::shared_ptr<EngineRasterModel> roomModel = EngineRasterModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
 
-		auto roomObject = EngineGameObject::createSharedGameObject();
+		auto roomObject = EngineGeometry::createSharedGeometry();
 		roomObject->model = roomModel;
 		roomObject->transform.translation = {0.0f, 0.0f, 0.0f};
 		roomObject->transform.scale = {1.0f, 1.0f, 1.0f};
@@ -129,7 +129,7 @@ namespace nugiEngine {
 		MaterialData materialData{};
 		materialData.data[0] = matItem;
 
-		auto pointLight = EngineLightObject::createSharedLightObject();
+		auto pointLight = EngineLight::createSharedLight();
 		pointLight->color = glm::vec3(1.0f);
 		pointLight->intensity = 1.0f;
 		pointLight->position = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -161,7 +161,7 @@ namespace nugiEngine {
 		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 });
 
 		modeldata.objects = models;
-		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);
+		this->gameObject = EngineGeometry::createSharedGeometry(this->device, modeldata);
 
 		// ----------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ namespace nugiEngine {
 		pointLight.color = glm::vec3(1.0f);
 
 		pointLights.emplace_back(pointLight);
-		this->lightObject = EngineLightObject::createSharedLightObject(this->device, pointLights);
+		this->lightObject = EngineLight::createSharedLight(this->device, pointLights);
 
 		// ----------------------------------------------------------------------------		
 
@@ -225,7 +225,7 @@ namespace nugiEngine {
 			0, 1, 2, 2, 3, 0
 		};
 
-		auto quadObject = EngineGameObject::createSharedGameObject();
+		auto quadObject = EngineGeometry::createSharedGeometry();
 		quadObject->rasterModel = std::make_shared<EngineRasterModel>(this->device, modelData);
 
 		this->quadModelObjects.emplace_back(quadObject);

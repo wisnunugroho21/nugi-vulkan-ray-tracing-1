@@ -1,12 +1,12 @@
-#include "game_object.hpp"
+#include "geometry.hpp"
 
 namespace nugiEngine {
-  EngineGameObject EngineGameObject::createGameObject() {
+  EngineGeometry EngineGeometry::createGeometry() {
     static id_t currentId = 0;
-    return EngineGameObject{currentId++};
+    return EngineGeometry{currentId++};
   }
 
-  EngineGameObject EngineGameObject::createGameObject(EngineDevice &device, RayTraceModelData rayTraceModelData) {
+  EngineGeometry EngineGeometry::createGeometry(EngineDevice &device, RayTraceModelData rayTraceModelData) {
     RasterModelData rasterModelData;
 
     for (auto &&obj : rayTraceModelData.objects) {
@@ -16,7 +16,7 @@ namespace nugiEngine {
     }
 
     static id_t currentId = 0;
-    auto obj = EngineGameObject{currentId++};
+    auto obj = EngineGeometry{currentId++};
 
     obj.rasterModel = std::make_shared<EngineRasterModel>(device, rasterModelData);
     obj.rayTraceModel = std::make_shared<EngineRayTraceModel>(device, rayTraceModelData);
@@ -24,12 +24,12 @@ namespace nugiEngine {
     return obj;
   }
 
-  std::shared_ptr<EngineGameObject> EngineGameObject::createSharedGameObject() {
+  std::shared_ptr<EngineGeometry> EngineGeometry::createSharedGeometry() {
     static id_t currentId = 0;
-    return std::make_shared<EngineGameObject>(currentId++);
+    return std::make_shared<EngineGeometry>(currentId++);
   }
 
-  std::shared_ptr<EngineGameObject> EngineGameObject::createSharedGameObject(EngineDevice &device, RayTraceModelData rayTraceModelData) {
+  std::shared_ptr<EngineGeometry> EngineGeometry::createSharedGeometry(EngineDevice &device, RayTraceModelData rayTraceModelData) {
     RasterModelData rasterModelData;
 
     for (auto &&obj : rayTraceModelData.objects) {
@@ -39,7 +39,7 @@ namespace nugiEngine {
     }
 
     static id_t currentId = 0;
-    auto obj = std::make_shared<EngineGameObject>(currentId++);
+    auto obj = std::make_shared<EngineGeometry>(currentId++);
 
     obj->rasterModel = std::make_shared<EngineRasterModel>(device, rasterModelData);
     obj->rayTraceModel = std::make_shared<EngineRayTraceModel>(device, rayTraceModelData);

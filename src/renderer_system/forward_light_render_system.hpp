@@ -4,12 +4,12 @@
 #include "../camera/camera.hpp"
 #include "../device/device.hpp"
 #include "../pipeline/graphic_pipeline.hpp"
-#include "../game_object/light_object.hpp"
+#include "../data/light.hpp"
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../ubo.hpp"
-#include "../game_object/material.hpp"
+#include "../data/material.hpp"
 
 #include <memory>
 #include <vector>

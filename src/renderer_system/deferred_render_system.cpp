@@ -82,7 +82,7 @@ namespace nugiEngine {
 	}
 
 	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects, uint32_t randomSeed)
+		VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGeometry>> &gameObjects, uint32_t randomSeed)
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 		std::vector<VkDescriptorSet> descpSet = { globalDescSet, *this->descriptorSets[frameIndex] };

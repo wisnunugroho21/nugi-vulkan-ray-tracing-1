@@ -1,21 +1,21 @@
-#include "light_object.hpp"
+#include "light.hpp"
 
 namespace nugiEngine {
-  EngineLightObject::EngineLightObject(id_t id, EngineDevice &device, std::vector<PointLight> pointLights) : objectId{id} {
+  EngineLight::EngineLight(id_t id, EngineDevice &device, std::vector<PointLight> pointLights) : objectId{id} {
     this->createLightBuffers(device, pointLights);
   }
 
-  EngineLightObject EngineLightObject::createLightObject(EngineDevice &device, std::vector<PointLight> pointLights) {
+  EngineLight EngineLight::createLight(EngineDevice &device, std::vector<PointLight> pointLights) {
     static id_t currentId = 0;
-    return EngineLightObject(currentId++, device, pointLights);
+    return EngineLight(currentId++, device, pointLights);
   }
 
-  std::shared_ptr<EngineLightObject> EngineLightObject::createSharedLightObject(EngineDevice &device, std::vector<PointLight> pointLights) {
+  std::shared_ptr<EngineLight> EngineLight::createSharedLight(EngineDevice &device, std::vector<PointLight> pointLights) {
     static id_t currentId = 0;
-    return std::make_shared<EngineLightObject>(currentId++, device, pointLights);
+    return std::make_shared<EngineLight>(currentId++, device, pointLights);
   }
 
-  void EngineLightObject::createLightBuffers(EngineDevice &device, std::vector<PointLight> pointLights) {
+  void EngineLight::createLightBuffers(EngineDevice &device, std::vector<PointLight> pointLights) {
     GlobalLight globalLight{};
     
     int lightIndex = 0;

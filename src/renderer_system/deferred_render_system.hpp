@@ -4,7 +4,7 @@
 #include "../camera/camera.hpp"
 #include "../device/device.hpp"
 #include "../pipeline/graphic_pipeline.hpp"
-#include "../game_object/game_object.hpp"
+#include "../data/geometry.hpp"
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
@@ -25,7 +25,7 @@ namespace nugiEngine {
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
 			EngineDeffereRenderSystem& operator = (const EngineDeffereRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects, uint32_t randomSeed);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGeometry>> &gameObjects, uint32_t randomSeed);
 		
 		private:
 			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);

@@ -4,7 +4,7 @@
 #include "../camera/camera.hpp"
 #include "../device/device.hpp"
 #include "../pipeline/compute_pipeline.hpp"
-#include "../game_object/game_object.hpp"
+#include "../data/geometry.hpp"
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"

@@ -4,12 +4,12 @@
 #include "../camera/camera.hpp"
 #include "../device/device.hpp"
 #include "../pipeline/graphic_pipeline.hpp"
-#include "../game_object/game_object.hpp"
+#include "../data/geometry.hpp"
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../ubo.hpp"
-#include "../game_object/material.hpp"
+#include "../data/material.hpp"
 
 #include <memory>
 #include <vector>
@@ -25,7 +25,7 @@ namespace nugiEngine {
 			EngineForwardPassRenderSystem& operator = (const EngineForwardPassRenderSystem&) = delete;
 
       void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGameObject> gameObjects);
+				VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGeometry> gameObjects);
 
 		private:
 			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);

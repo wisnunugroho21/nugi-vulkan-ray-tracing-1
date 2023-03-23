@@ -102,7 +102,7 @@ namespace nugiEngine {
   }
 
 	void EngineForwardPassRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGameObject> gameObject) 
+		VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGeometry> gameObject) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 		std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };

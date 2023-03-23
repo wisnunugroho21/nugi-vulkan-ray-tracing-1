@@ -15,19 +15,19 @@ namespace nugiEngine {
     uint32_t numLight = 0;
   };
 
-	class EngineLightObject {
+	class EngineLight {
 		public:
 			using id_t = unsigned int;
 
-			EngineLightObject(id_t id, EngineDevice &device, std::vector<PointLight> pointLights);
+			EngineLight(id_t id, EngineDevice &device, std::vector<PointLight> pointLights);
 
-			static EngineLightObject createLightObject(EngineDevice &device, std::vector<PointLight> pointLights);
-			static std::shared_ptr<EngineLightObject> createSharedLightObject(EngineDevice &device, std::vector<PointLight> pointLights);
+			static EngineLight createLight(EngineDevice &device, std::vector<PointLight> pointLights);
+			static std::shared_ptr<EngineLight> createSharedLight(EngineDevice &device, std::vector<PointLight> pointLights);
 
-			EngineLightObject(const EngineLightObject &) = delete;
-			EngineLightObject& operator = (const EngineLightObject &) = delete;
-			EngineLightObject(EngineLightObject &&) = default;
-			EngineLightObject& operator = (EngineLightObject &&) = default;
+			EngineLight(const EngineLight &) = delete;
+			EngineLight& operator = (const EngineLight &) = delete;
+			EngineLight(EngineLight &&) = default;
+			EngineLight& operator = (EngineLight &&) = default;
 
 			id_t getId() { return this->objectId; }
 			uint32_t getNumLight() { return this->numLight; }

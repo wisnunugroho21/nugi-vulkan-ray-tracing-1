@@ -49,9 +49,9 @@ namespace nugiEngine {
 			std::unique_ptr<EngineForwardLightRenderSystem> forwardLightRenderSystem{};
 			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
 
-			std::vector<std::shared_ptr<EngineGameObject>> quadModelObjects;
-			std::shared_ptr<EngineGameObject> gameObject;
-			std::shared_ptr<EngineLightObject> lightObject;
+			std::vector<std::shared_ptr<EngineGeometry>> quadModelObjects;
+			std::shared_ptr<EngineGeometry> gameObject;
+			std::shared_ptr<EngineLight> lightObject;
 			std::shared_ptr<EngineMaterial> materials;
 			std::shared_ptr<EngineTransform> transform;
 
