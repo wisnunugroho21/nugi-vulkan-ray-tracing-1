@@ -17,11 +17,13 @@ namespace nugiEngine {
     alignas(4) float radius;
   };
 
-  struct Model {
+  struct Object {
     Triangle triangle{};
-    alignas(16) glm::vec3 normal{};
+
+    alignas(4) uint32_t materialType;
     alignas(4) uint32_t materialIndex;
   };
+  
 
   struct BvhNode {
     alignas(4) int leftNode = -1;
@@ -40,9 +42,10 @@ namespace nugiEngine {
     alignas(4) float fresnelReflect;
   };
 
-  struct PointLight {
-    Sphere sphere;
+  struct Light {
+    Triangle triangle{};
     alignas(16) glm::vec3 color;
+    alignas(4) float radius;
   };
 
   struct RayTraceUbo {
@@ -55,16 +58,5 @@ namespace nugiEngine {
 
   struct RayTracePushConstant {
     alignas(4) uint32_t randomSeed;
-  };
-
-  struct RasterUBO {
-    glm::mat4 projection{1.0f};
-    glm::mat4 view{1.0f};
-    alignas(16) glm::vec3 realCameraPos{1.0f};
-  };
-
-  struct GlobalLight {
-    PointLight pointLights[10];
-    uint32_t numLight = 0;
   };
 }

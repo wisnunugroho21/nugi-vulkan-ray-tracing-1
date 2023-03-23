@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../model/raster_model.hpp"
-#include "../model/ray_trace_model.hpp"
+#include "../model/model.hpp"
 #include "../texture/texture.hpp"
 #include "transform.hpp"
 
@@ -14,10 +13,7 @@ namespace nugiEngine {
 			using id_t = unsigned int;
 
 			static EngineGameObject createGameObject();
-			static EngineGameObject createGameObject(EngineDevice &device, RayTraceModelData rayTraceModelData);
-
 			static std::shared_ptr<EngineGameObject> createSharedGameObject();
-			static std::shared_ptr<EngineGameObject> createSharedGameObject(EngineDevice &device, RayTraceModelData rayTraceModelData);
 
 			EngineGameObject(const EngineGameObject &) = delete;
 			EngineGameObject& operator = (const EngineGameObject &) = delete;
@@ -29,8 +25,7 @@ namespace nugiEngine {
 			id_t getId() { return this->objectId; }
 
 			TransformComponent transform{};
-			std::shared_ptr<EngineRasterModel> rasterModel{};
-			std::shared_ptr<EngineRayTraceModel> rayTraceModel{};
+			std::shared_ptr<EngineModel> model{};
 
 		private:
 			id_t objectId;

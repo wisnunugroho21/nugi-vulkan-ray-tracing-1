@@ -1,7 +1,7 @@
 #include "sampling_ray_raster_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
-#include "../ubo.hpp"
+#include "../ray_ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -105,7 +105,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineRasterModel> model, uint32_t randomSeed) {
+	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		std::vector<VkDescriptorSet> descpSet = { *this->descriptorSets[frameIndex] };

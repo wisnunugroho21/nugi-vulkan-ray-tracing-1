@@ -1,7 +1,7 @@
 #include "sampling_ray_compute_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
-#include "../ubo.hpp"
+#include "../ray_ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

@@ -22,12 +22,10 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
+		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device);
+
 		this->loadObjects();
 		this->loadQuadModels();
-
-		VkDescriptorBufferInfo rayTraceModelInfo[2] = { this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
-		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device, rayTraceModelInfo);
-		
 		this->recreateSubRendererAndSubsystem();
 	}
 
@@ -65,7 +63,7 @@ namespace nugiEngine {
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObject);
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObjects);
 				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObjects);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
@@ -115,8 +113,8 @@ namespace nugiEngine {
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
 
-	/* void EngineApp::loadObjects() {
-		std::shared_ptr<EngineRasterModel> roomModel = EngineRasterModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
+	void EngineApp::loadObjects() {
+		std::shared_ptr<EngineModel> roomModel = EngineModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
 
 		auto roomObject = EngineGameObject::createSharedGameObject();
 		roomObject->model = roomModel;
@@ -139,52 +137,10 @@ namespace nugiEngine {
 		this->lightObjects.emplace_back(std::move(pointLight));
 
 		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
-	} */
-
-	void EngineApp::loadObjects() {
-		RayTraceModelData modeldata{};
-
-		Triangle triangle{};
-    alignas(16) glm::vec3 normal{};
-    alignas(4) uint32_t materialIndex;
-
-		std::vector<Model> models;
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0, 0.0, 0.0) }, 0);
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0, 0.0, 0.0) }, 0);
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0, 0.0, 0.0) }, 0);
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0, 0.0, 0.0) }, 0);
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 1.0, 0.0) }, 0);
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0, 1.0, 0.0) }, 0);
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, -1.0, 0.0) }, 0);
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0, -1.0, 0.0) }, 0);
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0) }, 0);
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0) }, 0);
-
-		// ----------------------------------------------------------------------------
-
-		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);
-
-		MaterialItem matItem { glm::vec3(1.0, 0.0, 0.0) };
-		MaterialData materialData{};
-		materialData.data[0] = matItem;
-
-		auto pointLight = EngineLightObject::createSharedLightObject();
-		pointLight->color = glm::vec3(1.0f);
-		pointLight->intensity = 1.0f;
-		pointLight->position = glm::vec3(0.0f, 1.0f, 0.0f);
-		pointLight->radius = 0.1f;
-
-		this->lightObjects.emplace_back(std::move(pointLight));
-
-		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
 	}
 
 	void EngineApp::loadQuadModels() {
-		RasterModelData modelData{};
+		ModelData modelData{};
 
 		std::vector<Vertex> vertices;
 
@@ -206,7 +162,7 @@ namespace nugiEngine {
 		};
 
 		auto quadObject = EngineGameObject::createSharedGameObject();
-		quadObject->rasterModel = std::make_shared<EngineRasterModel>(this->device, modelData);
+		quadObject->model = std::make_shared<EngineModel>(this->device, modelData);
 
 		this->quadModelObjects.emplace_back(quadObject);
 	}
@@ -224,7 +180,6 @@ namespace nugiEngine {
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();		
 
 		std::vector<VkDescriptorBufferInfo> buffersInfo = { this->materials->getMaterialInfo() };
-		VkDescriptorBufferInfo rayTraceModelInfo[2] = {};
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
@@ -232,7 +187,7 @@ namespace nugiEngine {
 		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
 		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();		
 		
-		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3] = { 
+		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { 
 			this->forwardPassSubRenderer->getPositionInfoResources(), 
 			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
 			this->forwardPassSubRenderer->getNormalInfoResources() 

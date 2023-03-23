@@ -19,7 +19,7 @@ namespace nugiEngine {
 	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
     std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorSetLayout globalDescSetLayout, 
-		VkDescriptorBufferInfo modelBuffersInfo[1]) 
+		std::vector<VkDescriptorBufferInfo> modelBuffersInfo) 
 		: appDevice{device} 
 	{
 		this->createDescriptor(descriptorPool, modelBuffersInfo);
@@ -88,9 +88,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		VkDescriptorBufferInfo modelBuffersInfo[1]) 
-	{
+  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> buffersInfo) {
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -100,7 +98,7 @@ namespace nugiEngine {
 			auto descSet = std::make_shared<VkDescriptorSet>();
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeBuffer(0, &modelBuffersInfo[0])
+				.writeBuffer(0, &buffersInfo[0])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
@@ -108,7 +106,7 @@ namespace nugiEngine {
   }
 
 	void EngineForwardPassRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGameObject> gameObject) 
+		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineGameObject>> &gameObjects) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 		std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };
@@ -124,20 +122,22 @@ namespace nugiEngine {
 			nullptr
 		);
 
-		SimplePushConstantData pushConstant{};
-		pushConstant.modelMatrix = gameObject->transform.mat4();
-		pushConstant.normalMatrix = gameObject->transform.normalMatrix();
+		for (auto& obj : gameObjects) {
+			SimplePushConstantData pushConstant{};
+			pushConstant.modelMatrix = obj->transform.mat4();
+			pushConstant.normalMatrix = obj->transform.normalMatrix();
 
-		vkCmdPushConstants(
-			commandBuffer->getCommandBuffer(), 
-			pipelineLayout, 
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-			0,
-			sizeof(SimplePushConstantData),
-			&pushConstant
-		);
+			vkCmdPushConstants(
+				commandBuffer->getCommandBuffer(), 
+				pipelineLayout, 
+				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+				0,
+				sizeof(SimplePushConstantData),
+				&pushConstant
+			);
 
-		gameObject->rasterModel->bind(commandBuffer);
-		gameObject->rasterModel->draw(commandBuffer);
+			obj->model->bind(commandBuffer);
+			obj->model->draw(commandBuffer);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../model/raster_model.hpp"
+#include "../model/model.hpp"
 #include "../texture/texture.hpp"
 #include "transform.hpp"
 
@@ -17,6 +17,8 @@ namespace nugiEngine {
 
 			EngineLightObject(const EngineLightObject &) = delete;
 			EngineLightObject& operator = (const EngineLightObject &) = delete;
+			EngineLightObject(EngineLightObject &&) = default;
+			EngineLightObject& operator = (EngineLightObject &&) = default;
 
 			EngineLightObject(id_t id) : objectId{id} {}
 

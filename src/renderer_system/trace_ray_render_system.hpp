@@ -9,7 +9,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../frame_info.hpp"
-#include "../ubo.hpp"
+#include "../ray_ubo.hpp"
 
 #include <memory>
 #include <vector>

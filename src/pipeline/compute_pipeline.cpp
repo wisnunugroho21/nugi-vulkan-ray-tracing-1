@@ -1,6 +1,6 @@
 #include "compute_pipeline.hpp"
 
-#include "../model/raster_model.hpp"
+#include "../model/model.hpp"
 
 #include <fstream>
 #include <iostream>

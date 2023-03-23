@@ -12,17 +12,19 @@ float stepAndOutputRNGFloat(inout uint rngState) {
   return float(word) / 4294967295.0;
 }
 
-uvec2 imgSize = uvec2(imageSize(positionResource));
+uvec2 imgSize = uvec2(imageSize(targetImage[0]));
 
-uint rngStateXY = (imgSize.x * uint(gl_FragCoord.x) + uint(gl_FragCoord.y)) * (push.randomSeed + 1);
-uint rngStateYX = (imgSize.y * uint(gl_FragCoord.y) + uint(gl_FragCoord.x)) * (push.randomSeed + 1);
+uint rngStateXY =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
+uint rngStateXZ =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateYZ =  (imgSize.y * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
 
 float randomFloat(uint index) {
   float randNum = 0.0;
 
   switch(index) {
     case 0: randNum = stepAndOutputRNGFloat(rngStateXY); break;
-    case 1: randNum = stepAndOutputRNGFloat(rngStateYX); break;
+    case 1: randNum = stepAndOutputRNGFloat(rngStateXZ); break;
+    case 2: randNum = stepAndOutputRNGFloat(rngStateYZ); break;
   }
 
   return randNum;

@@ -1,5 +1,5 @@
 #include "ray_tracing_renderer.hpp"
-#include "../ubo.hpp"
+#include "../ray_ubo.hpp"
 
 #include <stdexcept>
 #include <array>
