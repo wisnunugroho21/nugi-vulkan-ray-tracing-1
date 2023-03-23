@@ -62,8 +62,8 @@ namespace nugiEngine {
 		};
 	}
 
-	EngineTransform::EngineTransform(EngineDevice &device, TransformData &data) : engineDevice{device} {
-		this->createTransformBuffers(data);
+	EngineTransform::EngineTransform(EngineDevice &device) : engineDevice{device} {
+		this->createTransformBuffers();
 	}
 
 	EngineTransform EngineTransform::createFromTransformComponent(EngineDevice &device, std::vector<TransformComponent> transformComponents) {
@@ -75,7 +75,10 @@ namespace nugiEngine {
 			transformData.data[transformIndex].normalMatrix = transformComponent.normalMatrix();
 		}
 
-		return EngineTransform(device, transformData);
+		EngineTransform transform(device);
+		transform.writeBuffers(&transformData);
+
+		return transform;
 	}
 
 	std::shared_ptr<EngineTransform> EngineTransform::createSharedFromTransformComponent(EngineDevice &device, std::vector<TransformComponent> transformComponents) {
@@ -87,30 +90,40 @@ namespace nugiEngine {
 			transformData.data[transformIndex].normalMatrix = transformComponent.normalMatrix();
 		}
 
-		return std::make_shared<EngineTransform>(device, transformData);
+		std::shared_ptr<EngineTransform> transform = std::make_shared<EngineTransform>(device);
+		transform->writeBuffers(&transformData);
+
+		return transform;
 	}
 
-	void EngineTransform::createTransformBuffers(TransformData &data) {
-		EngineBuffer stagingBuffer {
+	void EngineTransform::createTransformBuffers() {
+		this->transformBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
 			sizeof(TransformData),
 			1,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-		};
-
-		stagingBuffer.map();
-		stagingBuffer.writeToBuffer(&data);
-
-		this->materialBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
-			sizeof(TransformData),
-			1,
-			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 		);
 
-		this->materialBuffer->copyBuffer(stagingBuffer.getBuffer(), sizeof(TransformData));
+		this->transformBuffer->map();
+	}
+
+	void EngineTransform::writeBuffers(TransformData *data, VkDeviceSize size, VkDeviceSize offset) {
+		this->transformBuffer->writeToBuffer(data, size, offset);
+		this->transformBuffer->flush(size, offset);
+	}
+
+	void EngineTransform::writeBuffers(std::vector<TransformComponent> transformComponents, VkDeviceSize size, VkDeviceSize offset) {
+		TransformData transformData{};
+
+		int transformIndex = 0; 
+		for (auto &&transformComponent : transformComponents) {
+			transformData.data[transformIndex].modelMatrix = transformComponent.mat4();
+			transformData.data[transformIndex].normalMatrix = transformComponent.normalMatrix();
+		}
+		
+		this->transformBuffer->writeToBuffer(&transformData, size, offset);
+		this->transformBuffer->flush(size, offset);
 	}
     
 } // namespace nugiEngine

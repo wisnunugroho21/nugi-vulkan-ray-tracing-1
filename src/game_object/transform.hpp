@@ -28,20 +28,20 @@ namespace nugiEngine {
 
   class EngineTransform {
     public:
-      EngineTransform(EngineDevice &device, TransformData &data);
+      EngineTransform(EngineDevice &device);
 
       static EngineTransform createFromTransformComponent(EngineDevice &device, std::vector<TransformComponent> transformComponents);
       static std::shared_ptr<EngineTransform> createSharedFromTransformComponent(EngineDevice &device, std::vector<TransformComponent> transformComponents);
-
-      EngineTransform(const EngineTransform&) = delete;
-      EngineTransform& operator = (const EngineTransform&) = delete;
       
-      VkDescriptorBufferInfo getTransformInfo() { return this->materialBuffer->descriptorInfo(); }
+      VkDescriptorBufferInfo getTransformInfo() { return this->transformBuffer->descriptorInfo(); }
+
+      void writeBuffers(TransformData *data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
+      void writeBuffers(std::vector<TransformComponent> transformComponents, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
       
     private:
       EngineDevice &engineDevice;
-      std::shared_ptr<EngineBuffer> materialBuffer;
+      std::shared_ptr<EngineBuffer> transformBuffer;
 
-      void createTransformBuffers(TransformData &data);
+      void createTransformBuffers();
   };
 }

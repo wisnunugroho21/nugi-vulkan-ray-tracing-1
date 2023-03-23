@@ -1,8 +1,6 @@
 #include "app.hpp"
 
 #include "../camera/camera.hpp"
-#include "../mouse_controller/mouse_controller.hpp"
-#include "../keyboard_controller/keyboard_controller.hpp"
 #include "../buffer/buffer.hpp"
 #include "../frame_info.hpp"
 
@@ -37,8 +35,6 @@ namespace nugiEngine {
 		auto viewObject = EngineGameObject::createGameObject();
 
 		EngineCamera camera{};
-		EngineMouseController mouseController{};
-		EngineKeyboardController keyboardController{};
 
 		while (this->isRendering) {
 			auto aspect = this->renderer->getSwapChain()->extentAspectRatio();
