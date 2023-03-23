@@ -186,7 +186,7 @@ namespace nugiEngine {
 		auto pointLight = EngineLightObject::createSharedLightObject();
 		pointLight->color = glm::vec3(1.0f);
 		pointLight->intensity = 1.0f;
-		pointLight->position = glm::vec3(277.5f, 544.0f, 277.5f);
+		pointLight->position = glm::vec3(277.5f, 500.0f, 277.5f);
 		pointLight->radius = 10.0f;
 
 		this->lightObjects.emplace_back(std::move(pointLight));

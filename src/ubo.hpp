@@ -64,7 +64,7 @@ namespace nugiEngine {
   };
 
   struct GlobalLight {
-    PointLight pointLights[10];
+    PointLight pointLights[100];
     uint32_t numLight = 0;
   };
 }

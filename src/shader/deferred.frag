@@ -378,41 +378,35 @@ void main() {
   vec3 fragColor = imageLoad(albedoResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragNormalWorld = imageLoad(normalResource, ivec2(gl_FragCoord.xy)).xyz;
 
-  vec3 diffuseLight = vec3(1.0);
-  vec3 specularLight = vec3(0.0);
+  vec3 totalColor = vec3(0.0);
 
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < globalLight.numLight; i++) {
     vec3 viewDirection = normalize(ubo.realCameraPos - fragPosWorld);
-    vec3 lightDirection = globalLight.pointLights[i].sphere.center - fragPosWorld;    
+    vec3 lightDirection = normalize(globalLight.pointLights[i].sphere.center - fragPosWorld);
+    vec3 halAngle = normalize(lightDirection + viewDirection); // half vector
+
+    float NoV = clamp(dot(fragNormalWorld, viewDirection), 0.001, 1.0);
+    float NoL = clamp(dot(fragNormalWorld, lightDirection), 0.001, 1.0);
+    float NoH = clamp(dot(fragNormalWorld, halAngle), 0.001, 1.0);
+    float VoH = clamp(dot(viewDirection, halAngle), 0.001, 1.0);
 
     Ray r;
     r.origin = fragPosWorld;
-    r.direction = normalize(lightDirection);
+    r.direction = lightDirection;
 
-    HitRecord hit = hitBvh(r, 0.1, 1000000.0);
-    vec3 lightColor = vec3(0.0);
+    HitRecord hitLight = hitSphere(globalLight.pointLights[i].sphere, r, 0.001, 1000000.0); 
+    HitRecord hitObject = hitBvh(r, 0.001, (hitLight.isHit) ? hitLight.t : 1000000.0);
 
-    if (!hit.isHit) {
-      hit = hitSphere(globalLight.pointLights[i].sphere, r, 0.001, 1000000.0);
-
-      PointLight light = globalLight.pointLights[i];
-
-      float attenuation = 1.0 / dot(lightDirection, lightDirection);
-      vec3 directionToLight = normalize(lightDirection);
-      
-      float cosAngIncidence = max(dot(fragNormalWorld, directionToLight), 0);
-      vec3 intensity = light.color * attenuation;
-
-      diffuseLight += intensity * cosAngIncidence;
-
-      // specular light
-      vec3 halAngle = normalize(directionToLight + viewDirection);
-      float blinnTerm = dot(fragNormalWorld, halAngle);
-      blinnTerm = clamp(blinnTerm, 0, 1);
-      blinnTerm = pow(blinnTerm, 256.0); // higher value -> sharper light
-      specularLight += intensity * blinnTerm;
+    if (hitObject.isHit) {
+      continue;
     }
+
+    vec3 distance = (hitLight.point - r.origin) / 10.0;
+    float brdf = brdfVal(NoV, NoL, NoH, VoH);
+    float NloL = dot(hitLight.faceNormal.normal, -1.0 * normalize(r.direction));
+
+    totalColor += areaLight(globalLight.pointLights[i].sphere) * globalLight.pointLights[i].color * brdf * NoL * NloL / dot(distance, distance);
   }
 
-  outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
+  outColor = vec4(totalColor * fragColor, 1.0);
 }
