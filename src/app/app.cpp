@@ -25,7 +25,7 @@ namespace nugiEngine {
 		this->loadObjects();
 		this->loadQuadModels();
 
-		VkDescriptorBufferInfo rayTraceModelInfo[2] = { this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
+		VkDescriptorBufferInfo rayTraceModelInfo[3] = { this->lightObject->getModelInfo(), this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
 		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device, rayTraceModelInfo);
 		
 		this->recreateSubRendererAndSubsystem();

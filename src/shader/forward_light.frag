@@ -46,7 +46,7 @@ layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	vec3 realCameraPos;
 } ubo;
 
-layout(set = 0, binding = 1) uniform readonly GlobalLight {
+layout(set = 0, binding = 1) buffer readonly GlobalLight {
 	PointLight pointLights[100];
 	uint numLight;
 } globalLight;
@@ -67,7 +67,7 @@ void main() {
     discard;
   }
   
-  positionResource = vec3(positionFrag, 1.0);
+  positionResource = vec4(positionFrag, 1.0);
   albedoResource = vec4(albedoFrag, 1.0);
   normalResource = vec4(0.0);
 }

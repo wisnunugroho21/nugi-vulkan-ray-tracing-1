@@ -20,10 +20,10 @@ layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	vec3 realCameraPos;
 } ubo;
 
-struct PointLight {
-	Sphere sphere;
-  vec3 color;
-};
+layout(set = 0, binding = 1) buffer readonly GlobalLight {
+	PointLight pointLights[100];
+	uint numLight;
+} globalLight;
 
 void main() {
     gl_Position = vec4(position, 1.0);

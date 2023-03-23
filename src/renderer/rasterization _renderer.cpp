@@ -1,5 +1,6 @@
 #include "rasterization_renderer.hpp"
 #include "../ubo.hpp"
+#include "../game_object/light_object.hpp"
 
 #include <stdexcept>
 #include <array>
