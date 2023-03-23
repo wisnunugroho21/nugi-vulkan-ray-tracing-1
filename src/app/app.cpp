@@ -40,7 +40,7 @@ namespace nugiEngine {
 			auto aspect = this->renderer->getSwapChain()->extentAspectRatio();
 
 			// camera.setViewYXZ(viewObject.transform.translation, viewObject.transform.rotation);
-			camera.setViewDirection({ 278.0f, 278.0f, -800.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f });
+			camera.setViewDirection({ 278.0f, 278.0f, -800.0f }, { 0.0f, 0.0f, 800.0f }, { 0.0f, 1.0f, 0.0f });
 			camera.setPerspectiveProjection(glm::radians(40.0f), aspect, 0.1f, 2000.0f);
 
 			if (this->renderer->acquireFrame()) {
@@ -144,20 +144,21 @@ namespace nugiEngine {
 		RayTraceModelData modeldata{};
 
 		std::vector<Model> models{};
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0, 0.0, 0.0), 2, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0, 0.0, 0.0), 2, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 1.0, 0.0), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0, 1.0, 0.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, -1.0, 0.0), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0, -1.0, 0.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 });
+
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 });
 
 		modeldata.objects = models;
 		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);

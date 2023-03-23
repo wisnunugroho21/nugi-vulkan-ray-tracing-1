@@ -385,10 +385,10 @@ void main() {
     vec3 lightDirection = normalize(globalLight.pointLights[i].sphere.center - fragPosWorld);
     vec3 halAngle = normalize(lightDirection + viewDirection); // half vector
 
-    float NoV = clamp(dot(fragNormalWorld, viewDirection), 0.001, 1.0);
-    float NoL = clamp(dot(fragNormalWorld, lightDirection), 0.001, 1.0);
-    float NoH = clamp(dot(fragNormalWorld, halAngle), 0.001, 1.0);
-    float VoH = clamp(dot(viewDirection, halAngle), 0.001, 1.0);
+    float NoV = clamp(dot(fragNormalWorld, viewDirection), 0.0, 1.0);
+    float NoL = clamp(dot(fragNormalWorld, lightDirection), 0.0, 1.0);
+    float NoH = clamp(dot(fragNormalWorld, halAngle), 0.0, 1.0);
+    float VoH = clamp(dot(viewDirection, halAngle), 0.0, 1.0);
 
     Ray r;
     r.origin = fragPosWorld;

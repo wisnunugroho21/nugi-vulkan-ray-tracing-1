@@ -128,7 +128,7 @@ namespace nugiEngine {
 	}
 
 	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(3);
+		std::vector<VkVertexInputAttributeDescription> attributeDescription(4);
 
 		attributeDescription[0].binding = 0;
 		attributeDescription[0].location = 0;

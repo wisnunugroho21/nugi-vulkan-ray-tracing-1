@@ -45,7 +45,7 @@ namespace nugiEngine {
 			}
 
 			void createRasterBuffer();
-			void createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[3]);
+			void createDescriptor();
 			
 			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
@@ -74,6 +74,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
 			std::shared_ptr<EngineDescriptorSetLayout> globalDescSetLayout;
 			std::vector<VkDescriptorSet> globalDescriptorSets;
+			VkDescriptorBufferInfo rayTraceModelInfo[3];
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;

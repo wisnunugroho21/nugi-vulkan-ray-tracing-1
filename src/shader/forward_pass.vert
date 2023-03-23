@@ -43,7 +43,7 @@ layout(set = 1, binding = 0) buffer readonly GlobalMaterial {
   Material materials[100];
 };
 
-layout(set = 1, binding = 1) buffer readonly GlobalTransform {
+layout(set = 1, binding = 1) uniform readonly GlobalTransform {
   Transform transform[100];
 };
 

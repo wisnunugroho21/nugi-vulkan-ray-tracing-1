@@ -7,8 +7,12 @@
 
 namespace nugiEngine {
 	EngineDefferedRenderer::EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
-		VkDescriptorBufferInfo rayTraceModelInfo[3]) : appDevice{device}, appWindow{window} 
+		VkDescriptorBufferInfo modelInfo[3]) : appDevice{ device }, appWindow{ window }
 	{
+		this->rayTraceModelInfo[0] = modelInfo[0];
+		this->rayTraceModelInfo[1] = modelInfo[1];
+		this->rayTraceModelInfo[2] = modelInfo[2];
+
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
 
@@ -16,7 +20,7 @@ namespace nugiEngine {
 		this->createDescriptorPool(this->swapChain->imageCount());
 
 		this->createRasterBuffer();
-		this->createDescriptor(rayTraceModelInfo);
+		this->createDescriptor();
 	}
 
 	EngineDefferedRenderer::~EngineDefferedRenderer() {
@@ -116,7 +120,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDefferedRenderer::createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[3]) {
+	void EngineDefferedRenderer::createDescriptor() {
 		this->globalDescSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
@@ -134,9 +138,9 @@ namespace nugiEngine {
 
 			EngineDescriptorWriter(*this->globalDescSetLayout, *this->descriptorPool)
 				.writeBuffer(0, &globalBufferInfo)
-				.writeBuffer(1, &rayTraceModelInfo[0])
-				.writeBuffer(2, &rayTraceModelInfo[1])
-				.writeBuffer(3, &rayTraceModelInfo[2]) 
+				.writeBuffer(1, &this->rayTraceModelInfo[0])
+				.writeBuffer(2, &this->rayTraceModelInfo[1])
+				.writeBuffer(3, &this->rayTraceModelInfo[2])
 				.build(&descSet);
 
 			this->globalDescriptorSets.emplace_back(descSet);
@@ -194,7 +198,9 @@ namespace nugiEngine {
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->appWindow.wasResized()) {
 			this->appWindow.resetResizedFlag();
 			this->recreateSwapChain();
+
 			this->descriptorPool->resetPool();
+			this->createDescriptor();
 
 			return false;
 		} else if (result != VK_SUCCESS) {
