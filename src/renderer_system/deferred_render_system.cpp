@@ -15,7 +15,7 @@
 namespace nugiEngine {
 	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
 		uint32_t width, uint32_t height, VkRenderPass renderPass, VkDescriptorSetLayout globalDescSetLayout, 
-		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]) : appDevice{device}
+		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4]) : appDevice{device}
 	{
 		this->createDescriptor(descriptorPool, forwardPassResourcesInfo);
 
@@ -57,13 +57,14 @@ namespace nugiEngine {
 	}
 
 	void EngineDeffereRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3])  
+		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4])  
 	{
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 				
 		this->descriptorSets.clear();
@@ -75,6 +76,7 @@ namespace nugiEngine {
 				.writeImage(0, &forwardPassResourcesInfo[0][i])
 				.writeImage(1, &forwardPassResourcesInfo[1][i])
 				.writeImage(2, &forwardPassResourcesInfo[2][i])
+				.writeImage(3, &forwardPassResourcesInfo[3][i])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

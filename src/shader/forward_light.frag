@@ -32,13 +32,14 @@ struct BvhNode {
   vec3 minimum;
 };
 
-layout (location = 0) in vec2 fragOffset;
+layout(location = 0) in vec2 fragOffset;
 layout(location = 1) in vec3 positionFrag;
 layout(location = 2) in vec3 albedoFrag;
 
 layout(location = 0) out vec4 positionResource;
 layout(location = 1) out vec4 albedoResource;
 layout(location = 2) out vec4 normalResource;
+layout(location = 3) out vec4 materialResource;
 
 layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;
@@ -70,4 +71,5 @@ void main() {
   positionResource = vec4(positionFrag, 1.0);
   albedoResource = vec4(albedoFrag, 1.0);
   normalResource = vec4(0.0);
+  materialResource = vec4(0.0);
 }

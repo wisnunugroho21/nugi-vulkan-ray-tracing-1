@@ -14,6 +14,9 @@
 namespace nugiEngine {
   struct MaterialItem {
     alignas(16) glm::vec3 color{};
+    alignas(4) float metallicness;
+    alignas(4) float roughness;
+    alignas(4) float fresnelReflect;
   };
 
 	struct MaterialData {

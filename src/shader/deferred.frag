@@ -63,6 +63,7 @@ layout(set = 0, binding = 3) buffer readonly GlobalBvh {
 layout(set = 1, binding = 0, rgba8) uniform readonly image2D positionResource;
 layout(set = 1, binding = 1, rgba8) uniform readonly image2D albedoResource;
 layout(set = 1, binding = 2, rgba8) uniform readonly image2D normalResource;
+layout(set = 1, binding = 3, rgba8) uniform readonly image2D materialResource;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -319,23 +320,19 @@ float G_Smith(float NoV, float NoL, float roughness) {
 }
 
 // ------------- Material -------------
-float brdfVal(float NoV, float NoL, float NoH, float VoH) {
-  float roughness = 0.0;
-  float fresnelReflect = 0.2;
-  float metallicness = 0.8;
-
-  float f0 = 0.16 * (fresnelReflect * fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
+float brdfVal(float NoV, float NoL, float NoH, float VoH, vec3 material) {
+  float f0 = 0.16 * (material.z * material.z); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
-  float D = D_GGX(NoH, roughness);
-  float G = G_Smith(NoV, NoL, roughness);
+  float D = D_GGX(NoH, material.y);
+  float G = G_Smith(NoV, NoL, material.y);
   float spec = (F * D * G) / (4.0 * NoV * NoL);
   
   // diffuse
   float diff = 1.0 / pi;
 
-  return mix(diff, spec, metallicness);
+  return mix(diff, spec, material.x);
 }
 
 // ------------- Light -------------
@@ -377,6 +374,7 @@ void main() {
   vec3 fragPosWorld = imageLoad(positionResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragColor = imageLoad(albedoResource, ivec2(gl_FragCoord.xy)).xyz;
   vec3 fragNormalWorld = imageLoad(normalResource, ivec2(gl_FragCoord.xy)).xyz;
+  vec3 fragMaterial = imageLoad(materialResource, ivec2(gl_FragCoord.xy)).xyz;
 
   vec3 totalColor = vec3(0.0);
 
@@ -402,7 +400,7 @@ void main() {
     }
 
     vec3 distance = (hitLight.point - r.origin) / 10.0;
-    float brdf = brdfVal(NoV, NoL, NoH, VoH);
+    float brdf = brdfVal(NoV, NoL, NoH, VoH, fragMaterial);
     float NloL = dot(hitLight.faceNormal.normal, -1.0 * normalize(r.direction));
 
     totalColor += areaLight(globalLight.pointLights[i].sphere) * globalLight.pointLights[i].color * brdf * NoL * NloL / dot(distance, distance);

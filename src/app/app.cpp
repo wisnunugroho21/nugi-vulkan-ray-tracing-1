@@ -167,13 +167,13 @@ namespace nugiEngine {
 
 		MaterialData materialData{};
 
-		MaterialItem matItem1 { glm::vec3(0.73f, 0.73f, 0.73f) };
+		MaterialItem matItem1 { glm::vec3(0.73f, 0.73f, 0.73f), 1.0f, 0.2f, 0.5f };
 		materialData.data[0] = matItem1;
 
-		MaterialItem matItem2 { glm::vec3(0.65f, 0.05f, 0.05f) };
+		MaterialItem matItem2 { glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.0f, 0.0f };
 		materialData.data[1] = matItem2;
 
-		MaterialItem matItem3 { glm::vec3(0.12f, 0.45f, 0.15f) };
+		MaterialItem matItem3 { glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.0f, 0.0f };
 		materialData.data[2] = matItem3;
 
 		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);

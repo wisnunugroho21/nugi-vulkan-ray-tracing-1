@@ -2,6 +2,9 @@
 
 struct Material {
   vec3 color;
+	float metallicness;
+  float roughness;
+  float fresnelReflect;
 };
 
 struct Sphere {
@@ -27,6 +30,7 @@ layout(location = 3) in uint transformIndex;
 layout(location = 0) out vec4 positionFrag;
 layout(location = 1) out vec4 albedoFrag;
 layout(location = 2) out vec4 normalFrag;
+layout(location = 3) out vec4 materialFrag;
 
 layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;
@@ -53,4 +57,5 @@ void main() {
 	positionFrag = vec4(position, 1.0);
 	albedoFrag = vec4(materials[materialIndex].color, 1.0);
 	normalFrag = normalize(transform[transformIndex].normalMatrix * vec4(normal, 1.0));
+	materialFrag = vec4(materials[materialIndex].metallicness, materials[materialIndex].roughness, materials[materialIndex].fresnelReflect, 0.0);
 }

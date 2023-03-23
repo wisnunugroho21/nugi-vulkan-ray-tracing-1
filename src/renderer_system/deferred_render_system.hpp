@@ -19,7 +19,7 @@ namespace nugiEngine {
 			EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				uint32_t width, uint32_t height, VkRenderPass renderPass, 
 				VkDescriptorSetLayout globalDescSetLayout,
-				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]);
+				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4]);
 			~EngineDeffereRenderSystem();
 
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
@@ -32,7 +32,7 @@ namespace nugiEngine {
 			void createPipeline(VkRenderPass renderPass);
 
 			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3]);
+				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4]);
 
 			EngineDevice& appDevice;
 			
