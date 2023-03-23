@@ -4,9 +4,6 @@
 
 #define KEPSILON 0.00001
 
-layout(origin_upper_left) in vec4 gl_FragCoord;
-layout(location = 0) out vec4 outColor;
-
 struct Sphere {
   vec3 center;
   float radius;
@@ -38,6 +35,9 @@ struct BvhNode {
   vec3 maximum;
   vec3 minimum;
 };
+
+layout(origin_upper_left) in vec4 gl_FragCoord;
+layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;

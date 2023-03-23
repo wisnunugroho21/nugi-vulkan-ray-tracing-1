@@ -16,7 +16,7 @@ namespace nugiEngine {
 	class EngineDefferedRenderer {
 		public:
 			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
-				VkDescriptorBufferInfo rayTraceModelInfo[2]);
+				VkDescriptorBufferInfo rayTraceModelInfo[3]);
 			~EngineDefferedRenderer();
 
 			EngineDefferedRenderer(const EngineDefferedRenderer&) = delete;
@@ -45,12 +45,9 @@ namespace nugiEngine {
 			}
 
 			void createRasterBuffer();
-			void createLightBuffer();
-
-			void createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[2]);
+			void createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[3]);
 			
 			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-			void writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
 			std::shared_ptr<EngineCommandBuffer> beginCommand();
 			void endCommand(std::shared_ptr<EngineCommandBuffer>);
@@ -73,7 +70,6 @@ namespace nugiEngine {
 			std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers;
 
 			std::vector<std::shared_ptr<EngineBuffer>> rasterBuffers;
-			std::vector<std::shared_ptr<EngineBuffer>> lightBuffers;
 
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
 			std::shared_ptr<EngineDescriptorSetLayout> globalDescSetLayout;

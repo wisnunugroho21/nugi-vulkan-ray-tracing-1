@@ -30,20 +30,12 @@ namespace nugiEngine {
 	}
 
 	void EngineForwardLightRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
-		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(PointLightPushConstant);
-
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout };
-		std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
 		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-		pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
 
 		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -88,23 +80,8 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineForwardLightRenderSystem::update(std::vector<std::shared_ptr<EngineLightObject>> &pointLightObjects, GlobalLight &globalLight) {
-		int lightIndex = 0;
-
-		for (auto& plo : pointLightObjects) {
-			// copy light to ubo
-			globalLight.pointLights[lightIndex].sphere.center = plo->position;
-			globalLight.pointLights[lightIndex].sphere.radius = plo->radius;
-			globalLight.pointLights[lightIndex].color = plo->color;
-
-			lightIndex++;
-		}
-
-		globalLight.numLight = lightIndex;
-	}
-
 	void EngineForwardLightRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineLightObject>> &pointLights) 
+		VkDescriptorSet &globalDescSet, uint32_t numLight) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 		std::vector<VkDescriptorSet> descSets = { globalDescSet };
@@ -120,22 +97,6 @@ namespace nugiEngine {
 			nullptr
 		);
 
-		for (auto& pl : pointLights) {
-			PointLightPushConstant pushConstant{};
-			pushConstant.position = glm::vec4{ pl->position, 1.0f };
-			pushConstant.color = glm::vec4{ pl->color, pl->intensity };
-			pushConstant.radius = pl->radius;
-
-			vkCmdPushConstants(
-				commandBuffer->getCommandBuffer(), 
-				pipelineLayout, 
-				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-				0,
-				sizeof(PointLightPushConstant),
-				&pushConstant
-			);
-
-			vkCmdDraw(commandBuffer->getCommandBuffer(), 6, 1, 0, 0);
-		}
+		vkCmdDraw(commandBuffer->getCommandBuffer(), 6 * numLight, 1, 0, 0);
 	}
 }

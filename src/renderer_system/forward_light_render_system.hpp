@@ -23,9 +23,8 @@ namespace nugiEngine {
 			EngineForwardLightRenderSystem(const EngineForwardLightRenderSystem&) = delete;
 			EngineForwardLightRenderSystem& operator = (const EngineForwardLightRenderSystem&) = delete;
 
-      void update(std::vector<std::shared_ptr<EngineLightObject>> &pointLightObjects, GlobalLight &globalLight);
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				VkDescriptorSet &globalDescSet, std::vector<std::shared_ptr<EngineLightObject>> &pointLights);
+				VkDescriptorSet &globalDescSet, uint32_t numLight);
 
 		private:
 			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);

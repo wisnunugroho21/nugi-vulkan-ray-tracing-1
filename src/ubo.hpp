@@ -62,9 +62,4 @@ namespace nugiEngine {
     glm::mat4 view{1.0f};
     alignas(16) glm::vec3 realCameraPos{1.0f};
   };
-
-  struct GlobalLight {
-    PointLight pointLights[100];
-    uint32_t numLight = 0;
-  };
 }

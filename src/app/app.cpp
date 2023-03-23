@@ -57,16 +57,12 @@ namespace nugiEngine {
 				ubo.realCameraPos = camera.getRealCameraPos();
 				this->renderer->writeGlobalBuffer(frameIndex, &ubo);
 
-				GlobalLight lightUbo{};
-				this->forwardLightRenderSystem->update(this->lightObjects, lightUbo);
-				this->renderer->writeLightBuffer(frameIndex, &lightUbo);
-
 				auto globalDescSet = this->renderer->getGlobalDescriptorSets(frameIndex);
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObject);
-				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObjects);
+				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObject->getNumLight());
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
@@ -167,10 +163,10 @@ namespace nugiEngine {
 		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
 		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
 
-		modeldata.objects = models;		
-		// ----------------------------------------------------------------------------
-
+		modeldata.objects = models;
 		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);
+
+		// ----------------------------------------------------------------------------
 
 		MaterialData materialData{};
 
@@ -183,15 +179,21 @@ namespace nugiEngine {
 		MaterialItem matItem3 { glm::vec3(0.12f, 0.45f, 0.15f) };
 		materialData.data[2] = matItem3;
 
-		auto pointLight = EngineLightObject::createSharedLightObject();
-		pointLight->color = glm::vec3(1.0f);
-		pointLight->intensity = 1.0f;
-		pointLight->position = glm::vec3(277.5f, 500.0f, 277.5f);
-		pointLight->radius = 10.0f;
-
-		this->lightObjects.emplace_back(std::move(pointLight));
-
 		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
+
+		// ----------------------------------------------------------------------------
+
+		std::vector<PointLight> pointLights{};
+
+		PointLight pointLight{};
+		pointLight.sphere.center = glm::vec3(277.5f, 500.0f, 277.5f);
+		pointLight.sphere.radius = 10.0f;
+		pointLight.color = glm::vec3(1.0f);
+
+		pointLights.emplace_back(pointLight);
+		this->lightObject = EngineLightObject::createSharedLightObject(this->device, pointLights);
+
+		// ----------------------------------------------------------------------------		
 	}
 
 	void EngineApp::loadQuadModels() {

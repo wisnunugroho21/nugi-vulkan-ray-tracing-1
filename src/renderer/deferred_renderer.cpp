@@ -7,7 +7,7 @@
 
 namespace nugiEngine {
 	EngineDefferedRenderer::EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
-		VkDescriptorBufferInfo rayTraceModelInfo[2]) : appDevice{device}, appWindow{window} 
+		VkDescriptorBufferInfo rayTraceModelInfo[3]) : appDevice{device}, appWindow{window} 
 	{
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
@@ -16,7 +16,6 @@ namespace nugiEngine {
 		this->createDescriptorPool(this->swapChain->imageCount());
 
 		this->createRasterBuffer();
-		this->createLightBuffer();
 		this->createDescriptor(rayTraceModelInfo);
 	}
 
@@ -117,28 +116,11 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDefferedRenderer::createLightBuffer() {
-		this->lightBuffers.clear();
-
-		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto lightBuffer = std::make_shared<EngineBuffer>(
-				this->appDevice,
-				sizeof(GlobalLight),
-				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-			);
-
-			lightBuffer->map();
-			this->lightBuffers.emplace_back(lightBuffer);
-		}
-	}
-
-	void EngineDefferedRenderer::createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[2]) {
+	void EngineDefferedRenderer::createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[3]) {
 		this->globalDescSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
@@ -149,13 +131,12 @@ namespace nugiEngine {
 			VkDescriptorSet descSet{};
 
 			auto globalBufferInfo =  this->rasterBuffers[i]->descriptorInfo();
-			auto lightBufferInfo =  this->lightBuffers[i]->descriptorInfo();
 
 			EngineDescriptorWriter(*this->globalDescSetLayout, *this->descriptorPool)
 				.writeBuffer(0, &globalBufferInfo)
-				.writeBuffer(1, &lightBufferInfo) 
-				.writeBuffer(2, &rayTraceModelInfo[0])
-				.writeBuffer(3, &rayTraceModelInfo[1])
+				.writeBuffer(1, &rayTraceModelInfo[0])
+				.writeBuffer(2, &rayTraceModelInfo[1])
+				.writeBuffer(3, &rayTraceModelInfo[2]) 
 				.build(&descSet);
 
 			this->globalDescriptorSets.emplace_back(descSet);
@@ -165,11 +146,6 @@ namespace nugiEngine {
 	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size, VkDeviceSize offset) {
 		this->rasterBuffers[frameIndex]->writeToBuffer(data, size, offset);
 		this->rasterBuffers[frameIndex]->flush(size, offset);
-	}
-
-	void EngineDefferedRenderer::writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size, VkDeviceSize offset) {
-		this->lightBuffers[frameIndex]->writeToBuffer(data, size, offset);
-		this->lightBuffers[frameIndex]->flush(size, offset);
 	}
 
 	std::shared_ptr<EngineCommandBuffer> EngineDefferedRenderer::beginCommand() {

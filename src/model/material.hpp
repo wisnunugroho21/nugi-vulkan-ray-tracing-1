@@ -28,7 +28,6 @@ namespace nugiEngine {
       EngineMaterial(const EngineMaterial&) = delete;
       EngineMaterial& operator = (const EngineMaterial&) = delete;
       
-      std::shared_ptr<EngineBuffer> getMaterialBuffer() { return this->materialBuffer; }
       VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo(); }
       
     private:
