@@ -9,7 +9,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../ubo.hpp"
-#include "../model/material.hpp"
+#include "../game_object/material.hpp"
 
 #include <memory>
 #include <vector>

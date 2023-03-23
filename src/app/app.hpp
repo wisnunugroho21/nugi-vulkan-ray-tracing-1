@@ -53,6 +53,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineGameObject> gameObject;
 			std::shared_ptr<EngineLightObject> lightObject;
 			std::shared_ptr<EngineMaterial> materials;
+			std::shared_ptr<EngineTransform> transform;
 
 			bool isRendering = true;
 			uint32_t randomSeed = 0;

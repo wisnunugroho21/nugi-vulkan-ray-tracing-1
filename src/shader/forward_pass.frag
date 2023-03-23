@@ -65,15 +65,6 @@ layout(set = 0, binding = 3) buffer readonly GlobalBvh {
   uint numNode;
 } globalBvh;
 
-layout(set = 1, binding = 0) buffer readonly materialSsbo {
-  Material materials[100];
-};
-
-layout(push_constant) uniform Push {
-  mat4 modelMatrix;
-  mat4 normalMatrix;
-} push;
-
 void main() {
 	positionResource = positionFrag;
   albedoResource = albedoFrag;

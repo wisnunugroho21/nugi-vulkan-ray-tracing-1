@@ -33,9 +33,9 @@ namespace nugiEngine {
     RasterModelData rasterModelData;
 
     for (auto &&obj : rayTraceModelData.objects) {
-      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point0, obj.normal, obj.materialIndex });
-      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point1, obj.normal, obj.materialIndex });
-      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point2, obj.normal, obj.materialIndex });
+      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point0, obj.normal, obj.materialIndex, obj.transformIndex });
+      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point1, obj.normal, obj.materialIndex, obj.transformIndex });
+      rasterModelData.vertices.emplace_back(Vertex{ obj.triangle.point2, obj.normal, obj.materialIndex, obj.transformIndex });
     }
 
     static id_t currentId = 0;

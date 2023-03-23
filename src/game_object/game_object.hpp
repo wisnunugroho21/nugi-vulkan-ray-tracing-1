@@ -28,7 +28,6 @@ namespace nugiEngine {
 
 			id_t getId() { return this->objectId; }
 
-			TransformComponent transform{};
 			std::shared_ptr<EngineRasterModel> rasterModel{};
 			std::shared_ptr<EngineRayTraceModel> rayTraceModel{};
 

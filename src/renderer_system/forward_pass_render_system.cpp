@@ -19,7 +19,7 @@ namespace nugiEngine {
 	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
     std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorSetLayout globalDescSetLayout, 
-		VkDescriptorBufferInfo modelBuffersInfo[1]) 
+		VkDescriptorBufferInfo modelBuffersInfo[2]) 
 		: appDevice{device} 
 	{
 		this->createDescriptor(descriptorPool, modelBuffersInfo);
@@ -32,20 +32,12 @@ namespace nugiEngine {
 	}
 
 	void EngineForwardPassRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
-		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		pushConstantRange.offset = 0;
-		pushConstantRange.size = sizeof(SimplePushConstantData);
-
 		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout, this->descSetLayout->getDescriptorSetLayout() };
-		std::vector<VkPushConstantRange> pushConstantRanges = { pushConstantRange };
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
 		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-		pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(pushConstantRanges.size());
-		pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
 
 		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -89,11 +81,12 @@ namespace nugiEngine {
 	}
 
   void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		VkDescriptorBufferInfo modelBuffersInfo[1]) 
+		VkDescriptorBufferInfo modelBuffersInfo[2]) 
 	{
 		this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(this->appDevice)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 				.build();
 		
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -101,6 +94,7 @@ namespace nugiEngine {
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeBuffer(0, &modelBuffersInfo[0])
+				.writeBuffer(1, &modelBuffersInfo[1])
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);
@@ -122,19 +116,6 @@ namespace nugiEngine {
 			descSets.data(),
 			0,
 			nullptr
-		);
-
-		SimplePushConstantData pushConstant{};
-		pushConstant.modelMatrix = gameObject->transform.mat4();
-		pushConstant.normalMatrix = gameObject->transform.normalMatrix();
-
-		vkCmdPushConstants(
-			commandBuffer->getCommandBuffer(), 
-			pipelineLayout, 
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-			0,
-			sizeof(SimplePushConstantData),
-			&pushConstant
 		);
 
 		gameObject->rasterModel->bind(commandBuffer);

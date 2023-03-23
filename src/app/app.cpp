@@ -148,20 +148,20 @@ namespace nugiEngine {
 		RayTraceModelData modeldata{};
 
 		std::vector<Model> models{};
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0, 0.0, 0.0), 2 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0, 0.0, 0.0), 2 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0, 0.0, 0.0), 2, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0, 0.0, 0.0), 2, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 1.0, 0.0), 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0, 1.0, 0.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 1.0, 0.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0, 1.0, 0.0), 0, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, -1.0, 0.0), 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0, -1.0, 0.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, -1.0, 0.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0, -1.0, 0.0), 0, 0 });
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0, 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0, 0 });
 
 		modeldata.objects = models;
 		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);
@@ -194,6 +194,16 @@ namespace nugiEngine {
 		this->lightObject = EngineLightObject::createSharedLightObject(this->device, pointLights);
 
 		// ----------------------------------------------------------------------------		
+
+		std::vector<TransformComponent> transformComponents{};
+
+		TransformComponent transformComponent{};
+		transformComponent.rotation = glm::vec3(0.0f);
+		transformComponent.scale = glm::vec3(1.0f);
+		transformComponent.translation = glm::vec3(0.0f);
+
+		transformComponents.emplace_back(transformComponent);
+		this->transform = EngineTransform::createSharedFromTransformComponent(this->device, transformComponents);
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -236,7 +246,7 @@ namespace nugiEngine {
 		auto descriptorPool = this->renderer->getDescriptorPool();		
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();		
 
-		VkDescriptorBufferInfo modelBuffersInfo[1] = { this->materials->getMaterialInfo() };
+		VkDescriptorBufferInfo modelBuffersInfo[2] = { this->materials->getMaterialInfo(), this->transform->getTransformInfo() };
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);

@@ -16,12 +16,14 @@ namespace nugiEngine {
 		alignas(16) glm::vec3 position{};
 		alignas(16) glm::vec3 normal{};
 		alignas(4) uint32_t materialIndex = 0;
+		alignas(4) uint32_t transformIndex = 0;
 
 		static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
 
 		bool operator == (const Vertex &other) const {
-			return this->position == other.position && this->normal == other.normal && this->materialIndex == other.materialIndex;
+			return this->position == other.position && this->normal == other.normal && this->materialIndex == other.materialIndex 
+				&& this->transformIndex == other.transformIndex;
 		}
 	};
 

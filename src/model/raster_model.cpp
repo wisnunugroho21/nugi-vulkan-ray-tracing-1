@@ -145,6 +145,11 @@ namespace nugiEngine {
 		attributeDescription[2].format = VK_FORMAT_R32_UINT;
 		attributeDescription[2].offset = offsetof(Vertex, materialIndex);
 
+		attributeDescription[3].binding = 0;
+		attributeDescription[3].location = 3;
+		attributeDescription[3].format = VK_FORMAT_R32_UINT;
+		attributeDescription[3].offset = offsetof(Vertex, transformIndex);
+
 		return attributeDescription;
 	}
 

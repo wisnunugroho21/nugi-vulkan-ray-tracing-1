@@ -14,9 +14,15 @@ struct PointLight {
   vec3 color;
 };
 
+struct Transform {
+  mat4 modelMatrix;
+	mat4 normalMatrix;
+};
+
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in uint materialIndex;
+layout(location = 3) in uint transformIndex;
 
 layout(location = 0) out vec4 positionFrag;
 layout(location = 1) out vec4 albedoFrag;
@@ -33,19 +39,18 @@ layout(set = 0, binding = 1) buffer readonly GlobalLight {
 	uint numLight;
 } globalLight;
 
-layout(set = 1, binding = 0) buffer readonly materialSsbo {
+layout(set = 1, binding = 0) buffer readonly GlobalMaterial {
   Material materials[100];
 };
 
-layout(push_constant) uniform Push {
-  mat4 modelMatrix;
-	mat4 normalMatrix;
-} push;
+layout(set = 1, binding = 1) buffer readonly GlobalTransform {
+  Transform transform[100];
+};
 
 void main() {
-	gl_Position = ubo.projection * ubo.view * push.modelMatrix * vec4(position, 1.0);
+	gl_Position = ubo.projection * ubo.view * transform[transformIndex].modelMatrix * vec4(position, 1.0);
 
 	positionFrag = vec4(position, 1.0);
 	albedoFrag = vec4(materials[materialIndex].color, 1.0);
-	normalFrag = normalize(push.normalMatrix * vec4(normal, 1.0));
+	normalFrag = normalize(transform[transformIndex].normalMatrix * vec4(normal, 1.0));
 }

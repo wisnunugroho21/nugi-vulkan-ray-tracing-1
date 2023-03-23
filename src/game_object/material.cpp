@@ -6,8 +6,6 @@ namespace nugiEngine {
 		this->createMaterialBuffers(data);
 	}
 
-	EngineMaterial::~EngineMaterial() {}
-
 	void EngineMaterial::createMaterialBuffers(MaterialData &data) {
 		EngineBuffer stagingBuffer {
 			this->engineDevice,

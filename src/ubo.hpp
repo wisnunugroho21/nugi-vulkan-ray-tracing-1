@@ -21,6 +21,7 @@ namespace nugiEngine {
     Triangle triangle{};
     alignas(16) glm::vec3 normal{};
     alignas(4) uint32_t materialIndex;
+    alignas(4) uint32_t transformIndex;
   };
 
   struct BvhNode {

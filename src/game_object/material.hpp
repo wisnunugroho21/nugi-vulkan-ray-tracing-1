@@ -23,7 +23,6 @@ namespace nugiEngine {
 	class EngineMaterial {
     public:
       EngineMaterial(EngineDevice &device, MaterialData &data);
-      ~EngineMaterial();
 
       EngineMaterial(const EngineMaterial&) = delete;
       EngineMaterial& operator = (const EngineMaterial&) = delete;
