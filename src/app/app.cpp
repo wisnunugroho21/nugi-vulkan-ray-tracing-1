@@ -22,10 +22,12 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device);
-
 		this->loadObjects();
 		this->loadQuadModels();
+
+		VkDescriptorBufferInfo rayTraceModelInfo[2] = { this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
+		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device, rayTraceModelInfo);
+		
 		this->recreateSubRendererAndSubsystem();
 	}
 
@@ -42,8 +44,8 @@ namespace nugiEngine {
 			auto aspect = this->renderer->getSwapChain()->extentAspectRatio();
 
 			// camera.setViewYXZ(viewObject.transform.translation, viewObject.transform.rotation);
-			camera.setViewDirection({ 0.0, 1.0, 6.0 }, { 0.0, 0.0, -1.0 });
-			camera.setPerspectiveProjection(glm::radians(30.0f), aspect, 0.1f, 500.0f);
+			camera.setViewDirection({ 278.0f, 278.0f, -800.0f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f });
+			camera.setPerspectiveProjection(glm::radians(40.0f), aspect, 0.1f, 2000.0f);
 
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
@@ -59,18 +61,18 @@ namespace nugiEngine {
 				this->forwardLightRenderSystem->update(this->lightObjects, lightUbo);
 				this->renderer->writeLightBuffer(frameIndex, &lightUbo);
 
-				auto globalDescSet = *this->renderer->getGlobalDescriptorSets(frameIndex);
+				auto globalDescSet = this->renderer->getGlobalDescriptorSets(frameIndex);
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObjects);
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObject);
 				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObjects);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->defferedRenderSystem->render(commandBuffer, imageIndex, globalDescSet, this->quadModelObjects);
+				this->defferedRenderSystem->render(commandBuffer, imageIndex, globalDescSet, this->quadModelObjects, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);				
 								
 				this->renderer->endCommand(commandBuffer);
@@ -78,7 +80,14 @@ namespace nugiEngine {
 				
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
-				}			
+					this->randomSeed = 0;
+
+					continue;
+				}
+
+				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
+					this->randomSeed++;
+				}
 			}
 		}
 	}
@@ -113,8 +122,8 @@ namespace nugiEngine {
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
 
-	void EngineApp::loadObjects() {
-		std::shared_ptr<EngineModel> roomModel = EngineModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
+	/* void EngineApp::loadObjects() {
+		std::shared_ptr<EngineRasterModel> roomModel = EngineRasterModel::createModelFromFile(this->device, "models/CornellBox.obj", 0);
 
 		auto roomObject = EngineGameObject::createSharedGameObject();
 		roomObject->model = roomModel;
@@ -137,10 +146,56 @@ namespace nugiEngine {
 		this->lightObjects.emplace_back(std::move(pointLight));
 
 		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
+	} */
+
+	void EngineApp::loadObjects() {
+		RayTraceModelData modeldata{};
+
+		std::vector<Model> models{};
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0, 0.0, 0.0), 1 });
+
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0, 0.0, 0.0), 2 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0, 0.0, 0.0), 2 });
+
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 1.0, 0.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0, 1.0, 0.0), 0 });
+
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, -1.0, 0.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0, -1.0, 0.0), 0 });
+
+		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
+		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0, 0.0, -1.0), 0 });
+
+		modeldata.objects = models;		
+		// ----------------------------------------------------------------------------
+
+		this->gameObject = EngineGameObject::createSharedGameObject(this->device, modeldata);
+
+		MaterialData materialData{};
+
+		MaterialItem matItem1 { glm::vec3(0.73f, 0.73f, 0.73f) };
+		materialData.data[0] = matItem1;
+
+		MaterialItem matItem2 { glm::vec3(0.65f, 0.05f, 0.05f) };
+		materialData.data[1] = matItem2;
+
+		MaterialItem matItem3 { glm::vec3(0.12f, 0.45f, 0.15f) };
+		materialData.data[2] = matItem3;
+
+		auto pointLight = EngineLightObject::createSharedLightObject();
+		pointLight->color = glm::vec3(1.0f);
+		pointLight->intensity = 1.0f;
+		pointLight->position = glm::vec3(277.5f, 544.0f, 277.5f);
+		pointLight->radius = 10.0f;
+
+		this->lightObjects.emplace_back(std::move(pointLight));
+
+		this->materials = std::make_shared<EngineMaterial>(this->device, materialData);
 	}
 
 	void EngineApp::loadQuadModels() {
-		ModelData modelData{};
+		RasterModelData modelData{};
 
 		std::vector<Vertex> vertices;
 
@@ -162,7 +217,7 @@ namespace nugiEngine {
 		};
 
 		auto quadObject = EngineGameObject::createSharedGameObject();
-		quadObject->model = std::make_shared<EngineModel>(this->device, modelData);
+		quadObject->rasterModel = std::make_shared<EngineRasterModel>(this->device, modelData);
 
 		this->quadModelObjects.emplace_back(quadObject);
 	}
@@ -179,7 +234,7 @@ namespace nugiEngine {
 		auto descriptorPool = this->renderer->getDescriptorPool();		
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();		
 
-		std::vector<VkDescriptorBufferInfo> buffersInfo = { this->materials->getMaterialInfo() };
+		VkDescriptorBufferInfo modelBuffersInfo[1] = { this->materials->getMaterialInfo() };
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
@@ -187,13 +242,13 @@ namespace nugiEngine {
 		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
 		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();		
 		
-		std::vector<std::vector<VkDescriptorImageInfo>> forwardPassResourcesInfo = { 
+		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[3] = { 
 			this->forwardPassSubRenderer->getPositionInfoResources(), 
 			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
 			this->forwardPassSubRenderer->getNormalInfoResources() 
 		};
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout, buffersInfo);
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout, modelBuffersInfo);
 		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, globalDescLayout);
 		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, swapChainRenderPass, globalDescLayout, forwardPassResourcesInfo);
 	}

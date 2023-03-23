@@ -93,9 +93,9 @@ namespace nugiEngine {
 
 		for (auto& plo : pointLightObjects) {
 			// copy light to ubo
-			globalLight.pointLights[lightIndex].position = glm::vec4{ plo->position, 1.0f };
-			globalLight.pointLights[lightIndex].color = glm::vec4{ plo->color, plo->intensity };
-			globalLight.pointLights[lightIndex].radius = plo->radius;
+			globalLight.pointLights[lightIndex].sphere.center = plo->position;
+			globalLight.pointLights[lightIndex].sphere.radius = plo->radius;
+			globalLight.pointLights[lightIndex].color = plo->color;
 
 			lightIndex++;
 		}

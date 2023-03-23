@@ -51,9 +51,9 @@ namespace nugiEngine {
     Sphere s;
   };
 
-  struct ObjectBoundBox {
+  struct ModelBoundBox {
     int index;
-    Object o;
+    Model o;
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.
@@ -62,7 +62,7 @@ namespace nugiEngine {
     int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     int leftNodeIndex = -1;
     int rightNodeIndex = -1;
-    std::vector<ObjectBoundBox> objects;
+    std::vector<ModelBoundBox> objects;
 
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
@@ -95,14 +95,14 @@ namespace nugiEngine {
     return Aabb{ glm::min(box0.min, box1.min), glm::max(box0.max, box1.max) };
   }
 
-  Aabb objectBoundingBox(Object &o) {
+  Aabb objectBoundingBox(Model &o) {
     // Need to add eps to correctly construct an AABB for flat objects like planes.
     return Aabb{ glm::min(glm::min(o.triangle.point0, o.triangle.point1), o.triangle.point2) - eps, 
       glm::max(glm::max(o.triangle.point0, o.triangle.point1), o.triangle.point2) + eps };
     // return {t.center - t.radius, t.center + t.radius};
   }
 
-  Aabb objectListBoundingBox(std::vector<ObjectBoundBox> &objects) {
+  Aabb objectListBoundingBox(std::vector<ModelBoundBox> &objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;
@@ -116,35 +116,35 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(Object &a, Object &b, int axis) {
+  inline bool boxCompare(Model &a, Model &b, int axis) {
     Aabb boxA = objectBoundingBox(a);
     Aabb boxB = objectBoundingBox(b);
 
     return boxA.min[axis] < boxB.min[axis];
   }
 
-  bool boxXCompare(ObjectBoundBox a, ObjectBoundBox b) {
+  bool boxXCompare(ModelBoundBox a, ModelBoundBox b) {
     return boxCompare(a.o, b.o, 0);
   }
 
-  bool boxYCompare(ObjectBoundBox a, ObjectBoundBox b) {
+  bool boxYCompare(ModelBoundBox a, ModelBoundBox b) {
     return boxCompare(a.o, b.o, 1);
   }
 
-  bool boxZCompare(ObjectBoundBox a, ObjectBoundBox b) {
+  bool boxZCompare(ModelBoundBox a, ModelBoundBox b) {
     return boxCompare(a.o, b.o, 2);
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<ObjectBoundBox> &srcObjects) {
+  std::vector<BvhNode> createBvh(const std::vector<ModelBoundBox> &srcModels) {
     int nodeCounter = 0;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
 
     BvhItemBuild root;
     root.index = nodeCounter;
-    root.objects = srcObjects;
+    root.objects = srcModels;
     nodeCounter++;
     nodeStack.push(root);
 

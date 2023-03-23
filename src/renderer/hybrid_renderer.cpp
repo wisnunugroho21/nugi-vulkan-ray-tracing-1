@@ -1,5 +1,5 @@
 #include "hybrid_renderer.hpp"
-#include "../ray_ubo.hpp"
+#include "../ubo.hpp"
 
 #include <stdexcept>
 #include <array>

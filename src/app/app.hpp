@@ -3,7 +3,7 @@
 #include "../window/window.hpp"
 #include "../device/device.hpp"
 #include "../model/ray_trace_model.hpp"
-#include "../model/model.hpp"
+#include "../model/raster_model.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
@@ -50,10 +50,11 @@ namespace nugiEngine {
 			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
 
 			std::vector<std::shared_ptr<EngineGameObject>> quadModelObjects;
-			std::vector<std::shared_ptr<EngineGameObject>> gameObjects;
+			std::shared_ptr<EngineGameObject> gameObject;
 			std::vector<std::shared_ptr<EngineLightObject>> lightObjects;
 			std::shared_ptr<EngineMaterial> materials;
 
 			bool isRendering = true;
+			uint32_t randomSeed = 0;
 	};
 }

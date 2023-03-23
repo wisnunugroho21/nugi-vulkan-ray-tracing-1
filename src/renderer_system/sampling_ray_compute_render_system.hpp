@@ -8,7 +8,7 @@
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>

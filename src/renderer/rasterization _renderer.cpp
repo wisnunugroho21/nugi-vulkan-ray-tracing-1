@@ -1,5 +1,5 @@
 #include "rasterization_renderer.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <stdexcept>
 #include <array>

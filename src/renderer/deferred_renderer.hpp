@@ -6,7 +6,7 @@
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../command/command_buffer.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>
@@ -15,7 +15,8 @@
 namespace nugiEngine {
 	class EngineDefferedRenderer {
 		public:
-			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device);
+			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
+				VkDescriptorBufferInfo rayTraceModelInfo[2]);
 			~EngineDefferedRenderer();
 
 			EngineDefferedRenderer(const EngineDefferedRenderer&) = delete;
@@ -23,7 +24,7 @@ namespace nugiEngine {
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
-			std::shared_ptr<VkDescriptorSet> getGlobalDescriptorSets(int frameIndex) { return this->globalDescriptorSets[frameIndex]; }
+			VkDescriptorSet getGlobalDescriptorSets(int frameIndex) { return this->globalDescriptorSets[frameIndex]; }
 			std::shared_ptr<EngineDescriptorSetLayout> getGlobalDescSetLayout() const { return this->globalDescSetLayout; }
 
 			bool isFrameInProgress() const { return this->isFrameStarted; }
@@ -43,10 +44,10 @@ namespace nugiEngine {
 				return this->currentImageIndex;
 			}
 
-			void createGlobalBuffer();
+			void createRasterBuffer();
 			void createLightBuffer();
 
-			void createDescriptor();
+			void createDescriptor(VkDescriptorBufferInfo rayTraceModelInfo[2]);
 			
 			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 			void writeLightBuffer(int frameIndex, GlobalLight* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
@@ -71,12 +72,12 @@ namespace nugiEngine {
 			std::shared_ptr<EngineSwapChain> swapChain;
 			std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers;
 
-			std::vector<std::shared_ptr<EngineBuffer>> globalBuffers;
+			std::vector<std::shared_ptr<EngineBuffer>> rasterBuffers;
 			std::vector<std::shared_ptr<EngineBuffer>> lightBuffers;
 
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
-      std::shared_ptr<EngineDescriptorSetLayout> globalDescSetLayout;
-      std::vector<std::shared_ptr<VkDescriptorSet>> globalDescriptorSets;
+			std::shared_ptr<EngineDescriptorSetLayout> globalDescSetLayout;
+			std::vector<VkDescriptorSet> globalDescriptorSets;
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;

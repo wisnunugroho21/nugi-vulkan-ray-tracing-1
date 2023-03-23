@@ -1,4 +1,4 @@
-#include "model.hpp"
+#include "raster_model.hpp"
 #include "../utils/utils.hpp"
 
 #include <cstring>
@@ -23,21 +23,21 @@ namespace std {
 } // namespace std
 
 namespace nugiEngine {
-	EngineModel::EngineModel(EngineDevice &device, const ModelData &datas) : engineDevice{device} {
+	EngineRasterModel::EngineRasterModel(EngineDevice &device, const RasterModelData &datas) : engineDevice{device} {
 		this->createVertexBuffers(datas.vertices);
 		this->createIndexBuffer(datas.indices);
 	}
 
-	EngineModel::~EngineModel() {}
+	EngineRasterModel::~EngineRasterModel() {}
 
-	std::unique_ptr<EngineModel> EngineModel::createModelFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
-		ModelData modelData;
+	std::unique_ptr<EngineRasterModel> EngineRasterModel::createModelFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
+		RasterModelData modelData;
 		modelData.loadModel(filePath, materialIndex);
 
-		return std::make_unique<EngineModel>(device, modelData);
+		return std::make_unique<EngineRasterModel>(device, modelData);
 	}
 
-	void EngineModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
+	void EngineRasterModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
 		this->vertextCount = static_cast<uint32_t>(vertices.size());
 		assert(vertextCount >= 3 && "Vertex count must be at least 3");
 
@@ -66,7 +66,7 @@ namespace nugiEngine {
 		this->vertexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
 	}
 
-	void EngineModel::createIndexBuffer(const std::vector<uint32_t> &indices) { 
+	void EngineRasterModel::createIndexBuffer(const std::vector<uint32_t> &indices) { 
 		this->indexCount = static_cast<uint32_t>(indices.size());
 		this->hasIndexBuffer = this->indexCount > 0;
 
@@ -99,7 +99,7 @@ namespace nugiEngine {
 		this->indexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
 	}
 
-	void EngineModel::bind(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+	void EngineRasterModel::bind(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		VkBuffer buffers[] = {this->vertexBuffer->getBuffer()};
 		VkDeviceSize offsets[] = {0};
 		vkCmdBindVertexBuffers(commandBuffer->getCommandBuffer(), 0, 1, buffers, offsets);
@@ -109,7 +109,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineModel::draw(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+	void EngineRasterModel::draw(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		if (this->hasIndexBuffer) {
 			vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), this->indexCount, 1, 0, 0, 0);
 		} else {
@@ -148,7 +148,7 @@ namespace nugiEngine {
 		return attributeDescription;
 	}
 
-	void ModelData::loadModel(const std::string &filePath, uint32_t materialIndex) {
+	void RasterModelData::loadModel(const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;

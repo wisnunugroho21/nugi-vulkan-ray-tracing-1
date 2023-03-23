@@ -8,7 +8,7 @@
 #include "../frame_info.hpp"
 #include "../buffer/buffer.hpp"
 #include "../descriptor/descriptor.hpp"
-#include "../globalUbo.hpp"
+#include "../ubo.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,7 +24,7 @@ namespace nugiEngine {
 			EngineSamplingRayRasterRenderSystem(const EngineSamplingRayRasterRenderSystem&) = delete;
 			EngineSamplingRayRasterRenderSystem& operator = (const EngineSamplingRayRasterRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineModel> model, uint32_t randomSeed = 1);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, std::shared_ptr<EngineRasterModel> model, uint32_t randomSeed = 1);
 		
 		private:
 			void createPipelineLayout();
