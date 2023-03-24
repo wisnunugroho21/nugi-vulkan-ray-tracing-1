@@ -288,51 +288,45 @@ float fresnelSchlick(float VoH, float F0) {
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = max(roughness, 0.05);
-  
+  float r = 0.5 + 0.5 * roughness;
   float alpha = r * r;
   float alpha2 = alpha * alpha;
-  
-  float b = (NoH * NoH * (alpha2 - 1.0) + 1.0);
+  float NoH2 = NoH * NoH;
+  float b = (NoH2 * (alpha2 - 1.0) + 1.0);
   return alpha2 / (pi * b * b);
 }
-float G1_GGX_Schlick(float cosine, float roughness) {
+float G1_GGX_Schlick(float NoV, float roughness) {
+  // float r = roughness; // original
   float r = 0.5 + 0.5 * roughness; // Disney remapping
   float k = (r * r) / 2.0;
-
-  float denom = cosine * (1.0 - k) + k;
-  return cosine / denom;
-}
-
-float G1_GGX(float cosine, float roughness) {
-  float alpha = roughness * roughness;
-  float alpha2 = alpha * alpha;
-
-  float b = alpha2 + (1 - alpha2) * cosine * cosine;
-  return 2 * cosine / (cosine + sqrt(b));
+  float denom = NoV * (1.0 - k) + k;
+  return max(NoV, 0.001) / denom;
 }
 
 float G_Smith(float NoV, float NoL, float roughness) {
-  float g1_l = G1_GGX(NoL, roughness);
-  float g1_v = G1_GGX(NoV, roughness);
-
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
   return g1_l * g1_v;
 }
 
 // ------------- Material -------------
 float brdfVal(float NoV, float NoL, float NoH, float VoH, vec3 material) {
   float f0 = 0.16 * (material.z * material.z); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
+  f0 = mix(f0, 1.0, material.x);
 
   // specular microfacet (cook-torrance) BRDF
   float F = fresnelSchlick(VoH, f0);
   float D = D_GGX(NoH, material.y);
   float G = G_Smith(NoV, NoL, material.y);
-  float spec = (F * D * G) / (4.0 * NoV * NoL);
-  
-  // diffuse
-  float diff = 1.0 / pi;
+  float spec = (F * D * G) / (4.0 * max(NoV, 0.001) * max(NoL, 0.001));
 
-  return mix(diff, spec, material.x);
+  // diffuse
+  float rhoD = 1.0;
+  rhoD *= rhoD - F; // if not specular, use as diffuse (optional)
+  rhoD *= (1.0 - material.x); // no diffuse for metals
+  float diff = rhoD / pi;
+
+  return diff + spec;
 }
 
 // ------------- Light -------------
@@ -383,10 +377,10 @@ void main() {
     vec3 lightDirection = normalize(globalLight.pointLights[i].sphere.center - fragPosWorld);
     vec3 halAngle = normalize(lightDirection + viewDirection); // half vector
 
-    float NoV = clamp(dot(fragNormalWorld, viewDirection), 0.0, 1.0);
-    float NoL = clamp(dot(fragNormalWorld, lightDirection), 0.0, 1.0);
-    float NoH = clamp(dot(fragNormalWorld, halAngle), 0.0, 1.0);
-    float VoH = clamp(dot(viewDirection, halAngle), 0.0, 1.0);
+    float NoV = clamp(dot(fragNormalWorld, viewDirection), 0.001, 1.0);
+    float NoL = clamp(dot(fragNormalWorld, lightDirection), 0.001, 1.0);
+    float NoH = clamp(dot(fragNormalWorld, halAngle), 0.001, 1.0);
+    float VoH = clamp(dot(viewDirection, halAngle), 0.001, 1.0);
 
     Ray r;
     r.origin = fragPosWorld;

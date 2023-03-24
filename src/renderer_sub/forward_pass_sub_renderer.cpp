@@ -41,7 +41,16 @@ namespace nugiEngine {
     }
 
     return descInfos;
-  }  
+  }
+
+  std::vector<VkDescriptorImageInfo> EngineForwardPassSubRenderer::getMaterialInfoResources() {
+      std::vector<VkDescriptorImageInfo> descInfos{};
+      for (auto&& materialInfo : this->materialResources) {
+          descInfos.emplace_back(materialInfo->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL));
+      }
+
+      return descInfos;
+  }
 
   void EngineForwardPassSubRenderer::createPositionResources(int imageCount) {
     this->positionResources.clear();
