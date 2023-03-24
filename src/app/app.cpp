@@ -167,7 +167,7 @@ namespace nugiEngine {
 
 		MaterialData materialData{};
 
-		MaterialItem matItem1 { glm::vec3(1.0f, 1.0f, 1.0f), 1.0f, 0.001f, 0.5f };
+		MaterialItem matItem1 { glm::vec3(0.73f, 0.73f, 0.73f), 1.0f, 0.001f, 0.5f };
 		materialData.data[0] = matItem1;
 
 		MaterialItem matItem2 { glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.0f, 0.0f };

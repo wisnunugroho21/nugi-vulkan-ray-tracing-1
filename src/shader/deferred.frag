@@ -288,7 +288,7 @@ float fresnelSchlick(float VoH, float F0) {
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = 0.5 + 0.5 * roughness;
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
   float alpha = r * r;
   float alpha2 = alpha * alpha;
   float NoH2 = NoH * NoH;
