@@ -18,12 +18,10 @@ namespace nugiEngine {
 	};
 	 
 	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
-    std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorSetLayout globalDescSetLayout, 
-		VkDescriptorBufferInfo modelBuffersInfo[2]) 
+    std::vector<VkDescriptorSetLayout> descSetLayout) 
 		: appDevice{device} 
 	{
-		this->createDescriptor(descriptorPool, modelBuffersInfo);
-		this->createPipelineLayout(globalDescSetLayout);
+		this->createPipelineLayout(descSetLayout);
 		this->createPipeline(renderPass);
 	}
 
@@ -31,13 +29,11 @@ namespace nugiEngine {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineForwardPassRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout, this->descSetLayout->getDescriptorSetLayout() };
-
+	void EngineForwardPassRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayout) {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayout.size());
+		pipelineLayoutInfo.pSetLayouts = descSetLayout.data();
 
 		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -84,32 +80,10 @@ namespace nugiEngine {
 			.build();
 	}
 
-  void EngineForwardPassRenderSystem::createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		VkDescriptorBufferInfo modelBuffersInfo[2]) 
-	{
-		this->descSetLayout = 
-			EngineDescriptorSetLayout::Builder(this->appDevice)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-				.addBinding(1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
-				.build();
-		
-		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto descSet = std::make_shared<VkDescriptorSet>();
-
-			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeBuffer(0, &modelBuffersInfo[0])
-				.writeBuffer(1, &modelBuffersInfo[1])
-				.build(descSet.get());
-
-			this->descriptorSets.emplace_back(descSet);
-		}
-  }
-
 	void EngineForwardPassRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGeometry> gameObject) 
+		std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-		std::vector<VkDescriptorSet> descSets = { globalDescSet, *this->descriptorSets[frameIndex] };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

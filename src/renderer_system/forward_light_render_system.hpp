@@ -17,17 +17,17 @@
 namespace nugiEngine {
 	class EngineForwardLightRenderSystem {
 		public:
-			EngineForwardLightRenderSystem(EngineDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalDescSetLayout);
+			EngineForwardLightRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::vector<VkDescriptorSetLayout> descSetLayouts);
 			~EngineForwardLightRenderSystem();
 
 			EngineForwardLightRenderSystem(const EngineForwardLightRenderSystem&) = delete;
 			EngineForwardLightRenderSystem& operator = (const EngineForwardLightRenderSystem&) = delete;
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				VkDescriptorSet &globalDescSet, uint32_t numLight);
+				std::vector<VkDescriptorSet> descSets, uint32_t numLight);
 
 		private:
-			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);
+			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts);
 			void createPipeline(VkRenderPass renderPass);
 
 			EngineDevice& appDevice;

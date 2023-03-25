@@ -17,25 +17,20 @@
 namespace nugiEngine {
 	class EngineForwardPassRenderSystem {
 		public:
-			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				VkDescriptorSetLayout globalDescSetLayout, VkDescriptorBufferInfo modelBuffersInfo[2]);
+			EngineForwardPassRenderSystem(EngineDevice& device, VkRenderPass renderPass, std::vector<VkDescriptorSetLayout> descSetLayout);
 			~EngineForwardPassRenderSystem();
 
 			EngineForwardPassRenderSystem(const EngineForwardPassRenderSystem&) = delete;
 			EngineForwardPassRenderSystem& operator = (const EngineForwardPassRenderSystem&) = delete;
 
       void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				VkDescriptorSet &globalDescSet, std::shared_ptr<EngineGeometry> gameObjects);
+				std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObjects);
 
 		private:
-			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);
+			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayout);
 			void createPipeline(VkRenderPass renderPass);
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorBufferInfo modelBuffersInfo[2]);
 
 			EngineDevice& appDevice;
-
-		  std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
-		  std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
 			
 			VkPipelineLayout pipelineLayout;
 			std::unique_ptr<EngineGraphicPipeline> pipeline;

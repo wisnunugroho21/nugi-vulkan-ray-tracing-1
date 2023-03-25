@@ -4,6 +4,9 @@
 #include "../device/device.hpp"
 #include "../model/ray_trace_model.hpp"
 #include "../model/raster_model.hpp"
+#include "../data/descSet/global_desc_set.hpp"
+#include "../data/descSet/forward_model_desc_set.hpp"
+#include "../data/descSet/forward_output_desc_set.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
@@ -36,7 +39,8 @@ namespace nugiEngine {
 		private:
 			void loadObjects();
 			void loadQuadModels();
-			
+
+			void createDescriptor();
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
@@ -47,13 +51,17 @@ namespace nugiEngine {
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
 			std::unique_ptr<EngineForwardLightRenderSystem> forwardLightRenderSystem{};
-			std::unique_ptr<EngineDeffereRenderSystem> defferedRenderSystem{};
+			std::unique_ptr<EngineDeffereRenderSystem> deferredRenderSystem{};
 
-			std::vector<std::shared_ptr<EngineGeometry>> quadModelObjects;
+			std::shared_ptr<EngineGeometry> quadModelObject;
 			std::shared_ptr<EngineGeometry> gameObject;
 			std::shared_ptr<EngineLight> lightObject;
 			std::shared_ptr<EngineMaterial> materials;
 			std::shared_ptr<EngineTransform> transform;
+
+			std::shared_ptr<EngineGlobalDescSet> globalDescSet;
+			std::shared_ptr<EngineForwardModelDescSet> forwardModelDescSet;
+			std::shared_ptr<EngineForwardOutputDescSet> forwardOutputDescSet;
 
 			bool isRendering = true;
 			uint32_t randomSeed = 0;

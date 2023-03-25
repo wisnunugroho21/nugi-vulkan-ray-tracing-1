@@ -22,10 +22,9 @@ namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->loadObjects();
 		this->loadQuadModels();
+		this->createDescriptor();
 
-		VkDescriptorBufferInfo rayTraceModelInfo[3] = { this->lightObject->getModelInfo(), this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
-		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device, rayTraceModelInfo);
-		
+		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device);
 		this->recreateSubRendererAndSubsystem();
 	}
 
@@ -51,20 +50,23 @@ namespace nugiEngine {
 				ubo.projection = camera.getProjectionMatrix();
 				ubo.view = camera.getViewMatrix();
 				ubo.realCameraPos = camera.getRealCameraPos();
-				this->renderer->writeGlobalBuffer(frameIndex, &ubo);
+				this->globalDescSet->writeGlobalBuffer(frameIndex, &ubo);
 
-				auto globalDescSet = this->renderer->getGlobalDescriptorSets(frameIndex);
+				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
+				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
+				std::vector<VkDescriptorSet> deferredDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(frameIndex) };
+
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->gameObject);
-				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, globalDescSet, this->lightObject->getNumLight());
+				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, forwardPassDescSets, this->gameObject);
+				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, forwardLightDescSets, this->lightObject->getNumLight());
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->defferedRenderSystem->render(commandBuffer, imageIndex, globalDescSet, this->quadModelObjects, this->randomSeed);
+				this->deferredRenderSystem->render(commandBuffer, imageIndex, deferredDescSets, this->quadModelObject, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);				
 								
 				this->renderer->endCommand(commandBuffer);
@@ -72,6 +74,7 @@ namespace nugiEngine {
 				
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
+					this->createDescriptor();
 					this->randomSeed = 0;
 
 					continue;
@@ -225,10 +228,25 @@ namespace nugiEngine {
 			0, 1, 2, 2, 3, 0
 		};
 
-		auto quadObject = EngineGeometry::createSharedGeometry();
-		quadObject->rasterModel = std::make_shared<EngineRasterModel>(this->device, modelData);
+		this->quadModelObject = EngineGeometry::createSharedGeometry();
+		this->quadModelObject->rasterModel = std::make_shared<EngineRasterModel>(this->device, modelData);
+	}
 
-		this->quadModelObjects.emplace_back(quadObject);
+	void EngineApp::createDescriptor() {
+		auto descriptorPool = this->renderer->getDescriptorPool();
+
+		VkDescriptorBufferInfo globalBufferInfo[3] = { this->lightObject->getModelInfo(), this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
+		VkDescriptorBufferInfo forwardModelBuffersInfo[2] = { this->materials->getMaterialInfo(), this->transform->getTransformInfo() };
+		std::vector<VkDescriptorImageInfo> forwardOutputBuffersInfo[4] = { 
+			this->forwardPassSubRenderer->getPositionInfoResources(), 
+			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
+			this->forwardPassSubRenderer->getNormalInfoResources(),
+			this->forwardPassSubRenderer->getMaterialInfoResources()
+		};
+		
+		this->globalDescSet = std::make_shared<EngineGlobalDescSet>(this->device, descriptorPool, globalBufferInfo);
+		this->forwardModelDescSet = std::make_shared<EngineForwardModelDescSet>(this->device, descriptorPool, forwardModelBuffersInfo);
+		this->forwardOutputDescSet = std::make_shared<EngineForwardOutputDescSet>(this->device, descriptorPool, forwardOutputBuffersInfo);
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
@@ -237,29 +255,22 @@ namespace nugiEngine {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 		uint32_t imageCount = this->renderer->getSwapChain()->imageCount();
+
 		auto imageFormat = this->renderer->getSwapChain()->getSwapChainImageFormat();
-
-		auto globalDescLayout = this->renderer->getGlobalDescSetLayout()->getDescriptorSetLayout();
-		auto descriptorPool = this->renderer->getDescriptorPool();		
-		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();		
-
-		VkDescriptorBufferInfo modelBuffersInfo[2] = { this->materials->getMaterialInfo(), this->transform->getTransformInfo() };
+		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
 		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
-		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();		
-		
-		std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4] = { 
-			this->forwardPassSubRenderer->getPositionInfoResources(), 
-			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
-			this->forwardPassSubRenderer->getNormalInfoResources(),
-			this->forwardPassSubRenderer->getMaterialInfoResources()
-		};
+		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();
 
-		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, descriptorPool, globalDescLayout, modelBuffersInfo);
-		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, globalDescLayout);
-		this->defferedRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, descriptorPool, width, height, swapChainRenderPass, globalDescLayout, forwardPassResourcesInfo);
+		std::vector<VkDescriptorSetLayout> forwardPassDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardModelDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> forwardLightDescLayouts = {  this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> deferredDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+
+		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, forwardPassDescLayouts);
+		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, forwardLightDescLayouts);
+		this->deferredRenderSystem = std::make_unique<EngineDeffereRenderSystem>(this->device, swapChainRenderPass, deferredDescLayouts);
 	}
 }

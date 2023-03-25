@@ -15,8 +15,7 @@
 namespace nugiEngine {
 	class EngineDefferedRenderer {
 		public:
-			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
-				VkDescriptorBufferInfo rayTraceModelInfo[3]);
+			EngineDefferedRenderer(EngineWindow& window, EngineDevice& device);
 			~EngineDefferedRenderer();
 
 			EngineDefferedRenderer(const EngineDefferedRenderer&) = delete;
@@ -24,8 +23,6 @@ namespace nugiEngine {
 
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
-			VkDescriptorSet getGlobalDescriptorSets(int frameIndex) { return this->globalDescriptorSets[frameIndex]; }
-			std::shared_ptr<EngineDescriptorSetLayout> getGlobalDescSetLayout() const { return this->globalDescSetLayout; }
 
 			bool isFrameInProgress() const { return this->isFrameStarted; }
 
@@ -43,11 +40,6 @@ namespace nugiEngine {
 				assert(this->isFrameStarted && "cannot get image index when frame is not in progress");
 				return this->currentImageIndex;
 			}
-
-			void createRasterBuffer();
-			void createDescriptor();
-			
-			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
 			std::shared_ptr<EngineCommandBuffer> beginCommand();
 			void endCommand(std::shared_ptr<EngineCommandBuffer>);
@@ -69,12 +61,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineSwapChain> swapChain;
 			std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers;
 
-			std::vector<std::shared_ptr<EngineBuffer>> rasterBuffers;
-
 			std::shared_ptr<EngineDescriptorPool> descriptorPool;
-			std::shared_ptr<EngineDescriptorSetLayout> globalDescSetLayout;
-			std::vector<VkDescriptorSet> globalDescriptorSets;
-			VkDescriptorBufferInfo rayTraceModelInfo[3];
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;

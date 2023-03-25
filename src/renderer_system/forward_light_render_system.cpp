@@ -19,9 +19,9 @@ namespace nugiEngine {
 	};
 	 
 	EngineForwardLightRenderSystem::EngineForwardLightRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
-    VkDescriptorSetLayout globalDescSetLayout) : appDevice{device} 
+    std::vector<VkDescriptorSetLayout> descSetLayouts) : appDevice{device} 
 	{
-		this->createPipelineLayout(globalDescSetLayout);
+		this->createPipelineLayout(descSetLayouts);
 		this->createPipeline(renderPass);
 	}
 
@@ -29,13 +29,11 @@ namespace nugiEngine {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineForwardLightRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout) {
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts = { globalDescSetLayout };
-
+	void EngineForwardLightRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts) {
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descSetLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = descSetLayouts.data();
 
 		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -85,10 +83,9 @@ namespace nugiEngine {
 	}
 
 	void EngineForwardLightRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		VkDescriptorSet &globalDescSet, uint32_t numLight) 
+		std::vector<VkDescriptorSet> descSets, uint32_t numLight) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
-		std::vector<VkDescriptorSet> descSets = { globalDescSet };
 
 		vkCmdBindDescriptorSets(
 			commandBuffer->getCommandBuffer(),

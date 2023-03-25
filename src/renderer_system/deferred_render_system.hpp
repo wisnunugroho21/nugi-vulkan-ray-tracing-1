@@ -16,23 +16,20 @@
 namespace nugiEngine {
 	class EngineDeffereRenderSystem {
 		public:
-			EngineDeffereRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-				uint32_t width, uint32_t height, VkRenderPass renderPass, 
-				VkDescriptorSetLayout globalDescSetLayout,
-				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4]);
+			EngineDeffereRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
+				std::vector<VkDescriptorSetLayout> descSetLayouts);
 			~EngineDeffereRenderSystem();
 
 			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
 			EngineDeffereRenderSystem& operator = (const EngineDeffereRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, VkDescriptorSet& globalDescSet, std::vector<std::shared_ptr<EngineGeometry>> &gameObjects, uint32_t randomSeed);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+				std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject, 
+				uint32_t randomSeed);
 		
 		private:
-			void createPipelineLayout(VkDescriptorSetLayout globalDescSetLayout);
+			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts);
 			void createPipeline(VkRenderPass renderPass);
-
-			void createDescriptor(std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				std::vector<VkDescriptorImageInfo> forwardPassResourcesInfo[4]);
 
 			EngineDevice& appDevice;
 			

@@ -6,21 +6,13 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineDefferedRenderer::EngineDefferedRenderer(EngineWindow& window, EngineDevice& device, 
-		VkDescriptorBufferInfo modelInfo[3]) : appDevice{ device }, appWindow{ window }
+	EngineDefferedRenderer::EngineDefferedRenderer(EngineWindow& window, EngineDevice& device) : appDevice{ device }, appWindow{ window }
 	{
-		this->rayTraceModelInfo[0] = modelInfo[0];
-		this->rayTraceModelInfo[1] = modelInfo[1];
-		this->rayTraceModelInfo[2] = modelInfo[2];
-
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
 
 		this->commandBuffers = EngineCommandBuffer::createCommandBuffers(device, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 		this->createDescriptorPool(this->swapChain->imageCount());
-
-		this->createRasterBuffer();
-		this->createDescriptor();
 	}
 
 	EngineDefferedRenderer::~EngineDefferedRenderer() {
@@ -57,7 +49,7 @@ namespace nugiEngine {
 	void EngineDefferedRenderer::createDescriptorPool(uint32_t imageCount) {
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
-				.setMaxSets(10)
+				.setMaxSets(20)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 50)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 50)
 				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100)
@@ -102,55 +94,6 @@ namespace nugiEngine {
 
 		this->isFrameStarted = true;
 		return true;
-	}
-
-	void EngineDefferedRenderer::createRasterBuffer() {
-		this->rasterBuffers.clear();
-
-		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto rasterBuffer = std::make_shared<EngineBuffer>(
-				this->appDevice,
-				sizeof(RasterUBO),
-				1,
-				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-			);
-
-			rasterBuffer->map();
-			this->rasterBuffers.emplace_back(rasterBuffer);
-		}
-	}
-
-	void EngineDefferedRenderer::createDescriptor() {
-		this->globalDescSetLayout = 
-			EngineDescriptorSetLayout::Builder(this->appDevice)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
-				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT)
-				.build();
-
-		this->globalDescriptorSets.clear();
-
-		for (uint32_t i = 0; i < this->rasterBuffers.size(); i++) {
-			VkDescriptorSet descSet{};
-
-			auto globalBufferInfo =  this->rasterBuffers[i]->descriptorInfo();
-
-			EngineDescriptorWriter(*this->globalDescSetLayout, *this->descriptorPool)
-				.writeBuffer(0, &globalBufferInfo)
-				.writeBuffer(1, &this->rayTraceModelInfo[0])
-				.writeBuffer(2, &this->rayTraceModelInfo[1])
-				.writeBuffer(3, &this->rayTraceModelInfo[2])
-				.build(&descSet);
-
-			this->globalDescriptorSets.emplace_back(descSet);
-		}
-	}
-
-	void EngineDefferedRenderer::writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size, VkDeviceSize offset) {
-		this->rasterBuffers[frameIndex]->writeToBuffer(data, size, offset);
-		this->rasterBuffers[frameIndex]->flush(size, offset);
 	}
 
 	std::shared_ptr<EngineCommandBuffer> EngineDefferedRenderer::beginCommand() {
@@ -199,9 +142,7 @@ namespace nugiEngine {
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->appWindow.wasResized()) {
 			this->appWindow.resetResizedFlag();
 			this->recreateSwapChain();
-
 			this->descriptorPool->resetPool();
-			this->createDescriptor();
 
 			return false;
 		} else if (result != VK_SUCCESS) {
