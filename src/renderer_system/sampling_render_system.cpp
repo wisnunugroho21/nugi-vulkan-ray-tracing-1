@@ -1,4 +1,4 @@
-#include "deferred_render_system.hpp"
+#include "sampling_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
 #include "../ubo.hpp"
@@ -13,18 +13,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineDeffereRenderSystem::EngineDeffereRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
+	EngineSamplingRenderSystem::EngineSamplingRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
 		std::vector<VkDescriptorSetLayout> descSetLayouts) : appDevice{device}
 	{
 		this->createPipelineLayout(descSetLayouts);
 		this->createPipeline(renderPass);
 	}
 
-	EngineDeffereRenderSystem::~EngineDeffereRenderSystem() {
+	EngineSamplingRenderSystem::~EngineSamplingRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineDeffereRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts) {
+	void EngineSamplingRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
@@ -44,15 +44,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDeffereRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void EngineSamplingRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
-			.setDefault("shader/deferred.vert.spv", "shader/deferred.frag.spv")
+			.setDefault("shader/sampling.vert.spv", "shader/sampling.frag.spv")
 			.build();
 	}
 
-	void EngineDeffereRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+	void EngineSamplingRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
 		std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject, 
 		uint32_t randomSeed)
 	{

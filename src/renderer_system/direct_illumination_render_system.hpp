@@ -14,14 +14,14 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineDeffereRenderSystem {
+	class EngineDirectIlluminationRenderSystem {
 		public:
-			EngineDeffereRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
+			EngineDirectIlluminationRenderSystem(EngineDevice& device, VkRenderPass renderPass, 
 				std::vector<VkDescriptorSetLayout> descSetLayouts);
-			~EngineDeffereRenderSystem();
+			~EngineDirectIlluminationRenderSystem();
 
-			EngineDeffereRenderSystem(const EngineDeffereRenderSystem&) = delete;
-			EngineDeffereRenderSystem& operator = (const EngineDeffereRenderSystem&) = delete;
+			EngineDirectIlluminationRenderSystem(const EngineDirectIlluminationRenderSystem&) = delete;
+			EngineDirectIlluminationRenderSystem& operator = (const EngineDirectIlluminationRenderSystem&) = delete;
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
 				std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject, 

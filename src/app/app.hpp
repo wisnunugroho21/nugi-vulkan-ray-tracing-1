@@ -7,13 +7,17 @@
 #include "../data/descSet/global_desc_set.hpp"
 #include "../data/descSet/forward_model_desc_set.hpp"
 #include "../data/descSet/forward_output_desc_set.hpp"
+#include "../data/descSet/output_desc_set.hpp"
 #include "../descriptor/descriptor.hpp"
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
 #include "../renderer_sub/forward_pass_sub_renderer.hpp"
+#include "../renderer_sub/direct_illumination_sub_renderer.hpp"
 #include "../renderer_system/forward_light_render_system.hpp"
 #include "../renderer_system/forward_pass_render_system.hpp"
-#include "../renderer_system/deferred_render_system.hpp"
+#include "../renderer_system/direct_illumination_render_system.hpp"
+#include "../renderer_system/indirect_illumination_render_system.hpp"
+#include "../renderer_system/sampling_render_system.hpp"
 
 #include <memory>
 #include <vector>
@@ -40,18 +44,23 @@ namespace nugiEngine {
 			void loadObjects();
 			void loadQuadModels();
 
-			void createDescriptor();
+			void createDescriptor(uint32_t width, uint32_t height, uint32_t imageCount);
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
 			EngineDevice device{window};
 			
 			std::unique_ptr<EngineDefferedRenderer> renderer{};
+
 			std::unique_ptr<EngineForwardPassSubRenderer> forwardPassSubRenderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
+			std::unique_ptr<EngineDirectIlluminationSubRenderer> directIlluminationSubRenderer{};
+
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
 			std::unique_ptr<EngineForwardLightRenderSystem> forwardLightRenderSystem{};
-			std::unique_ptr<EngineDeffereRenderSystem> deferredRenderSystem{};
+			std::unique_ptr<EngineDirectIlluminationRenderSystem> directIlluminationRenderSystem{};
+			std::unique_ptr<EngineIndirectIlluminationRenderSystem> indirectIlluminationRenderSystem{};
+			std::unique_ptr<EngineSamplingRenderSystem> samplingRenderSystem{};
 
 			std::shared_ptr<EngineGeometry> quadModelObject;
 			std::shared_ptr<EngineGeometry> gameObject;
@@ -62,6 +71,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineGlobalDescSet> globalDescSet;
 			std::shared_ptr<EngineForwardModelDescSet> forwardModelDescSet;
 			std::shared_ptr<EngineForwardOutputDescSet> forwardOutputDescSet;
+			std::shared_ptr<EngineOutputDescSet> outputDescSet;
 
 			bool isRendering = true;
 			uint32_t randomSeed = 0;
