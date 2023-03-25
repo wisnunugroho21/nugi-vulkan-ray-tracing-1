@@ -16,8 +16,6 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
 
 		private:
-			id_t objectId;
-
       std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
 			std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
 

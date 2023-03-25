@@ -22,7 +22,6 @@ namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->loadObjects();
 		this->loadQuadModels();
-		this->createDescriptor();
 
 		this->renderer = std::make_unique<EngineDefferedRenderer>(this->window, this->device);
 		this->recreateSubRendererAndSubsystem();
@@ -54,7 +53,7 @@ namespace nugiEngine {
 
 				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
-				std::vector<VkDescriptorSet> deferredDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(frameIndex) };
+				std::vector<VkDescriptorSet> deferredDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex) };
 
 				auto commandBuffer = this->renderer->beginCommand();
 
@@ -261,6 +260,8 @@ namespace nugiEngine {
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
+
+		this->createDescriptor();
 
 		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
 		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();

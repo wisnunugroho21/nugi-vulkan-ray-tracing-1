@@ -18,8 +18,6 @@ namespace nugiEngine {
 			void writeGlobalBuffer(int frameIndex, RasterUBO* data, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
 		private:
-			id_t objectId;
-
       std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
       std::vector<std::shared_ptr<EngineBuffer>> rasterBuffers;
 			std::vector<std::shared_ptr<VkDescriptorSet>> descriptorSets;
