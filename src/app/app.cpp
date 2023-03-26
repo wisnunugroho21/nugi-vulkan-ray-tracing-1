@@ -45,11 +45,14 @@ namespace nugiEngine {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				RasterUBO ubo{};
-				ubo.projection = camera.getProjectionMatrix();
-				ubo.view = camera.getViewMatrix();
-				ubo.realCameraPos = camera.getRealCameraPos();
-				this->globalDescSet->writeRasterBuffer(frameIndex, &ubo);
+				RasterUBO rasterUbo{};
+				rasterUbo.projection = camera.getProjectionMatrix();
+				rasterUbo.view = camera.getViewMatrix();
+				rasterUbo.realCameraPos = camera.getRealCameraPos();
+				this->globalDescSet->writeRasterBuffer(frameIndex, &rasterUbo);
+
+				RayTraceUbo rayTraceUbo = camera.getRayTraceUbo();
+				this->globalDescSet->writeRayTraceBuffer(frameIndex, &rayTraceUbo);
 
 				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };

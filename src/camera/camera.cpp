@@ -23,6 +23,11 @@ namespace nugiEngine {
     this->projectionMatrix[2][2] = far / (far - near);
     this->projectionMatrix[2][3] = 1.f;
     this->projectionMatrix[3][2] = -(far * near) / (far - near);
+
+    float theta = glm::radians(fovy);
+		float h = glm::tan(theta / 2.0f);
+		this->viewportHeight = 2.0f * h;
+		this->viewportWidth = aspect * this->viewportHeight;
   }
 
   void EngineCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
@@ -59,6 +64,10 @@ namespace nugiEngine {
     this->inverseViewMatrix[3][2] = position.z;
 
     this->realCameraPos = position;
+
+    this->w = glm::normalize(direction);
+		this->u = glm::normalize(glm::cross(up, w));
+		this->v = glm::cross(w, u);
   }
 
   void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up) {
@@ -106,6 +115,18 @@ namespace nugiEngine {
     this->inverseViewMatrix[3][2] = position.z;
 
     this->realCameraPos = position;
+  }
+
+  RayTraceUbo EngineCamera::getRayTraceUbo() {
+    RayTraceUbo ubo{};
+
+    ubo.origin = this->lookFrom;
+		ubo.horizontal = this->viewportWidth * this->u;
+		ubo.vertical = this->viewportHeight * this->v;
+		ubo.lowerLeftCorner = ubo.origin - ubo.horizontal / 2.0f + ubo.vertical / 2.0f - this->w;
+		ubo.background = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    return ubo;
   }
   
 } // namespace nugiEngine

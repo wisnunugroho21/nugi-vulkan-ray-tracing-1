@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../ubo.hpp"
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -19,11 +21,16 @@ namespace nugiEngine {
       const glm::mat4 getInverseViewMatrix() const { return this->inverseViewMatrix; }
       const glm::vec3 getRealCameraPos() const { return this->realCameraPos; }
 
+      RayTraceUbo getRayTraceUbo();
+
     private:
       glm::mat4 projectionMatrix{1.0f};
       glm::mat4 viewMatrix{1.0f};
       glm::mat4 inverseViewMatrix{1.0f};
       glm::vec3 realCameraPos{0.0f};
+
+      float viewportHeight, viewportWidth;
+      glm::vec3 w, u, v, lookFrom;
   };
 } // namespace nugiEngine
 
