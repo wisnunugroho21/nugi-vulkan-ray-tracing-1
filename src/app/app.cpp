@@ -54,7 +54,7 @@ namespace nugiEngine {
 				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> directDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex) };
-				std::vector<VkDescriptorSet> indirectDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->outputDescSet->getDescriptorSets(imageIndex) };
+				std::vector<VkDescriptorSet> indirectDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->outputDescSet->getDescriptorSets(imageIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> outputDescSets = { *this->outputDescSet->getDescriptorSets(imageIndex) };
 
 				auto commandBuffer = this->renderer->beginCommand();
