@@ -166,10 +166,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.05f, 0.65f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.2f, 0.1f, 0.5f });
-		modeldata.materials.emplace_back(Material{ glm::vec3(1.0f, 1.0f, 1.0f), 0.2f, 0.1f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.0f, 0.5f });
+		modeldata.materials.emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 1.0f, 0.2f, 0.5f });
 
 		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );
 		modeldata.lights.emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(10.0f, 10.0f, 10.0f), 100.f} );

@@ -440,7 +440,12 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float diff = 1.0 / pi;
 
   float specPdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  float diffPdf = 0.5 * (cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) + triangleListPdfValue(scat.raySpecular));
+
+  float cosinePdf = cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction);
+  float lightPdf = triangleListPdfValue(scat.raySpecular);
+
+  float sumDiffPdf = cosinePdf + lightPdf;
+  float diffPdf = cosinePdf / sumDiffPdf + lightPdf / sumDiffPdf;
 
   float pdfVal = mix(diffPdf, specPdf, materials[materialIndex].metallicness);
   float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
@@ -454,14 +459,13 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
 RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
-  float distance = length(rayAt(r, hit.t)) / 10.0;
-
-  float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
+  vec3 distance = (hit.point - r.origin) / 2.0;
   float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
 
-  float falloff = (nom * nom + 1.0) / (pow(distance, 2) + 1.0);
+  // float nom = clamp(1.0 - pow(distance / lights[lightIndex].radius, 4), 0.0, 1.0);
+  // float falloff = (nom * nom + 1.0) / (dot(distance, distance) + 1.0);
 
-  rad.colorIrradiance = lights[lightIndex].color * falloff * cosine * areaTriangle(lights[lightIndex].triangle);
+  rad.colorIrradiance = lights[lightIndex].color * cosine * areaTriangle(lights[lightIndex].triangle) / dot(distance, distance);
   return rad;
 }
 
