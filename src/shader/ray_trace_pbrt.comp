@@ -440,12 +440,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   float diff = 1.0 / pi;
 
   float specPdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-
-  float cosinePdf = cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction);
-  float lightPdf = triangleListPdfValue(scat.raySpecular);
-
-  float sumDiffPdf = cosinePdf + lightPdf;
-  float diffPdf = cosinePdf / sumDiffPdf + lightPdf / sumDiffPdf;
+  float diffPdf = 0.5 * (cosinePdfValue(hit.faceNormal.normal, scat.raySpecular.direction) + sphereListPdfValue(scat.raySpecular));
 
   float pdfVal = mix(diffPdf, specPdf, materials[materialIndex].metallicness);
   float totalBrdf = mix(diff, spec, materials[materialIndex].metallicness);
