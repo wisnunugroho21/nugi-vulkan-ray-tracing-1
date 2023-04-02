@@ -69,7 +69,6 @@ namespace nugiEngine {
 			std::shared_ptr<EngineTransform> transform;
 
 			std::shared_ptr<EngineGlobalDescSet> globalDescSet;
-			std::shared_ptr<EngineForwardModelDescSet> forwardModelDescSet;
 			std::shared_ptr<EngineForwardOutputDescSet> forwardOutputDescSet;
 			std::shared_ptr<EngineOutputDescSet> outputDescSet;
 

@@ -1,12 +1,5 @@
 #version 460
 
-struct Material {
-  vec3 color;
-	float metallicness;
-  float roughness;
-  float fresnelReflect;
-};
-
 struct Sphere {
   vec3 center;
   float radius;
@@ -15,6 +8,13 @@ struct Sphere {
 struct PointLight {
 	Sphere sphere;
   vec3 color;
+};
+
+struct Material {
+  vec3 color;
+	float metallicness;
+  float roughness;
+  float fresnelReflect;
 };
 
 struct Transform {
@@ -43,11 +43,11 @@ layout(set = 0, binding = 1) buffer readonly GlobalLight {
 	uint numLight;
 } globalLight;
 
-layout(set = 1, binding = 0) buffer readonly GlobalMaterial {
+layout(set = 0, binding = 4) buffer readonly GlobalMaterial {
   Material materials[100];
 };
 
-layout(set = 1, binding = 1) uniform readonly GlobalTransform {
+layout(set = 0, binding = 5) uniform readonly GlobalTransform {
   Transform transform[100];
 };
 

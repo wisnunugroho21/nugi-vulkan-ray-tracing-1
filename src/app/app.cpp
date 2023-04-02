@@ -54,17 +54,13 @@ namespace nugiEngine {
 				RayTraceUbo rayTraceUbo = camera.getRayTraceUbo();
 				this->globalDescSet->writeRayTraceBuffer(frameIndex, &rayTraceUbo);
 
-				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
+				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> directDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex) };
-				std::vector<VkDescriptorSet> indirectDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->outputDescSet->getDescriptorSets(imageIndex), *this->forwardModelDescSet->getDescriptorSets(frameIndex) };
+				std::vector<VkDescriptorSet> indirectDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex), *this->outputDescSet->getDescriptorSets(imageIndex) };
 				std::vector<VkDescriptorSet> outputDescSets = { *this->outputDescSet->getDescriptorSets(imageIndex) };
 
 				auto commandBuffer = this->renderer->beginCommand();
-
-				this->outputDescSet->prepareFrame(commandBuffer, frameIndex);
-				this->indirectIlluminationRenderSystem->render(commandBuffer, frameIndex, indirectDescSets, randomSeed);
-				this->outputDescSet->transferFrame(commandBuffer, frameIndex);
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, forwardPassDescSets, this->gameObject);
@@ -72,6 +68,10 @@ namespace nugiEngine {
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
+
+				this->outputDescSet->prepareFrame(commandBuffer, frameIndex);
+				this->indirectIlluminationRenderSystem->render(commandBuffer, frameIndex, indirectDescSets, randomSeed);
+				this->outputDescSet->transferFrame(commandBuffer, frameIndex);
 
 				this->directIlluminationSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->directIlluminationRenderSystem->render(commandBuffer, imageIndex, directDescSets, this->quadModelObject, this->randomSeed);
@@ -248,7 +248,13 @@ namespace nugiEngine {
 	void EngineApp::createDescriptor(uint32_t width, uint32_t height, uint32_t imageCount) {
 		auto descriptorPool = this->renderer->getDescriptorPool();
 
-		VkDescriptorBufferInfo globalBufferInfo[3] = { this->lightObject->getModelInfo(), this->gameObject->rayTraceModel->getModelInfo(), this->gameObject->rayTraceModel->getBvhInfo() };
+		VkDescriptorBufferInfo globalBufferInfo[5] = { 
+			this->lightObject->getModelInfo(), 
+			this->gameObject->rayTraceModel->getModelInfo(), 
+			this->gameObject->rayTraceModel->getBvhInfo(),
+			this->materials->getMaterialInfo(), 
+			this->transform->getTransformInfo()
+		};
 		VkDescriptorBufferInfo forwardModelBuffersInfo[2] = { this->materials->getMaterialInfo(), this->transform->getTransformInfo() };
 		std::vector<VkDescriptorImageInfo> outputBuffersInfo[1] = { this->directIlluminationSubRenderer->getOutputInfoResources() };
 		std::vector<VkDescriptorImageInfo> forwardOutputBuffersInfo[4] = { 
@@ -259,7 +265,6 @@ namespace nugiEngine {
 		};
 		
 		this->globalDescSet = std::make_shared<EngineGlobalDescSet>(this->device, descriptorPool, globalBufferInfo);
-		this->forwardModelDescSet = std::make_shared<EngineForwardModelDescSet>(this->device, descriptorPool, forwardModelBuffersInfo);
 		this->forwardOutputDescSet = std::make_shared<EngineForwardOutputDescSet>(this->device, descriptorPool, forwardOutputBuffersInfo);
 		this->outputDescSet = std::make_shared<EngineOutputDescSet>(this->device, descriptorPool, width, height, imageCount, outputBuffersInfo);
 	}
@@ -282,10 +287,10 @@ namespace nugiEngine {
 		auto directIlluminationRenderPass = this->directIlluminationSubRenderer->getRenderPass()->getRenderPass();
 		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();
 
-		std::vector<VkDescriptorSetLayout> forwardPassDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardModelDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> forwardPassDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> forwardLightDescLayouts = {  this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> directDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
-		std::vector<VkDescriptorSetLayout> indirectDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> indirectDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> outputDescLayouts = { this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 
 		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, forwardPassDescLayouts);

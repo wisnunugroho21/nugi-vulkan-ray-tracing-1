@@ -12,11 +12,6 @@ float stepAndOutputRNGFloat(inout uint rngState) {
   return float(word) / 4294967295.0;
 }
 
-uvec2 imgSize = uvec2(imageSize(positionResource));
-
-uint rngStateXY = (imgSize.x * uint(gl_FragCoord.x) + uint(gl_FragCoord.y)) * (push.randomSeed + 1);
-uint rngStateYX = (imgSize.y * uint(gl_FragCoord.y) + uint(gl_FragCoord.x)) * (push.randomSeed + 1);
-
 float randomFloat(uint index) {
   float randNum = 0.0;
 
@@ -73,48 +68,4 @@ vec3 randomInUnitDisk(uint index) {
       return p;
     }
   }
-}
-
-vec3 randomCosineDirection(uint index1, uint index2) {
-  float r1 = randomFloat(index1);
-  float r2 = randomFloat(index2);
-  float phi = 2 * 3.14159265359 * r1;
-  
-  float x = cos(phi) * sqrt(r2);
-  float y = sin(phi) * sqrt(r2);
-  float z = sqrt(1 - r2);
-
-  return vec3(x, y, z);
-}
-
-vec3 randomPhong(uint index1, uint index2, int shininess) {
-  float r1 = randomFloat(index1);
-  float r2 = randomFloat(index2);
-  float phi = 2 * 3.14159265359 * r2;
-
-  float cosTheta = pow(1 - r1, 1 / (2 + shininess));
-  float sinTheta = sqrt(1 - cosTheta * cosTheta);
-
-  float x = cos(phi) * sinTheta;
-  float y = sin(phi) * sinTheta;
-  float z = cosTheta;
-
-  return vec3(x, y, z);
-}
-
-vec3 randomGGX(uint index1, uint index2, float roughness) {
-  float r1 = randomFloat(index1);
-  float r2 = randomFloat(index2);
-
-  float a = roughness * roughness;
-  float phi = 2 * 3.14159265359 * r2;
-
-  float cosTheta = sqrt((1.0 - r1) / ((a * a - 1.0) * r1 + 1.0));
-  float sinTheta = sqrt(1 - cosTheta * cosTheta);
-
-  float x = cos(phi) * sinTheta;
-  float y = sin(phi) * sinTheta;
-  float z = cosTheta;
-
-  return vec3(x, y, z);
 }
