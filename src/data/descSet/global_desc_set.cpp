@@ -3,6 +3,7 @@
 namespace nugiEngine {
   EngineGlobalDescSet::EngineGlobalDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, VkDescriptorBufferInfo rayTraceModelInfo[3]) {
 		this->createRasterBuffer(device);
+		this->createRayTraceBuffer(device);
 		this->createDescriptor(device, descriptorPool, rayTraceModelInfo);
   }
   
@@ -75,9 +76,9 @@ namespace nugiEngine {
 				.writeBuffer(1, &rayTraceModelInfo[0])
 				.writeBuffer(2, &rayTraceModelInfo[1])
 				.writeBuffer(3, &rayTraceModelInfo[2])
-				.writeBuffer(2, &rayTraceModelInfo[3])
-				.writeBuffer(3, &rayTraceModelInfo[4])
-				.writeBuffer(4, &rayTraceBufferInfo)
+				.writeBuffer(4, &rayTraceModelInfo[3])
+				.writeBuffer(5, &rayTraceModelInfo[4])
+				.writeBuffer(6, &rayTraceBufferInfo)
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

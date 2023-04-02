@@ -69,9 +69,9 @@ namespace nugiEngine {
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
-				this->outputDescSet->prepareFrame(commandBuffer, frameIndex);
+				this->outputDescSet->prepareFrame(commandBuffer, imageIndex);
 				this->indirectIlluminationRenderSystem->render(commandBuffer, frameIndex, indirectDescSets, randomSeed);
-				this->outputDescSet->transferFrame(commandBuffer, frameIndex);
+				this->outputDescSet->transferFrame(commandBuffer, imageIndex);
 
 				this->directIlluminationSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->directIlluminationRenderSystem->render(commandBuffer, imageIndex, directDescSets, this->quadModelObject, this->randomSeed);
@@ -81,7 +81,9 @@ namespace nugiEngine {
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->samplingRenderSystem->render(commandBuffer, imageIndex, outputDescSets, this->quadModelObject, this->randomSeed);
-				this->swapChainSubRenderer->endRenderPass(commandBuffer);				
+				this->swapChainSubRenderer->endRenderPass(commandBuffer);			
+
+				this->outputDescSet->finishFrame(commandBuffer, imageIndex);
 								
 				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);

@@ -148,7 +148,7 @@ namespace nugiEngine {
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
-		clearValues[4].depthStencil = { 1.0f, 0 };
+		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		renderBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderBeginInfo.pClearValues = clearValues.data();

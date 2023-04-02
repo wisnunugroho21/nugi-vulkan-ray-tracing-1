@@ -47,8 +47,14 @@ namespace nugiEngine {
 	void EngineDirectIlluminationRenderSystem::createPipeline(VkRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
+		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
+		multisampleInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+		multisampleInfo.sampleShadingEnable = VK_FALSE;
+		multisampleInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
 			.setDefault("shader/direct_illumination.vert.spv", "shader/direct_illumination.frag.spv")
+			.setMultisampleInfo(multisampleInfo)
 			.build();
 	}
 

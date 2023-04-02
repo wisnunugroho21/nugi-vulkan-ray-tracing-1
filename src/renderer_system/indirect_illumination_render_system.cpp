@@ -48,7 +48,7 @@ namespace nugiEngine {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/ray_trace_pbrt.comp.spv")
+			.setDefault("shader/indirect_illumination.comp.spv")
 			.build();
 	}
 
