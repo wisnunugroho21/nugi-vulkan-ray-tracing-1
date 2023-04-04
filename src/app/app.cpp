@@ -63,24 +63,24 @@ namespace nugiEngine {
 				auto commandBuffer = this->renderer->beginCommand();
 
 				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRenderSystem->render(commandBuffer, frameIndex, forwardPassDescSets, this->gameObject);
-				this->forwardLightRenderSystem->render(commandBuffer, frameIndex, forwardLightDescSets, this->lightObject->getNumLight());
+				this->forwardPassRenderSystem->render(commandBuffer, forwardPassDescSets, this->gameObject);
+				this->forwardLightRenderSystem->render(commandBuffer, forwardLightDescSets, this->lightObject->getNumLight());
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->outputDescSet->prepareFrame(commandBuffer, imageIndex);
-				this->indirectIlluminationRenderSystem->render(commandBuffer, frameIndex, indirectDescSets, randomSeed);
+				this->indirectIlluminationRenderSystem->render(commandBuffer, indirectDescSets, randomSeed);
 				this->outputDescSet->transferFrame(commandBuffer, imageIndex);
 
 				this->directIlluminationSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->directIlluminationRenderSystem->render(commandBuffer, imageIndex, directDescSets, this->quadModelObject, this->randomSeed);
+				this->directIlluminationRenderSystem->render(commandBuffer, directDescSets, this->quadModelObject, this->randomSeed);
 				this->directIlluminationSubRenderer->endRenderPass(commandBuffer);
 
 				this->directIlluminationSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRenderSystem->render(commandBuffer, imageIndex, outputDescSets, this->quadModelObject, this->randomSeed);
+				this->samplingRenderSystem->render(commandBuffer, outputDescSets, this->quadModelObject, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);			
 
 				this->outputDescSet->finishFrame(commandBuffer, imageIndex);

@@ -82,7 +82,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineForwardLightRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
+	void EngineForwardLightRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, 
 		std::vector<VkDescriptorSet> descSets, uint32_t numLight) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());

@@ -52,9 +52,8 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineSamplingRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-		std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject, 
-		uint32_t randomSeed)
+	void EngineSamplingRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, 
+		std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObject, uint32_t randomSeed)
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 

@@ -52,7 +52,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineIndirectIlluminationRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t imageIndex, 
+	void EngineIndirectIlluminationRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, 
 		std::vector<VkDescriptorSet> descSets, uint32_t randomSeed) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());

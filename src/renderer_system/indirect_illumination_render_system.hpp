@@ -24,8 +24,8 @@ namespace nugiEngine {
 			EngineIndirectIlluminationRenderSystem(const EngineIndirectIlluminationRenderSystem&) = delete;
 			EngineIndirectIlluminationRenderSystem& operator = (const EngineIndirectIlluminationRenderSystem&) = delete;
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				std::vector<VkDescriptorSet> descSets, uint32_t randomSeed = 1);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descSets, 
+				uint32_t randomSeed = 1);
 
 		private:
 			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts);

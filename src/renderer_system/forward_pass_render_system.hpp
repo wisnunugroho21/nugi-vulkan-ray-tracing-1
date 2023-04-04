@@ -23,8 +23,8 @@ namespace nugiEngine {
 			EngineForwardPassRenderSystem(const EngineForwardPassRenderSystem&) = delete;
 			EngineForwardPassRenderSystem& operator = (const EngineForwardPassRenderSystem&) = delete;
 
-      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex, 
-				std::vector<VkDescriptorSet> descSets, std::shared_ptr<EngineGeometry> gameObjects);
+      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descSets, 
+				std::shared_ptr<EngineGeometry> gameObjects);
 
 		private:
 			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayout);

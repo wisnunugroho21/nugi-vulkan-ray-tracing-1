@@ -67,6 +67,7 @@ uint rngStateYX = (imgSize.y * uint(gl_GlobalInvocationID.y) + uint(gl_GlobalInv
 
 ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
+  scat.colorEmitted = vec3(0.0, 0.0, 0.0);
 
   float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect); // F0 for dielectics in range [0.0, 0.16].  default FO is (0.16 * 0.5^2) = 0.04
   vec3 unitViewDirection = normalize(r.direction);
@@ -123,11 +124,11 @@ void main() {
   vec3 fragPosWorld = imageLoad(positionResource, ivec2(gl_GlobalInvocationID.xy)).xyz;
   vec3 fragNormalWorld = imageLoad(normalResource, ivec2(gl_GlobalInvocationID.xy)).xyz;
 
-  vec3[3] globalOnb = buildOnb(fragNormalWorld);
+  vec3[3] normalOrthogonal = buildOnb(fragNormalWorld);
 
   Ray curRay;
   curRay.origin = fragPosWorld;
-  curRay.direction = cosineGenerateRandom(globalOnb);
+  curRay.direction = cosineGenerateRandom(normalOrthogonal);
 
   vec4 lastNum = vec4(0.0, 0.0, 0.0, 0.0);
   mat4 rayTransform = mat4(
