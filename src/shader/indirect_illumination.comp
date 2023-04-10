@@ -56,8 +56,8 @@ layout(push_constant) uniform Push {
 
 uvec2 imgSize = uvec2(imageSize(rayTraceImage));
 
-uint rngStateXY = (imgSize.x * uint(gl_GlobalInvocationID.x) + uint(gl_GlobalInvocationID.y)) * (push.randomSeed + 1);
-uint rngStateYX = (imgSize.y * uint(gl_GlobalInvocationID.y) + uint(gl_GlobalInvocationID.x)) * (push.randomSeed + 1);
+uint rngStateXY = (imgSize.x * uint(gl_GlobalInvocationID.y) + uint(gl_GlobalInvocationID.x)) * (push.randomSeed + 1);
+uint rngStateYX = (imgSize.y * uint(gl_GlobalInvocationID.x) + uint(gl_GlobalInvocationID.y)) * (push.randomSeed + 1);
 
 #include "helper/random.glsl"
 #include "helper/trace.glsl"

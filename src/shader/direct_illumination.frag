@@ -43,8 +43,8 @@ layout(push_constant) uniform Push {
 
 uvec2 imgSize = uvec2(imageSize(positionResource));
 
-uint rngStateXY = (imgSize.x * uint(gl_FragCoord.x) + uint(gl_FragCoord.y)) * (push.randomSeed + 1);
-uint rngStateYX = (imgSize.y * uint(gl_FragCoord.y) + uint(gl_FragCoord.x)) * (push.randomSeed + 1);
+uint rngStateXY = (imgSize.x * uint(gl_FragCoord.y) + uint(gl_FragCoord.x)) * (push.randomSeed + 1);
+uint rngStateYX = (imgSize.y * uint(gl_FragCoord.x) + uint(gl_FragCoord.y)) * (push.randomSeed + 1);
 
 #include "helper/random.glsl"
 #include "helper/trace.glsl"

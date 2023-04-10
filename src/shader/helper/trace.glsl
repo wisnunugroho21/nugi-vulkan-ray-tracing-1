@@ -115,6 +115,10 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
 // ------------- Bvh -------------
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+  if (all(lessThan(boxMin, r.origin)) && all(greaterThan(boxMax, r.origin))) {
+    return true;
+  }
+
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
