@@ -13,7 +13,6 @@ struct Triangle {
 
 struct Object {
   Triangle triangle;
-  vec3 normal;
   uint materialIndex;
 };
 

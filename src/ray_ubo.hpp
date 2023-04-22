@@ -19,8 +19,6 @@ namespace nugiEngine {
 
   struct Object {
     Triangle triangle{};
-
-    alignas(4) uint32_t materialType;
     alignas(4) uint32_t materialIndex;
   };
   
@@ -45,7 +43,6 @@ namespace nugiEngine {
   struct Light {
     Triangle triangle{};
     alignas(16) glm::vec3 color;
-    alignas(4) float radius;
   };
 
   struct RayTraceUbo {

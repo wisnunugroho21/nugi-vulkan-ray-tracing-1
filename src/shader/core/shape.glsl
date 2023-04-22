@@ -8,8 +8,8 @@ vec3 sphereGenerateRandom(Sphere sphere, vec3 origin) {
   vec3 dist = sphere.center - origin;
   vec3[3] globalOnb = buildOnb(dist);
 
-  float r1 = randomFloat(0);
-  float r2 = randomFloat(1);
+  float r1 = randomFloat(1);
+  float r2 = randomFloat(2);
   float z = 1 + r2 * (sqrt(1 - sphere.radius * sphere.radius /  dot(dist, dist)) - 1);
 
   float phi = 2 * pi * r1;

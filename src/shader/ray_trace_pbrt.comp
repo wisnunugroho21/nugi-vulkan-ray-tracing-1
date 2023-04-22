@@ -41,9 +41,9 @@ layout(push_constant) uniform Push {
 
 uvec2 imgSize = uvec2(imageSize(targetImage[0]));
 
-uint rngStateXY =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
-uint rngStateXZ =  (imgSize.x * gl_GlobalInvocationID.x + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
-uint rngStateYZ =  (imgSize.y * gl_GlobalInvocationID.y + gl_GlobalInvocationID.z) * (push.randomSeed + 1);
+uint rngStateXY =  (imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x) * (push.randomSeed + 1);
+uint rngStateXZ =  (imgSize.x * gl_GlobalInvocationID.z + gl_GlobalInvocationID.x) * (push.randomSeed + 1);
+uint rngStateYZ =  (imgSize.y * gl_GlobalInvocationID.z + gl_GlobalInvocationID.y) * (push.randomSeed + 1);
 
 #include "core/random.glsl"
 #include "core/trace.glsl"
@@ -77,9 +77,7 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     float pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
     scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
   } else {
-    int rand = randomInt(0, 1, 0);
-
-    if (rand == 0) {
+    if (randomInt(0, 2, 0) == 0) {
       int triangleRand = randomInt(0, 1, 1);
       scat.raySpecular.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point);
     } else {
@@ -99,10 +97,9 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     }
 
     if (nextHit.isHit) {
-      vec3 distance = nextHit.point - scat.raySpecular.origin;
-      float squaredDistance = dot(distance, distance);
+      float squaredDistance = nextHit.t * nextHit.t * dot(scat.raySpecular.direction, scat.raySpecular.direction);
 
-      float NloL = clamp(dot(nextHit.faceNormal.normal, -1.0 * scat.raySpecular.direction), 0.0, 1.0);
+      float NloL = dot(-1.0 * normalize(scat.raySpecular.direction), nextHit.faceNormal.normal);
       float area = areaTriangle(lights[nextHit.objIndex].triangle);
 
       float brdf = lambertBrdfValue();
