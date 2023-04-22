@@ -72,8 +72,13 @@ struct HitRecord {
 struct ShadeRecord {
   vec3 colorAttenuation;
   vec3 colorEmitted;
+  float pdf;
 
   Ray raySpecular;
+};
+
+struct RadianceRecord {
+  vec3 colorIrradiance;
 };
 
 float pi = 3.14159265359;

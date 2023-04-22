@@ -68,14 +68,15 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     vec3 unitLightDirection = normalize(scat.raySpecular.direction);
     vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
 
-    float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001, 1.0);
     float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
+    float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001, 1.0);
     float NoH = clamp(dot(hit.faceNormal.normal, H), 0.001, 1.0);
     float VoH = clamp(dot(unitViewDirection, H), 0.001, 1.0);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
-    float pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
+
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
+    scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
   } else {
     if (randomInt(0, 2, 0) == 0) {
       int triangleRand = randomInt(0, 1, 1);
@@ -88,30 +89,25 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     vec3 unitLightDirection = normalize(scat.raySpecular.direction);
     float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
 
-    HitRecord nextHit;
-    nextHit.t = 1000000.0;
-    
-    for (int i = 0; i < 2; i++) {
-      HitRecord testNextHit = hitTriangle(lights[i].triangle, scat.raySpecular, 0.001, nextHit.t);
-      if (testNextHit.isHit) nextHit = testNextHit;
-    }
+    float brdf = lambertBrdfValue();
 
-    if (nextHit.isHit) {
-      float squaredDistance = nextHit.t * nextHit.t * dot(scat.raySpecular.direction, scat.raySpecular.direction);
-
-      float NloL = dot(-1.0 * normalize(scat.raySpecular.direction), nextHit.faceNormal.normal);
-      float area = areaTriangle(lights[nextHit.objIndex].triangle);
-
-      float brdf = lambertBrdfValue();
-      scat.colorAttenuation = integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, squaredDistance, area);
-    } else {
-      float brdf = lambertBrdfValue();
-      float pdf = lambertPdfValue(hit.faceNormal.normal, scat.raySpecular.direction);
-      scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
-    }
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
+    scat.pdf = lambertPdfValue(hit.faceNormal.normal, scat.raySpecular.direction);
   }
   
   return scat;
+}
+
+// ------------- Light -------------
+
+RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
+  RadianceRecord rad;
+
+  float sqrDistance = hit.t * hit.t * dot(r.direction, r.direction);
+  float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
+
+  rad.colorIrradiance = lights[lightIndex].color * cosine * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
+  return rad;
 }
 
 // ------------- Main -------------
@@ -129,6 +125,8 @@ void main() {
   vec2 uv = (imgPosition + noiseUV) / imgSize;
 
   Ray curRay;
+  ShadeRecord scat;
+
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
@@ -149,11 +147,14 @@ void main() {
 
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
+      lastNum = vec4(rad.colorIrradiance, 1.0);
+
       break;
     }
 
-    ShadeRecord scat = shade(curRay, hit, objects[hit.objIndex].materialIndex);
+    if (i > 0) rayTransform = rayTransform / scat.pdf;
+    scat = shade(curRay, hit, objects[hit.objIndex].materialIndex);
 
     mat4 emitTransf = mat4(
       1.0, 0.0, 0.0, scat.colorEmitted.x,
