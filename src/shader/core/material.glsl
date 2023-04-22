@@ -55,9 +55,8 @@ vec3 lambertGenerateRandom(vec3[3] globalOnb) {
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
-float lambertPdfValue(vec3 normal, vec3 direction) {
-  float cosine = dot(normalize(direction), normal);
-  return max(cosine, 0.0001) / pi;
+float lambertPdfValue(float NoL) {
+  return NoL / pi;
 }
 
 float lambertBrdfValue() {

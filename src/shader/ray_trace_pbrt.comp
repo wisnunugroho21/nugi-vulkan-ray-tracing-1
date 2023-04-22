@@ -68,17 +68,17 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     vec3 unitLightDirection = normalize(scat.raySpecular.direction);
     vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
 
-    float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
-    float NoV = clamp(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001, 1.0);
-    float NoH = clamp(dot(hit.faceNormal.normal, H), 0.001, 1.0);
-    float VoH = clamp(dot(unitViewDirection, H), 0.001, 1.0);
+    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
+    float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001);
+    float NoH = max(dot(hit.faceNormal.normal, H), 0.001);
+    float VoH = max(dot(unitViewDirection, H), 0.001);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
 
     scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
   } else {
-    if (randomInt(0, 2, 0) == 0) {
+    if (randomInt(0, 1, 0) == 0) {
       int triangleRand = randomInt(0, 1, 1);
       scat.raySpecular.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point);
     } else {
@@ -87,12 +87,12 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
     }
 
     vec3 unitLightDirection = normalize(scat.raySpecular.direction);
-    float NoL = clamp(dot(hit.faceNormal.normal, unitLightDirection), 0.001, 1.0);
+    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
 
     float brdf = lambertBrdfValue();
 
     scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
-    scat.pdf = lambertPdfValue(hit.faceNormal.normal, scat.raySpecular.direction);
+    scat.pdf = lambertPdfValue(NoL);
   }
   
   return scat;
@@ -104,9 +104,9 @@ RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
   RadianceRecord rad;
 
   float sqrDistance = hit.t * hit.t * dot(r.direction, r.direction);
-  float cosine = clamp(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.0, 1.0);
+  float cosine = max(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.001);
 
-  rad.colorIrradiance = lights[lightIndex].color * cosine * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
+  rad.colorIrradiance = cosine * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
   return rad;
 }
 
@@ -129,6 +129,7 @@ void main() {
 
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
+  scat.pdf = 1.0;
 
   vec4 lastNum = vec4(0.0, 0.0, 0.0, 0.0);
   mat4 rayTransform = mat4(
@@ -139,21 +140,40 @@ void main() {
   );
   
   for(int i = 0; i < 50; i++) {
-    HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
+    HitRecord hittedLight = hitLightList(curRay, 0.001, 1000000.0);
+    if (hittedLight.isHit) {
+      if (i > 0) {
+        RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
+
+        mat4 radTransf = mat4(
+          rad.colorIrradiance, 0.0, 0.0, 0.0,
+          0.0, rad.colorIrradiance, 0.0, 0.0,
+          0.0, 0.0, rad.colorIrradiance, 0.0,
+          0.0, 0.0, 0.0, 1.0
+        );
+
+        rayTransform = rayTransform * radTransf;
+      }
+      
+      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
+      break;
+    }
+
+    mat4 pdfTransf = mat4(
+      1.0 / scat.pdf, 0.0, 0.0, 0.0,
+      0.0, 1.0 / scat.pdf, 0.0, 0.0,
+      0.0, 0.0, 1.0 / scat.pdf, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    rayTransform = rayTransform * pdfTransf;
+
+    HitRecord hit = hitBvh(curRay, 0.001, hittedLight.t);
     if (!hit.isHit) {
       lastNum = vec4(ubo.background, 1.0);
       break;
     }
 
-    HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
-    if (hittedLight.isHit) {
-      RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
-      lastNum = vec4(rad.colorIrradiance, 1.0);
-
-      break;
-    }
-
-    if (i > 0) rayTransform = rayTransform / scat.pdf;
     scat = shade(curRay, hit, objects[hit.objIndex].materialIndex);
 
     mat4 emitTransf = mat4(

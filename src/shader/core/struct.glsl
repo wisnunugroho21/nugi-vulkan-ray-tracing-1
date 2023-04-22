@@ -78,7 +78,7 @@ struct ShadeRecord {
 };
 
 struct RadianceRecord {
-  vec3 colorIrradiance;
+  float colorIrradiance;
 };
 
 float pi = 3.14159265359;
