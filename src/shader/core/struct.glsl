@@ -71,7 +71,6 @@ struct HitRecord {
 
 struct ShadeRecord {
   vec3 colorAttenuation;
-  vec3 colorEmitted;
   float pdf;
 
   Ray raySpecular;
