@@ -98,23 +98,11 @@ ShadeRecord shade(Ray r, HitRecord hit, uint materialIndex) {
   return scat;
 }
 
-// ------------- Light -------------
-
-RadianceRecord radiance(Ray r, HitRecord hit, uint lightIndex) {
-  RadianceRecord rad;
-
-  float sqrDistance = hit.t * hit.t * dot(r.direction, r.direction);
-  float cosine = max(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.001);
-
-  rad.colorIrradiance = cosine * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
-  return rad;
-}
-
 // ------------- Main -------------
 
 void main() {
-  uint imgIndex = gl_GlobalInvocationID.z;
   uvec2 imgPosition = gl_GlobalInvocationID.xy;
+  uint imgIndex = gl_GlobalInvocationID.z;
 
   uvec2 imgSize = uvec2(imageSize(targetImage[imgIndex]));
 
@@ -131,18 +119,16 @@ void main() {
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   scat.pdf = 1.0;
 
-  vec3 lastNum = vec3(0.0);
   vec3 totalAttenuation = vec3(1.0);
   
   for(int i = 0; i < 50; i++) {
     HitRecord hittedLight = hitLightList(curRay, 0.001, 1000000.0);
     if (hittedLight.isHit) {
       if (i > 0) {
-        RadianceRecord rad = radiance(curRay, hittedLight, hittedLight.objIndex);
-        totalAttenuation = totalAttenuation * rad.colorIrradiance;
+        totalAttenuation = totalAttenuation * radiance(curRay, hittedLight, hittedLight.objIndex);
       }
       
-      lastNum = lights[hittedLight.objIndex].color;
+      totalAttenuation = totalAttenuation * lights[hittedLight.objIndex].color;
       break;
     }
 
@@ -150,7 +136,7 @@ void main() {
 
     HitRecord hit = hitBvh(curRay, 0.001, hittedLight.t);
     if (!hit.isHit) {
-      lastNum = ubo.background;
+      totalAttenuation = totalAttenuation * ubo.background;
       break;
     }
 
@@ -160,6 +146,6 @@ void main() {
     curRay = scat.raySpecular;
   }
   
-  vec4 curColor = vec4(totalAttenuation * lastNum, 1.0);
+  vec4 curColor = vec4(totalAttenuation, 1.0);
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
 }
