@@ -5,8 +5,7 @@ vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
 }
 
 vec3 integrandOverArea(vec3 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
-  float geometricTerm = NoL * NloL / squareDistance;
-  return color * brdf * geometricTerm * area;
+  return color * brdf * NoL * NloL * area / squareDistance;
 }
 
 vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
