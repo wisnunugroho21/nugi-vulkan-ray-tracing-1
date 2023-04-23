@@ -87,7 +87,7 @@ ShadeRecord indirectShade(Ray r, HitRecord hit, uint materialIndex) {
     float brdf = lambertBrdfValue();
     float pdf = lambertPdfValue(NoL);
 
-    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);    
+    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
   }
   
   return scat;
@@ -96,7 +96,6 @@ ShadeRecord indirectShade(Ray r, HitRecord hit, uint materialIndex) {
 ShadeRecord directShade(HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
   scat.colorAttenuation = vec3(0.0);
-  scat.pdf = 1.0;
 
   Ray shadowRay;
   shadowRay.origin = hit.point;
@@ -116,7 +115,7 @@ ShadeRecord directShade(HitRecord hit, uint materialIndex) {
     float area = areaTriangle(lights[hittedLight.objIndex].triangle);
     float brdf = lambertBrdfValue();
 
-    scat.colorAttenuation += integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, sqrDistance, area);
+    scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area) / 2.0;
   }
 
   return scat;
@@ -135,33 +134,46 @@ void main() {
 
   vec2 noiseUV = vec2(noiseX, noiseY);
   vec2 uv = (imgPosition + noiseUV) / imgSize;
-
-  vec3 totalAttenuation = vec3(1.0);
-  Ray curRay;
+  
+  vec4 totalAttenuation = vec4(1.0);
+  Ray curRay;  
 
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
   for(int i = 0; i < 10; i++) {
-    HitRecord hittedLight = hitLightList(curRay, 0.001, 1000000.0);
-    if (hittedLight.isHit) {
-      totalAttenuation = totalAttenuation * lights[hittedLight.objIndex].color;
+    HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
+    if (!hit.isHit) {
+      totalAttenuation = totalAttenuation * vec4(ubo.background, 1.0);
       break;
     }
 
-    HitRecord hit = hitBvh(curRay, 0.001, hittedLight.t);
-    if (!hit.isHit) {
-      totalAttenuation = totalAttenuation * ubo.background;
+    HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
+    if (hittedLight.isHit) {
       break;
     }
 
     ShadeRecord indirectScat = indirectShade(curRay, hit, objects[hit.objIndex].materialIndex);
     ShadeRecord directScat = directShade(hit, objects[hit.objIndex].materialIndex);
 
-    totalAttenuation = totalAttenuation * (indirectScat.colorAttenuation + directScat.colorAttenuation) * 0.5;
+    mat4 directTransf = mat4(
+      1.0, 0.0, 0.0, directScat.colorAttenuation.x,
+      0.0, 1.0, 0.0, directScat.colorAttenuation.y,
+      0.0, 0.0, 1.0, directScat.colorAttenuation.z,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    mat4 indirectTransf = mat4(
+      indirectScat.colorAttenuation.x, 0.0, 0.0, 0.0,
+      0.0, indirectScat.colorAttenuation.y, 0.0, 0.0,
+      0.0, 0.0, indirectScat.colorAttenuation.z, 0.0,
+      0.0, 0.0, 0.0, 1.0
+    );
+
+    totalAttenuation = directTransf * indirectTransf * totalAttenuation;
     curRay = indirectScat.raySpecular;
   }
   
-  vec4 curColor = vec4(totalAttenuation, 1.0);
+  vec4 curColor = totalAttenuation;
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
 }
