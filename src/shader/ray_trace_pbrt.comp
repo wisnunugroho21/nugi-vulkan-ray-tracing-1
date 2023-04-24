@@ -93,7 +93,7 @@ ShadeRecord indirectShade(Ray r, HitRecord hit, uint materialIndex) {
   return scat;
 }
 
-ShadeRecord directShade(HitRecord hit, uint materialIndex) {
+ShadeRecord directShade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
   scat.colorAttenuation = vec3(0.0);
 
@@ -102,20 +102,38 @@ ShadeRecord directShade(HitRecord hit, uint materialIndex) {
 
   for (int i = 0; i < 2; i++) {
     shadowRay.direction = triangleGenerateRandom(lights[i].triangle, hit.point);
+    vec3 unitLightDirection = normalize(shadowRay.direction);
 
     HitRecord hittedLight = hitLightList(shadowRay, 0.001, 1000000.0);
     if (!hittedLight.isHit) continue;
 
-    vec3 unitLightDirection = normalize(shadowRay.direction);
+    if (materials[materialIndex].metallicness >= randomFloat(0)) {
+      vec3 unitViewDirection = normalize(r.direction);
+      vec3 H = normalize(shadowRay.direction - r.direction); // half vector
 
-    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
-    float NloL = max(dot(hittedLight.faceNormal.normal, -1.0 * unitLightDirection), 0.001);
+      float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect);
 
-    float sqrDistance = hittedLight.t * hittedLight.t * dot(shadowRay.direction, shadowRay.direction);
-    float area = areaTriangle(lights[hittedLight.objIndex].triangle);
-    float brdf = lambertBrdfValue();
+      float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
+      float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001);
+      float NoH = max(dot(hit.faceNormal.normal, H), 0.001);
+      float VoH = max(dot(unitViewDirection, H), 0.001);
+      float NloL = max(dot(hittedLight.faceNormal.normal, -1.0 * unitLightDirection), 0.001);
 
-    scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area);
+      float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
+      float sqrDistance = hittedLight.t * hittedLight.t * dot(shadowRay.direction, shadowRay.direction);
+      float area = areaTriangle(lights[hittedLight.objIndex].triangle);
+
+      scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area);
+    } else {
+      float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
+      float NloL = max(dot(hittedLight.faceNormal.normal, -1.0 * unitLightDirection), 0.001);
+
+      float sqrDistance = hittedLight.t * hittedLight.t * dot(shadowRay.direction, shadowRay.direction);
+      float area = areaTriangle(lights[hittedLight.objIndex].triangle);
+      float brdf = lambertBrdfValue();
+
+      scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area);
+    }
   }
 
   return scat;
@@ -154,7 +172,7 @@ void main() {
     }
 
     ShadeRecord indirectScat = indirectShade(curRay, hit, objects[hit.objIndex].materialIndex);
-    ShadeRecord directScat = directShade(hit, objects[hit.objIndex].materialIndex);
+    ShadeRecord directScat = directShade(curRay, hit, objects[hit.objIndex].materialIndex);
 
     mat4 directTransf = mat4(
       1.0, 0.0, 0.0, directScat.colorAttenuation.x,
