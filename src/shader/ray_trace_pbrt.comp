@@ -115,7 +115,7 @@ ShadeRecord directShade(HitRecord hit, uint materialIndex) {
     float area = areaTriangle(lights[hittedLight.objIndex].triangle);
     float brdf = lambertBrdfValue();
 
-    scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area) / 2.0;
+    scat.colorAttenuation += integrandOverArea(lights[hittedLight.objIndex].color, brdf, NoL, NloL, sqrDistance, area);
   }
 
   return scat;
@@ -141,7 +141,7 @@ void main() {
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
-  for(int i = 0; i < 10; i++) {
+  for(int i = 0; i < 4; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
       totalAttenuation = totalAttenuation * vec4(ubo.background, 1.0);
