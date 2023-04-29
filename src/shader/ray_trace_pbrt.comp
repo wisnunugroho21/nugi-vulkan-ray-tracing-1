@@ -151,7 +151,14 @@ void main() {
   vec2 noiseUV = vec2(noiseX, noiseY);
   vec2 uv = (imgPosition + noiseUV) / imgSize;
   
-  vec4 totalAttenuation = vec4(1.0);
+  vec4 lastNum = vec4(0.0, 0.0, 0.0, 1.0);
+  mat4 totalAttenuation = mat4(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0
+  );
+
   Ray curRay;  
 
   curRay.origin = ubo.origin;
@@ -160,12 +167,13 @@ void main() {
   for(int i = 0; i < 6; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
-      totalAttenuation = totalAttenuation * vec4(ubo.background, 1.0);
+      lastNum = vec4(ubo.background, 1.0);
       break;
     }
 
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
+      lastNum = vec4(lights[hittedLight.objIndex].color, 1.0);
       break;
     }
 
@@ -190,6 +198,6 @@ void main() {
     curRay = indirectScat.raySpecular;
   }
   
-  vec4 curColor = totalAttenuation;
+  vec4 curColor = totalAttenuation * lastNum;
   imageStore(targetImage[imgIndex], ivec2(imgPosition), curColor);
 }
