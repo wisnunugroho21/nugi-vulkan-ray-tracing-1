@@ -21,7 +21,6 @@ namespace nugiEngine {
     Triangle triangle{};
     alignas(4) uint32_t materialIndex;
   };
-  
 
   struct BvhNode {
     alignas(4) int leftNode = -1;
@@ -41,7 +40,7 @@ namespace nugiEngine {
   };
 
   struct Light {
-    Triangle triangle{};
+    Sphere sphere{};
     alignas(16) glm::vec3 color;
   };
 
