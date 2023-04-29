@@ -105,7 +105,7 @@ ShadeRecord directShade(Ray r, HitRecord hit, uint materialIndex) {
     if (occludedHit.isHit) continue;
 
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    FaceNormal hittedLightFaceNormal = triangleFaceNormal(lights[i].sphere, unitLightDirection);
+    FaceNormal hittedLightFaceNormal = sphereFaceNormal(lights[i].sphere, rayAt(shadowRay, 1.0), unitLightDirection);
 
     float NloL = max(dot(hittedLightFaceNormal.normal, -1.0 * unitLightDirection), 0.001);
     float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);

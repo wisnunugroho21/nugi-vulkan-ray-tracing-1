@@ -195,7 +195,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   for (int i = 0; i < 2; i++) {
-    HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
+    HitRecord tempHit = hitSphere(lights[i].sphere, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
       hit.objIndex = i;
