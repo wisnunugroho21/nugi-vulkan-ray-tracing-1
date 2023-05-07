@@ -73,19 +73,18 @@ ShadeRecord indirectShade(Ray r, HitRecord hit, uint materialIndex) {
     float VoH = max(dot(unitViewDirection, H), 0.001);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
-    float pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
 
-    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
+    scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
+    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, scat.pdf);    
   } else {
     vec3[3] globalOnb = buildOnb(hit.faceNormal.normal);
     scat.raySpecular.direction = lambertGenerateRandom(globalOnb);
 
     float NoL = max(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.001);
-
     float brdf = lambertBrdfValue();
-    float pdf = lambertPdfValue(NoL);
 
-    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, pdf);
+    scat.pdf = lambertPdfValue(NoL);
+    scat.colorAttenuation = integrandOverHemisphere(materials[materialIndex].baseColor, brdf, NoL, scat.pdf);    
   }
   
   return scat;
@@ -93,22 +92,24 @@ ShadeRecord indirectShade(Ray r, HitRecord hit, uint materialIndex) {
 
 ShadeRecord directShade(Ray r, HitRecord hit, uint materialIndex) {
   ShadeRecord scat;
+
   scat.colorAttenuation = vec3(0.0);
+  scat.pdf = 0.0;
 
   Ray shadowRay;
   shadowRay.origin = hit.point;
 
-  for (int i = 0; i < 2; i++) {
-    shadowRay.direction = triangleGenerateRandom(lights[i].triangle, hit.point);
+  int i = randomInt(0, 1, 0);
 
-    HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
-    if (occludedHit.isHit) continue;
+  shadowRay.direction = triangleGenerateRandom(lights[i].triangle, hit.point);
+  HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
 
+  if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
     FaceNormal hittedLightFaceNormal = triangleFaceNormal(lights[i].triangle, unitLightDirection);
 
     float NloL = max(dot(hittedLightFaceNormal.normal, -1.0 * unitLightDirection), 0.001);
-    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);
+    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);    
 
     if (materials[materialIndex].metallicness >= randomFloat(0)) {
       vec3 unitViewDirection = normalize(r.direction);
@@ -124,15 +125,17 @@ ShadeRecord directShade(Ray r, HitRecord hit, uint materialIndex) {
       float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
       float area = areaTriangle(lights[i].triangle);
 
-      scat.colorAttenuation += integrandOverArea(lights[i].color, brdf, NoL, NloL, sqrDistance, area);
+      scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
+      scat.colorAttenuation = integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, sqrDistance, area) * lights[i].color;
     } else {
       float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
       float area = areaTriangle(lights[i].triangle);
       float brdf = lambertBrdfValue();
 
-      scat.colorAttenuation += integrandOverArea(lights[i].color, brdf, NoL, NloL, sqrDistance, area);
+      scat.pdf = lambertPdfValue(NoL);
+      scat.colorAttenuation = integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, sqrDistance, area) * lights[i].color;
     }
-  }
+  }  
 
   return scat;
 }
@@ -159,24 +162,26 @@ void main() {
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
-  for(int i = 0; i < 6; i++) {
+  for(int i = 0; i < 3; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
-      totalAttenuation = totalAttenuation + ubo.background;
+      totalAttenuation = totalAttenuation + totalIndirect * ubo.background;
       break;
     }
 
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      totalAttenuation = totalAttenuation + lights[hittedLight.objIndex].color;
+      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.objIndex].color;
       break;
     }
 
     ShadeRecord indirectScat = indirectShade(curRay, hit, objects[hit.objIndex].materialIndex);
     ShadeRecord directScat = directShade(curRay, hit, objects[hit.objIndex].materialIndex);
 
-    totalAttenuation = totalAttenuation + totalIndirect * directScat.colorAttenuation;
-    totalIndirect = totalIndirect * indirectScat.colorAttenuation;
+    float totalPdf = directScat.pdf + indirectScat.pdf;
+
+    totalAttenuation = totalAttenuation + totalIndirect * directScat.colorAttenuation * directScat.pdf / totalPdf;
+    totalIndirect = totalIndirect * indirectScat.colorAttenuation * indirectScat.pdf / totalPdf;
 
     curRay = indirectScat.raySpecular;
   }
