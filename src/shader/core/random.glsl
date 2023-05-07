@@ -12,8 +12,12 @@ float stepAndOutputRNGFloat(inout uint rngState) {
   return float(word) / 4294967295.0;
 }
 
-float randomFloat(uint index) {
+float randomFloat(uint index, uint additionalRandomSeed) {
   float randNum = 0.0;
+
+  uint rngStateXY =  (imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x) * (push.randomSeed + 1 + additionalRandomSeed);
+  uint rngStateXZ =  (imgSize.x * gl_GlobalInvocationID.z + gl_GlobalInvocationID.x) * (push.randomSeed + 1 + additionalRandomSeed);
+  uint rngStateYZ =  (imgSize.y * gl_GlobalInvocationID.z + gl_GlobalInvocationID.y) * (push.randomSeed + 1 + additionalRandomSeed);
 
   switch(index) {
     case 0: randNum = stepAndOutputRNGFloat(rngStateXY); break;
@@ -24,25 +28,25 @@ float randomFloat(uint index) {
   return randNum;
 }
 
-float randomFloatAt(float min, float max, uint index) {
-  return min + (max - min) * randomFloat(index);
+float randomFloatAt(float min, float max, uint index, uint additionalRandomSeed) {
+  return min + (max - min) * randomFloat(index, additionalRandomSeed);
 }
 
-int randomInt(float min, float max, uint index) {
-  return int(randomFloatAt(min, max + 1, index));
+int randomInt(float min, float max, uint index, uint additionalRandomSeed) {
+  return int(randomFloatAt(min, max + 1, index, additionalRandomSeed));
 }
 
-vec3 randomVecThree(uint index) {
-  return vec3(randomFloat(index), randomFloat(index), randomFloat(index));
+vec3 randomVecThree(uint index, uint additionalRandomSeed) {
+  return vec3(randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed));
 }
 
-vec3 randomVecThreeAt(float min, float max, uint index) {
-  return vec3(randomFloatAt(min, max, index), randomFloatAt(min, max, index), randomFloatAt(min, max, index));
+vec3 randomVecThreeAt(float min, float max, uint index, uint additionalRandomSeed) {
+  return vec3(randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed));
 }
 
-vec3 randomInUnitSphere(uint index) {
+vec3 randomInUnitSphere(uint index, uint additionalRandomSeed) {
   while (true) {
-    vec3 p = randomVecThreeAt(-1.0, 1.0, index);
+    vec3 p = randomVecThreeAt(-1.0, 1.0, index, additionalRandomSeed);
 
     if (dot(p, p) < 1) {
       return p;
@@ -50,8 +54,8 @@ vec3 randomInUnitSphere(uint index) {
   }
 }
 
-vec3 randomInHemisphere(vec3 normal, uint index) {
-  vec3 in_unit_sphere = randomInUnitSphere(index);
+vec3 randomInHemisphere(vec3 normal, uint index, uint additionalRandomSeed) {
+  vec3 in_unit_sphere = randomInUnitSphere(index, additionalRandomSeed);
 
   // In the same hemisphere as the normal
   if (dot(in_unit_sphere, normal) > 0.0) {
@@ -61,9 +65,9 @@ vec3 randomInHemisphere(vec3 normal, uint index) {
   }   
 }
 
-vec3 randomInUnitDisk(uint index) {
+vec3 randomInUnitDisk(uint index, uint additionalRandomSeed) {
   while (true) {
-    vec3 p = vec3(randomFloatAt(-1.0, 1.0, index), randomFloatAt(-1.0, 1.0, index), 0.0);
+    vec3 p = vec3(randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), 0.0);
 
     if (dot(p, p) < 1) {
       return p;

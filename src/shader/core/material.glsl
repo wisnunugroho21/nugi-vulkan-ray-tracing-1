@@ -1,8 +1,8 @@
 // ------------- GGX -------------
 
-vec3 randomGGX(uint index1, uint index2, float roughness) {
-  float r1 = randomFloat(index1);
-  float r2 = randomFloat(index2);
+vec3 randomGGX(float roughness, uint index1, uint index2, uint additionalRandomSeed) {
+  float r1 = randomFloat(index1, additionalRandomSeed);
+  float r2 = randomFloat(index2, additionalRandomSeed);
 
   float a = roughness * roughness;
   float phi = 2 * 3.14159265359 * r2;
@@ -17,8 +17,8 @@ vec3 randomGGX(uint index1, uint index2, float roughness) {
   return vec3(x, y, z);
 }
 
-vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness) {
-  vec3 source = randomGGX(0, 1, roughness);
+vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
+  vec3 source = randomGGX(roughness, 0, 1, additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
@@ -36,9 +36,9 @@ float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float r
 
 // ------------- Lambert ------------- 
 
-vec3 randomCosineDirection(uint index1, uint index2) {
-  float r1 = randomFloat(index1);
-  float r2 = randomFloat(index2);
+vec3 randomCosineDirection(uint index1, uint index2, uint additionalRandomSeed) {
+  float r1 = randomFloat(index1, additionalRandomSeed);
+  float r2 = randomFloat(index2, additionalRandomSeed);
 
   float phi = 2 * 3.14159265359 * r1;
   float cosTheta = sqrt(r2);
@@ -50,8 +50,8 @@ vec3 randomCosineDirection(uint index1, uint index2) {
   return vec3(x, y, z);
 }
 
-vec3 lambertGenerateRandom(vec3[3] globalOnb) {
-  vec3 source = randomCosineDirection(0, 1);
+vec3 lambertGenerateRandom(vec3[3] globalOnb, uint additionalRandomSeed) {
+  vec3 source = randomCosineDirection(0, 1, additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 

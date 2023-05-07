@@ -9,12 +9,12 @@ float areaSphere(Sphere obj) {
   return 4 * pi * obj.radius * obj.radius;
 }
 
-vec3 sphereGenerateRandom(Sphere sphere, vec3 origin) {
+vec3 sphereGenerateRandom(Sphere sphere, vec3 origin, uint additionalRandomSeed) {
   vec3 dist = sphere.center - origin;
   vec3[3] globalOnb = buildOnb(dist);
 
-  float r1 = randomFloat(1);
-  float r2 = randomFloat(2);
+  float r1 = randomFloat(1, additionalRandomSeed);
+  float r2 = randomFloat(2, additionalRandomSeed);
   float z = 1 + r2 * (sqrt(1 - sphere.radius * sphere.radius /  dot(dist, dist)) - 1);
 
   float phi = 2 * pi * r1;
@@ -42,12 +42,12 @@ float areaTriangle(Triangle obj) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-vec3 triangleGenerateRandom(Triangle obj, vec3 origin) {
+vec3 triangleGenerateRandom(Triangle obj, vec3 origin, uint additionalRandomSeed) {
   vec3 a = obj.point1 - obj.point0;
   vec3 b = obj.point2 - obj.point0;
 
-  float u1 = randomFloat(1);
-  float u2 = randomFloat(2);
+  float u1 = randomFloat(1, additionalRandomSeed);
+  float u2 = randomFloat(2, additionalRandomSeed);
 
   if (u1 + u2 > 1) {
     u1 = 1 - u1;
