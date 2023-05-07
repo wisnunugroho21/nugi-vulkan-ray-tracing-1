@@ -98,14 +98,13 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, uint 
 
 ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, uint additionalRandomSeed) {
   ShadeRecord scat;
+  Ray shadowRay;
 
   scat.colorAttenuation = vec3(0.0);
   scat.pdf = 0.0;
 
-  Ray shadowRay;
   shadowRay.origin = hit.point;
-
-  int i = randomInt(0, 1, 0, additionalRandomSeed);
+  int i = (randomInt(0, 1, 1, additionalRandomSeed) + randomInt(0, 1, 2, additionalRandomSeed)) % 2;
 
   shadowRay.direction = triangleGenerateRandom(lights[i].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
@@ -139,14 +138,13 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, uint additi
 
 ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, uint additionalRandomSeed) {
   ShadeRecord scat;
+  Ray shadowRay;
 
   scat.colorAttenuation = vec3(0.0);
   scat.pdf = 0.0;
 
-  Ray shadowRay;
   shadowRay.origin = hit.point;
-
-  int i = randomInt(0, 1, 0, additionalRandomSeed);
+  int i = (randomInt(0, 1, 1, additionalRandomSeed) + randomInt(0, 1, 2, additionalRandomSeed)) % 2;
 
   shadowRay.direction = triangleGenerateRandom(lights[i].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
