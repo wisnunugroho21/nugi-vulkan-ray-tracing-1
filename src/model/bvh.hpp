@@ -143,8 +143,8 @@ namespace nugiEngine {
     float length = node.box.max[axis] - node.box.min[axis];
     float costArr[splitNumber];
 
-    for (int i = 1; i <= splitNumber; i++) {
-      float leftLength = length * i / (splitNumber + 1);
+    for (int i = 0; i < splitNumber; i++) {
+      float leftLength = length * (i + 1) / (splitNumber + 1);
       int totalLeft = 0, totalRight = 0;
 
       for (auto &&item : node.objects) {
@@ -199,12 +199,24 @@ namespace nugiEngine {
         intermediate.push_back(currentNode);
         continue;
       } else {
-        auto mid = findObjectSplitIndex(currentNode, axis); // std::ceil(objectSpan / 2);
+        float length = currentNode.box.max[axis] - currentNode.box.min[axis];
+        int mid = findObjectSplitIndex(currentNode, axis); // std::ceil(objectSpan / 2);
+
+        float leftLength = length * (mid + 1) / (splitNumber + 1);
 
         BvhItemBuild leftNode;
         leftNode.index = nodeCounter;
-        for (int i = 0; i < mid; i++) {
+        /* for (int i = 0; i < mid; i++) {
           leftNode.objects.push_back(currentNode.objects[i]);
+        } */
+
+        for (auto &&item : currentNode.objects) {
+          Aabb curBox = objectBoundingBox(item.o);
+          float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
+
+          if (pos < leftLength) {
+            leftNode.objects.push_back(item);
+          }
         }
 
         nodeCounter++;
@@ -212,8 +224,17 @@ namespace nugiEngine {
 
         BvhItemBuild rightNode;
         rightNode.index = nodeCounter;
-        for (int i = mid; i < objectSpan; i++) {
+        /* for (int i = mid; i < objectSpan; i++) {
           rightNode.objects.push_back(currentNode.objects[i]);
+        } */
+
+        for (auto &&item : currentNode.objects) {
+          Aabb curBox = objectBoundingBox(item.o);
+          float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
+
+          if (pos >= leftLength) {
+            rightNode.objects.push_back(item);
+          }
         }
 
         nodeCounter++;
