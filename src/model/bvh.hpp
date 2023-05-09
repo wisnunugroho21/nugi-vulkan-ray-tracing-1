@@ -12,6 +12,7 @@
 
 namespace nugiEngine {
   const glm::vec3 eps(0.0001f);
+  const int splitNumber = 9;
 
   // Axis-aligned bounding box.
   struct Aabb {
@@ -74,7 +75,7 @@ namespace nugiEngine {
       if (leaf) {
         node.leftObjIndex = objects[0].index;
 
-        if (objects.size() >= 2) {
+        if (objects.size() > 1) {
           node.rightObjIndex = objects[1].index;
         }
       }
@@ -138,6 +139,34 @@ namespace nugiEngine {
     return boxCompare(a.o, b.o, 2);
   }
 
+  int findObjectSplitIndex(BvhItemBuild node, int axis) {
+    float length = node.box.max[axis] - node.box.min[axis];
+    float costArr[splitNumber];
+
+    for (int i = 1; i <= splitNumber; i++) {
+      float leftLength = length * i / (splitNumber + 1);
+      int totalLeft = 0, totalRight = 0;
+
+      for (auto &&item : node.objects) {
+        Aabb curBox = objectBoundingBox(item.o);
+        float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
+
+        if (pos < leftLength) {
+          totalLeft++;
+        } else {
+          totalRight++;
+        }
+      }
+
+      float probLeft = leftLength / length;
+      float probRight = (length - leftLength) / length;
+
+      costArr[i] = 0.5 + probLeft * totalLeft * 1 + probRight * totalRight * 1;
+    }
+
+    return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
+  }
+
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
   std::vector<BvhNode> createBvh(const std::vector<ObjectBoundBox> &srcObjects) {
@@ -170,7 +199,7 @@ namespace nugiEngine {
         intermediate.push_back(currentNode);
         continue;
       } else {
-        auto mid = std::ceil(objectSpan / 2);
+        auto mid = findObjectSplitIndex(currentNode, axis); // std::ceil(objectSpan / 2);
 
         BvhItemBuild leftNode;
         leftNode.index = nodeCounter;
