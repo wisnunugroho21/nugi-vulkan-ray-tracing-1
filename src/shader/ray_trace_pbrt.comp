@@ -130,7 +130,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, uint additi
     float area = areaTriangle(lights[i].triangle);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.colorAttenuation = integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, sqrDistance, area) * lights[i].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[i].color;
   }  
 
   return scat;
@@ -161,7 +161,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, uint ad
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.colorAttenuation = integrandOverArea(materials[materialIndex].baseColor, brdf, NoL, NloL, sqrDistance, area) * lights[i].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[i].color;
   }  
 
   return scat;
@@ -200,15 +200,15 @@ void main() {
     HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
       if (i > 0) {
-        totalIndirect = totalIndirect * radiance(curRay, hittedLight, hittedLight.objIndex);
+        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.objIndex);
       }
 
       totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.objIndex].color;
       break;
     }
 
-    uint materialIndex = objects[hit.objIndex].materialIndex;
     totalIndirect = totalIndirect / indirectScat.pdf;
+    uint materialIndex = objects[hit.objIndex].materialIndex;
 
     if (materials[materialIndex].metallicness >= randomFloat(0, i)) {
       indirectScat = indirectGgxShade(curRay, hit, materialIndex, i);

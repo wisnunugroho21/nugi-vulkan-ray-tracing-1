@@ -12,9 +12,13 @@ vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
   return color * brdf * NoL;
 }
 
-float radiance(Ray r, HitRecord hit, uint lightIndex) {
-  float sqrDistance = hit.t * hit.t * dot(r.direction, r.direction);
-  float cosine = max(dot(hit.faceNormal.normal, -1.0 * normalize(r.direction)), 0.001);
+float Gfactor(float NloL, float squareDistance, float area) {
+  return NloL * area / squareDistance;
+}
 
-  return cosine * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
+float Gfactor(Ray r, HitRecord hittedLight, uint lightIndex) {
+  float sqrDistance = hittedLight.t * hittedLight.t * dot(r.direction, r.direction);
+  float NloL = max(dot(hittedLight.faceNormal.normal, -1.0 * normalize(r.direction)), 0.001);
+
+  return NloL * areaTriangle(lights[lightIndex].triangle) / sqrDistance;
 }
