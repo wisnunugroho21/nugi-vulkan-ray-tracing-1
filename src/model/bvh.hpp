@@ -99,7 +99,7 @@ namespace nugiEngine {
     // Need to add eps to correctly construct an AABB for flat objects like planes.
     return Aabb{ glm::min(glm::min(o.triangle.point0, o.triangle.point1), o.triangle.point2) - eps, 
       glm::max(glm::max(o.triangle.point0, o.triangle.point1), o.triangle.point2) + eps };
-    // return {t.center - t.radius, t.center + t.radius};
+    // return {t.center - t.radius - eps, t.center + t.radius + eps};
   }
 
   Aabb objectListBoundingBox(std::vector<ObjectBoundBox> &objects) {
@@ -120,7 +120,10 @@ namespace nugiEngine {
     Aabb boxA = objectBoundingBox(a);
     Aabb boxB = objectBoundingBox(b);
 
-    return boxA.min[axis] < boxB.min[axis];
+    float Apos = (boxA.max[axis] - boxA.min[axis]) / 2 + boxA.min[axis];
+    float Bpos = (boxB.max[axis] - boxB.min[axis]) / 2 + boxB.min[axis];
+
+    return Apos < Bpos;
   }
 
   bool boxXCompare(ObjectBoundBox a, ObjectBoundBox b) {
@@ -145,6 +148,7 @@ namespace nugiEngine {
     BvhItemBuild root;
     root.index = nodeCounter;
     root.objects = srcObjects;
+
     nodeCounter++;
     nodeStack.push(root);
 
