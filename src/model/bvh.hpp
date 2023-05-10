@@ -12,7 +12,7 @@
 
 namespace nugiEngine {
   const glm::vec3 eps(0.0001f);
-  const int splitNumber = 9;
+  const int splitNumber = 3;
 
   // Axis-aligned bounding box.
   struct Aabb {
@@ -139,9 +139,8 @@ namespace nugiEngine {
     return boxCompare(a.o, b.o, 2);
   }
 
-  int findObjectSplitIndex(BvhItemBuild node, int axis) {
-    float length = node.box.max[axis] - node.box.min[axis];
-    float costArr[splitNumber];
+  int findObjectSplitIndex(BvhItemBuild node, int axis, float length) {
+    float costArr[splitNumber]{};
 
     for (int i = 0; i < splitNumber; i++) {
       float leftLength = length * (i + 1) / (splitNumber + 1);
@@ -161,10 +160,20 @@ namespace nugiEngine {
       float probLeft = leftLength / length;
       float probRight = (length - leftLength) / length;
 
-      costArr[i] = 0.5 + probLeft * totalLeft * 1 + probRight * totalRight * 1;
+      costArr[i] = 1 + probLeft * totalLeft * 2 + probRight * totalRight * 2;
     }
 
-    return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
+    int minIndex = 0;
+    float minValue = 9999;
+
+    for (int i = 0; i < splitNumber; i++) {
+        if (costArr[i] < minValue) {
+            minIndex = i;
+            minValue = costArr[i];
+        }
+    }
+
+    return minIndex;
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
@@ -200,15 +209,10 @@ namespace nugiEngine {
         continue;
       } else {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
-        int mid = findObjectSplitIndex(currentNode, axis); // std::ceil(objectSpan / 2);
+        int mid = findObjectSplitIndex(currentNode, axis, length); // std::ceil(objectSpan / 2);
 
         float leftLength = length * (mid + 1) / (splitNumber + 1);
-
-        BvhItemBuild leftNode;
-        leftNode.index = nodeCounter;
-        /* for (int i = 0; i < mid; i++) {
-          leftNode.objects.push_back(currentNode.objects[i]);
-        } */
+        BvhItemBuild leftNode, rightNode;
 
         for (auto &&item : currentNode.objects) {
           Aabb curBox = objectBoundingBox(item.o);
@@ -216,27 +220,31 @@ namespace nugiEngine {
 
           if (pos < leftLength) {
             leftNode.objects.push_back(item);
-          }
-        }
-
-        nodeCounter++;
-        nodeStack.push(leftNode);
-
-        BvhItemBuild rightNode;
-        rightNode.index = nodeCounter;
-        /* for (int i = mid; i < objectSpan; i++) {
-          rightNode.objects.push_back(currentNode.objects[i]);
-        } */
-
-        for (auto &&item : currentNode.objects) {
-          Aabb curBox = objectBoundingBox(item.o);
-          float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
-
-          if (pos >= leftLength) {
+          } else {
             rightNode.objects.push_back(item);
           }
         }
 
+        if (leftNode.objects.size() == 0 || rightNode.objects.size() == 0) {
+            mid = std::ceil(objectSpan / 2);
+
+            leftNode.objects.clear();
+            rightNode.objects.clear();
+
+            for (int i = 0; i < mid; i++) {
+                leftNode.objects.push_back(currentNode.objects[i]);
+            }
+
+            for (int i = mid; i < objectSpan; i++) {
+                rightNode.objects.push_back(currentNode.objects[i]);
+            }
+        }        
+
+        leftNode.index = nodeCounter;
+        nodeCounter++;
+        nodeStack.push(leftNode);
+
+        rightNode.index = nodeCounter;
         nodeCounter++;
         nodeStack.push(rightNode);
 
