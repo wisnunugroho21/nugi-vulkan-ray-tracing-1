@@ -12,7 +12,7 @@
 
 namespace nugiEngine {
   const glm::vec3 eps(0.0001f);
-  const int splitNumber = 3;
+  const int splitNumber = 11;
 
   // Axis-aligned bounding box.
   struct Aabb {
@@ -163,17 +163,7 @@ namespace nugiEngine {
       costArr[i] = 1 + probLeft * totalLeft * 2 + probRight * totalRight * 2;
     }
 
-    int minIndex = 0;
-    float minValue = 9999;
-
-    for (int i = 0; i < splitNumber; i++) {
-        if (costArr[i] < minValue) {
-            minIndex = i;
-            minValue = costArr[i];
-        }
-    }
-
-    return minIndex;
+    return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
@@ -226,18 +216,18 @@ namespace nugiEngine {
         }
 
         if (leftNode.objects.size() == 0 || rightNode.objects.size() == 0) {
-            mid = std::ceil(objectSpan / 2);
+					mid = std::ceil(objectSpan / 2);
 
-            leftNode.objects.clear();
-            rightNode.objects.clear();
+					leftNode.objects.clear();
+					rightNode.objects.clear();
 
-            for (int i = 0; i < mid; i++) {
-                leftNode.objects.push_back(currentNode.objects[i]);
-            }
+					for (int i = 0; i < mid; i++) {
+						leftNode.objects.push_back(currentNode.objects[i]);
+					}
 
-            for (int i = mid; i < objectSpan; i++) {
-                rightNode.objects.push_back(currentNode.objects[i]);
-            }
+					for (int i = mid; i < objectSpan; i++) {
+						rightNode.objects.push_back(currentNode.objects[i]);
+					}
         }        
 
         leftNode.index = nodeCounter;
