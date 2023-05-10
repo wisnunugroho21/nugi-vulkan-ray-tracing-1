@@ -78,8 +78,7 @@ namespace nugiEngine {
         if (objects.size() > 1) {
           node.rightObjIndex = objects[1].index;
         }
-      }
-      else {
+      } else {
         node.leftNode = leftNodeIndex;
         node.rightNode = rightNodeIndex;
       }
@@ -143,14 +142,16 @@ namespace nugiEngine {
     float costArr[splitNumber]{};
 
     for (int i = 0; i < splitNumber; i++) {
-      float leftLength = length * (i + 1) / (splitNumber + 1);
       int totalLeft = 0, totalRight = 0;
+
+      float leftLength = length * (i + 1) / (splitNumber + 1);
+      float posBarrier = leftLength + node.box.min[axis];
 
       for (auto &&item : node.objects) {
         Aabb curBox = objectBoundingBox(item.o);
-        float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
+        float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
 
-        if (pos < leftLength) {
+        if (pos < posBarrier) {
           totalLeft++;
         } else {
           totalRight++;
@@ -160,7 +161,7 @@ namespace nugiEngine {
       float probLeft = leftLength / length;
       float probRight = (length - leftLength) / length;
 
-      costArr[i] = 1 + probLeft * totalLeft * 2 + probRight * totalRight * 2;
+      costArr[i] = 0.5 + probLeft * totalLeft * 1 + probRight * totalRight * 1;
     }
 
     return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
@@ -201,14 +202,14 @@ namespace nugiEngine {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
         int mid = findObjectSplitIndex(currentNode, axis, length); // std::ceil(objectSpan / 2);
 
-        float leftLength = length * (mid + 1) / (splitNumber + 1);
+        float posBarrier = length * (mid + 1) / (splitNumber + 1) + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;
 
         for (auto &&item : currentNode.objects) {
           Aabb curBox = objectBoundingBox(item.o);
-          float pos = (curBox.max[axis] - curBox.min[axis]) / 2;
+          float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
 
-          if (pos < leftLength) {
+          if (pos < posBarrier) {
             leftNode.objects.push_back(item);
           } else {
             rightNode.objects.push_back(item);
