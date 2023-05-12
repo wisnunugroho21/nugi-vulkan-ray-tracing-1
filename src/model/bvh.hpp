@@ -44,11 +44,16 @@ namespace nugiEngine {
   // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
   struct BoundBox {
     int index;
+
+    BoundBox(int i) : index{i} {}
+
     virtual Aabb boundingBox() = 0;
   };
 
   struct TriangleBoundBox : BoundBox {
     Triangle t;
+
+    TriangleBoundBox(int i, Triangle t) : BoundBox(i), t{t} {}
 
     Aabb boundingBox() {
       return Aabb{ 
@@ -61,6 +66,8 @@ namespace nugiEngine {
   struct SphereBoundBox : BoundBox {
     Sphere s;
 
+    SphereBoundBox(int i, Sphere s) : BoundBox(i), s{s} {}
+
     Aabb boundingBox() {
       return Aabb { 
         this->s.center - this->s.radius - eps, 
@@ -72,10 +79,7 @@ namespace nugiEngine {
   struct ObjectBoundBox : BoundBox {
     Object o;
 
-    ObjectBoundBox(int i, Object o) {
-      this->index = i;
-      this->o = o;
-    }
+    ObjectBoundBox(int i, Object o) : BoundBox(i), o{o} {}
 
     Aabb boundingBox() {
       return Aabb { 
@@ -267,9 +271,7 @@ namespace nugiEngine {
     }
 
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
-
     std::vector<BvhNode> output;
-    // output.reserve(intermediate.size());
 
     for (int i = 0; i < intermediate.size(); i++) {
       output.emplace_back(intermediate[i].getGpuModel());
