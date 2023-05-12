@@ -50,10 +50,11 @@ namespace nugiEngine {
 	}
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
-		std::vector<ObjectBoundBox> objects;
+		std::vector<std::shared_ptr<BoundBox>> objects;
 		for (int i = 0; i < data.objects.size(); i++) {
 			Object o = data.objects[i];
-			objects.push_back({i, o});
+
+			objects.push_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ i, o }));
 		}
 
 		auto bvhNodes = createBvh(objects);

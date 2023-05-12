@@ -42,19 +42,47 @@ namespace nugiEngine {
   };
 
   // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
-  struct TriangleBoundBox {
+  struct BoundBox {
     int index;
+    virtual Aabb boundingBox() = 0;
+  };
+
+  struct TriangleBoundBox : BoundBox {
     Triangle t;
+
+    Aabb boundingBox() {
+      return Aabb{ 
+        glm::min(glm::min(this->t.point0, this->t.point1), this->t.point2) - eps, 
+        glm::max(glm::max(this->t.point0, this->t.point1), this->t.point2) + eps 
+      };
+    }
   };
 
-  struct SphereBoundBox {
-    int index;
+  struct SphereBoundBox : BoundBox {
     Sphere s;
+
+    Aabb boundingBox() {
+      return Aabb { 
+        this->s.center - this->s.radius - eps, 
+        this->s.center + this->s.radius + eps 
+      };
+    }
   };
 
-  struct ObjectBoundBox {
-    int index;
+  struct ObjectBoundBox : BoundBox {
     Object o;
+
+    ObjectBoundBox(int i, Object o) {
+      this->index = i;
+      this->o = o;
+    }
+
+    Aabb boundingBox() {
+      return Aabb { 
+        glm::min(glm::min(this->o.triangle.point0, this->o.triangle.point1), this->o.triangle.point2) - eps, 
+        glm::max(glm::max(this->o.triangle.point0, this->o.triangle.point1), this->o.triangle.point2) + eps 
+      };
+    }
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.
@@ -63,7 +91,7 @@ namespace nugiEngine {
     int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     int leftNodeIndex = -1;
     int rightNodeIndex = -1;
-    std::vector<ObjectBoundBox> objects;
+    std::vector<std::shared_ptr<BoundBox>> objects;
 
     BvhNode getGpuModel() {
       bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
@@ -73,10 +101,10 @@ namespace nugiEngine {
       node.maximum = box.max;      
 
       if (leaf) {
-        node.leftObjIndex = objects[0].index;
+        node.leftObjIndex = objects[0]->index;
 
         if (objects.size() > 1) {
-          node.rightObjIndex = objects[1].index;
+          node.rightObjIndex = objects[1]->index;
         }
       } else {
         node.leftNode = leftNodeIndex;
@@ -95,20 +123,13 @@ namespace nugiEngine {
     return Aabb{ glm::min(box0.min, box1.min), glm::max(box0.max, box1.max) };
   }
 
-  Aabb objectBoundingBox(Object &o) {
-    // Need to add eps to correctly construct an AABB for flat objects like planes.
-    return Aabb{ glm::min(glm::min(o.triangle.point0, o.triangle.point1), o.triangle.point2) - eps, 
-      glm::max(glm::max(o.triangle.point0, o.triangle.point1), o.triangle.point2) + eps };
-    // return {t.center - t.radius - eps, t.center + t.radius + eps};
-  }
-
-  Aabb objectListBoundingBox(std::vector<ObjectBoundBox> &objects) {
+  Aabb objectListBoundingBox(std::vector<std::shared_ptr<BoundBox>> &objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;
 
     for (auto &object : objects) {
-      tempBox = objectBoundingBox(object.o);
+      tempBox = object->boundingBox();
       outputBox = firstBox ? tempBox : surroundingBox(outputBox, tempBox);
       firstBox = false;
     }
@@ -116,9 +137,9 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(Object &a, Object &b, int axis) {
-    Aabb boxA = objectBoundingBox(a);
-    Aabb boxB = objectBoundingBox(b);
+  inline bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis) {
+    Aabb boxA = a->boundingBox();
+    Aabb boxB = b->boundingBox();
 
     float Apos = (boxA.max[axis] - boxA.min[axis]) / 2 + boxA.min[axis];
     float Bpos = (boxB.max[axis] - boxB.min[axis]) / 2 + boxB.min[axis];
@@ -126,16 +147,16 @@ namespace nugiEngine {
     return Apos < Bpos;
   }
 
-  bool boxXCompare(ObjectBoundBox a, ObjectBoundBox b) {
-    return boxCompare(a.o, b.o, 0);
+  bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+    return boxCompare(a, b, 0);
   }
 
-  bool boxYCompare(ObjectBoundBox a, ObjectBoundBox b) {
-    return boxCompare(a.o, b.o, 1);
+  bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+    return boxCompare(a, b, 1);
   }
 
-  bool boxZCompare(ObjectBoundBox a, ObjectBoundBox b) {
-    return boxCompare(a.o, b.o, 2);
+  bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+    return boxCompare(a, b, 2);
   }
 
   int findObjectSplitIndex(BvhItemBuild node, int axis, float length) {
@@ -148,7 +169,7 @@ namespace nugiEngine {
       float posBarrier = leftLength + node.box.min[axis];
 
       for (auto &&item : node.objects) {
-        Aabb curBox = objectBoundingBox(item.o);
+        Aabb curBox = item->boundingBox();
         float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
 
         if (pos < posBarrier) {
@@ -169,7 +190,7 @@ namespace nugiEngine {
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<ObjectBoundBox> &srcObjects) {
+  std::vector<BvhNode> createBvh(const std::vector<std::shared_ptr<BoundBox>> srcObjects) {
     int nodeCounter = 0;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
@@ -206,7 +227,7 @@ namespace nugiEngine {
         BvhItemBuild leftNode, rightNode;
 
         for (auto &&item : currentNode.objects) {
-          Aabb curBox = objectBoundingBox(item.o);
+          Aabb curBox = item->boundingBox();
           float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
 
           if (pos < posBarrier) {
