@@ -24,7 +24,7 @@ namespace nugiEngine {
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
 	ObjectData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
-		ObjectData object;
+		ObjectData object{};
 		for (int i = 0; i < data.objects.size(); i++) {
 			object.objects[i] = data.objects[i];
 		}
@@ -33,7 +33,7 @@ namespace nugiEngine {
 	}
 
 	MaterialData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
-		MaterialData materials;
+		MaterialData materials{};
 		for (int i = 0; i < data.materials.size(); i++) {
 			materials.materials[i] = data.materials[i];
 		}
@@ -42,7 +42,7 @@ namespace nugiEngine {
 	}
 
 	LightData EngineRayTraceModel::createLightData(const RayTraceModelData &data) {
-		LightData lights;
+		LightData lights{};
 		for (int i = 0; i < data.lights.size(); i++) {
 			lights.lights[i] = data.lights[i];
 		}
@@ -67,7 +67,7 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	BvhData createLightBvhData(const RayTraceModelData &data) {
+	BvhData EngineRayTraceModel::createLightBvhData(const RayTraceModelData &data) {
 		std::vector<std::shared_ptr<BoundBox>> lights;
 		for (int i = 0; i < data.lights.size(); i++) {
 			Light l = data.lights[i];
