@@ -89,6 +89,19 @@ namespace nugiEngine {
     }
   };
 
+  struct LightBoundBox : BoundBox {
+    Light l;
+
+    LightBoundBox(int i, Light l) : BoundBox(i), l{l} {}
+
+    Aabb boundingBox() {
+      return Aabb { 
+        glm::min(glm::min(this->l.triangle.point0, this->l.triangle.point1), this->l.triangle.point2) - eps, 
+        glm::max(glm::max(this->l.triangle.point0, this->l.triangle.point1), this->l.triangle.point2) + eps 
+      };
+    }
+  };
+
   // Intermediate BvhNode structure needed for constructing Bvh.
   struct BvhItemBuild {
     Aabb box;

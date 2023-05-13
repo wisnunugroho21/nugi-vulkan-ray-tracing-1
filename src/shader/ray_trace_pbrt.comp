@@ -27,12 +27,16 @@ layout(set = 0, binding = 3) buffer readonly BvhSsbo {
   BvhNode bvhNodes[100];
 };
 
-layout(set = 0, binding = 4) buffer readonly materialSsbo {
+layout(set = 0, binding = 4) buffer readonly MaterialSsbo {
   Material materials[100];
 };
 
-layout(set = 0, binding = 5) buffer readonly lightSsbo {
+layout(set = 0, binding = 5) buffer readonly LightSsbo {
   Light lights[100];
+};
+
+layout(set = 0, binding = 6) buffer readonly LightBvhSsbo {
+  BvhNode lightBvhNodes[100];
 };
 
 layout(push_constant) uniform Push {
@@ -196,7 +200,7 @@ void main() {
       break;
     }
 
-    HitRecord hittedLight = hitLightList(curRay, 0.001, hit.t);
+    HitRecord hittedLight = hitLightBvh(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
       if (i > 0) {
         totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.objIndex);

@@ -245,7 +245,13 @@ namespace nugiEngine {
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
 			width, height);
 
-		std::vector<VkDescriptorBufferInfo> buffersInfo { this->models->getObjectInfo(), this->models->getBvhInfo(), this->models->getMaterialInfo(), this->models->getLightInfo() };
+		std::vector<VkDescriptorBufferInfo> buffersInfo { 
+			this->models->getObjectInfo(), 
+			this->models->getBvhInfo(), 
+			this->models->getMaterialInfo(),
+			this->models->getLightInfo(),
+			this->models->getLightBvhInfo() 
+		};
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
 			width, height, nSample, buffersInfo);

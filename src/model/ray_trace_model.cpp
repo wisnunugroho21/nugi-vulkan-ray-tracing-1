@@ -16,8 +16,9 @@ namespace nugiEngine {
 		auto triangleData = this->createObjectData(datas);
 		auto materialData = this->createMaterialData(datas);
 		auto lightData = this->createLightData(datas);
+		auto bvhLight = this->createLightBvhData(datas);
 
-		this->createBuffers(triangleData, bvhData, materialData, lightData);
+		this->createBuffers(triangleData, bvhData, materialData, lightData, bvhLight);
 	}
 
 	EngineRayTraceModel::~EngineRayTraceModel() {}
@@ -53,7 +54,6 @@ namespace nugiEngine {
 		std::vector<std::shared_ptr<BoundBox>> objects;
 		for (int i = 0; i < data.objects.size(); i++) {
 			Object o = data.objects[i];
-
 			objects.push_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ i, o }));
 		}
 
@@ -67,7 +67,24 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light) {
+	BvhData createLightBvhData(const RayTraceModelData &data) {
+		std::vector<std::shared_ptr<BoundBox>> lights;
+		for (int i = 0; i < data.lights.size(); i++) {
+			Light l = data.lights[i];
+			lights.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, l }));
+		}
+
+		auto bvhNodes = createBvh(lights);
+		BvhData bvhLight{};
+
+		for (int i = 0; i < bvhNodes.size(); i++) {
+			bvhLight.bvhNodes[i] = bvhNodes[i];
+		}
+
+		return bvhLight;
+	}
+
+	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light, BvhData &bvhLight) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
 			sizeof(ObjectData),
@@ -88,6 +105,8 @@ namespace nugiEngine {
 		);
 
 		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(ObjectData));
+
+		// -------------------------------------------------
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
@@ -110,6 +129,8 @@ namespace nugiEngine {
 
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
 
+		// -------------------------------------------------
+
 		EngineBuffer materialStagingBuffer {
 			this->engineDevice,
 			sizeof(MaterialData),
@@ -131,6 +152,8 @@ namespace nugiEngine {
 
 		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), sizeof(MaterialData));
 
+		// -------------------------------------------------
+
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,
 			sizeof(LightData),
@@ -151,6 +174,29 @@ namespace nugiEngine {
 		);
 
 		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), sizeof(LightData));
+
+		// -------------------------------------------------
+
+		EngineBuffer lightBvhStagingBuffer {
+			this->engineDevice,
+			sizeof(BvhData),
+			1,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		};
+
+		lightBvhStagingBuffer.map();
+		lightBvhStagingBuffer.writeToBuffer(&bvhLight);
+
+		this->lightBvhBuffer = std::make_shared<EngineBuffer>(
+			this->engineDevice,
+			sizeof(BvhData),
+			1,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+
+		this->lightBvhBuffer->copyBuffer(lightBvhStagingBuffer.getBuffer(), sizeof(BvhData));
 	}
 
 	std::unique_ptr<EngineRayTraceModel> EngineRayTraceModel::createModelFromFile(EngineDevice &device, const std::string &filePath) {

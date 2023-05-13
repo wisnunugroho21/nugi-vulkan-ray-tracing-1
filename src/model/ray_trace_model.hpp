@@ -49,6 +49,7 @@ namespace nugiEngine {
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
     VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
+    VkDescriptorBufferInfo getLightBvhInfo() { return this->lightBvhBuffer->descriptorInfo(); }
 
     static std::unique_ptr<EngineRayTraceModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
 		
@@ -59,12 +60,14 @@ namespace nugiEngine {
     std::shared_ptr<EngineBuffer> bvhBuffer;
     std::shared_ptr<EngineBuffer> materialBuffer;
     std::shared_ptr<EngineBuffer> lightBuffer;
+    std::shared_ptr<EngineBuffer> lightBvhBuffer;
 
 	  ObjectData createObjectData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
     MaterialData createMaterialData(const RayTraceModelData &data);
     LightData createLightData(const RayTraceModelData &data);
+    BvhData createLightBvhData(const RayTraceModelData &data);
 
-    void createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light);
+    void createBuffers(ObjectData &data, BvhData &bvh, MaterialData &material, LightData &light, BvhData &bvhLight);
 	};
 } // namespace nugiEngine
