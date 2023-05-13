@@ -26,7 +26,7 @@ namespace nugiEngine {
 	ObjectData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
 		ObjectData object{};
 		for (int i = 0; i < data.objects.size(); i++) {
-			object.objects[i] = data.objects[i];
+			object.objects[i] = *data.objects[i];
 		}
 
 		return object;
@@ -35,7 +35,7 @@ namespace nugiEngine {
 	MaterialData EngineRayTraceModel::createMaterialData(const RayTraceModelData &data) {
 		MaterialData materials{};
 		for (int i = 0; i < data.materials.size(); i++) {
-			materials.materials[i] = data.materials[i];
+			materials.materials[i] = *data.materials[i];
 		}
 
 		return materials;
@@ -44,7 +44,7 @@ namespace nugiEngine {
 	LightData EngineRayTraceModel::createLightData(const RayTraceModelData &data) {
 		LightData lights{};
 		for (int i = 0; i < data.lights.size(); i++) {
-			lights.lights[i] = data.lights[i];
+			lights.lights[i] = *data.lights[i];
 		}
 
 		return lights;
@@ -53,8 +53,7 @@ namespace nugiEngine {
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
 		std::vector<std::shared_ptr<BoundBox>> objects;
 		for (int i = 0; i < data.objects.size(); i++) {
-			Object o = data.objects[i];
-			objects.push_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ i, o }));
+			objects.push_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ i, data.objects[i] }));
 		}
 
 		auto bvhNodes = createBvh(objects);
@@ -70,8 +69,7 @@ namespace nugiEngine {
 	BvhData EngineRayTraceModel::createLightBvhData(const RayTraceModelData &data) {
 		std::vector<std::shared_ptr<BoundBox>> lights;
 		for (int i = 0; i < data.lights.size(); i++) {
-			Light l = data.lights[i];
-			lights.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, l }));
+			lights.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, data.lights[i] }));
 		}
 
 		auto bvhNodes = createBvh(lights);

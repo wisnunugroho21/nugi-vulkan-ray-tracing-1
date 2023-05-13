@@ -51,53 +51,53 @@ namespace nugiEngine {
   };
 
   struct TriangleBoundBox : BoundBox {
-    Triangle t;
+    std::shared_ptr<Triangle> t;
 
-    TriangleBoundBox(int i, Triangle t) : BoundBox(i), t{t} {}
+    TriangleBoundBox(int i, std::shared_ptr<Triangle> t) : BoundBox(i), t{t} {}
 
     Aabb boundingBox() {
       return Aabb{ 
-        glm::min(glm::min(this->t.point0, this->t.point1), this->t.point2) - eps, 
-        glm::max(glm::max(this->t.point0, this->t.point1), this->t.point2) + eps 
+        glm::min(glm::min(this->t->point0, this->t->point1), this->t->point2) - eps, 
+        glm::max(glm::max(this->t->point0, this->t->point1), this->t->point2) + eps 
       };
     }
   };
 
   struct SphereBoundBox : BoundBox {
-    Sphere s;
+    std::shared_ptr<Sphere> s;
 
-    SphereBoundBox(int i, Sphere s) : BoundBox(i), s{s} {}
+    SphereBoundBox(int i, std::shared_ptr<Sphere> s) : BoundBox(i), s{s} {}
 
     Aabb boundingBox() {
       return Aabb { 
-        this->s.center - this->s.radius - eps, 
-        this->s.center + this->s.radius + eps 
+        this->s->center - this->s->radius - eps, 
+        this->s->center + this->s->radius + eps 
       };
     }
   };
 
   struct ObjectBoundBox : BoundBox {
-    Object o;
+    std::shared_ptr<Object> o;
 
-    ObjectBoundBox(int i, Object o) : BoundBox(i), o{o} {}
+    ObjectBoundBox(int i, std::shared_ptr<Object> o) : BoundBox(i), o{o} {}
 
     Aabb boundingBox() {
       return Aabb { 
-        glm::min(glm::min(this->o.triangle.point0, this->o.triangle.point1), this->o.triangle.point2) - eps, 
-        glm::max(glm::max(this->o.triangle.point0, this->o.triangle.point1), this->o.triangle.point2) + eps 
+        glm::min(glm::min(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) - eps, 
+        glm::max(glm::max(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) + eps 
       };
     }
   };
 
   struct LightBoundBox : BoundBox {
-    Light l;
+    std::shared_ptr<Light> l;
 
-    LightBoundBox(int i, Light l) : BoundBox(i), l{l} {}
+    LightBoundBox(int i, std::shared_ptr<Light> l) : BoundBox(i), l{l} {}
 
     Aabb boundingBox() {
       return Aabb { 
-        glm::min(glm::min(this->l.triangle.point0, this->l.triangle.point1), this->l.triangle.point2) - eps, 
-        glm::max(glm::max(this->l.triangle.point0, this->l.triangle.point1), this->l.triangle.point2) + eps 
+        glm::min(glm::min(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) - eps, 
+        glm::max(glm::max(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) + eps 
       };
     }
   };
