@@ -40,7 +40,7 @@ namespace nugiEngine {
   };
 
   struct Light {
-    Triangle triangle{};
+    alignas(16) glm::vec3 point;
     alignas(16) glm::vec3 color;
   };
 

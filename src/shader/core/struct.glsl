@@ -17,7 +17,7 @@ struct Object {
 };
 
 struct Light {
-  Triangle triangle;
+  vec3 point;
   vec3 color;
 };
 
