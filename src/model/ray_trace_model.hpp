@@ -14,9 +14,9 @@
 
 namespace nugiEngine {
 	struct RayTraceModelData {
-    std::vector<Object> objects;
-    std::vector<Material> materials;
-    std::vector<Light> lights;
+    std::vector<std::shared_ptr<Object>> objects;
+    std::vector<std::shared_ptr<Material>> materials;
+    std::vector<std::shared_ptr<Light>> lights;
 
 		void loadModel(const std::string &filePath);
 	};
