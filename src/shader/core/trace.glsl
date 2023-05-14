@@ -112,29 +112,6 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
   return hit;
 }
 
-// ------------- Point -------------
-
-HitRecord hitPoint(vec3 point, Ray r, float tMin, float tMax) {
-  HitRecord hit;
-  hit.isHit = false;
-
-  vec3 trueDirection = normalize(point - r.origin);
-  vec3 curDirection = normalize(r.direction);
-
-  if (abs(dot(trueDirection, curDirection)) > 0.0001) {
-    return hit;
-  }
-
-  hit.isHit = true;
-  hit.t = (point - r.origin) / r.direction;
-  hit.point = point;
-
-  vec3 outwardNormal = normalize(point - r.origin);
-  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
-
-  return hit;
-}
-
 // ------------- Bvh -------------
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
