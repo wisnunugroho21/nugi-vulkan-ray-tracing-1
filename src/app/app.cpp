@@ -181,15 +181,12 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		std::vector<PointLight> pointLights{};
+		std::vector<std::shared_ptr<Light>> lights{};
 
-		PointLight pointLight{};
-		pointLight.sphere.center = glm::vec3(277.5f, 500.0f, 277.5f);
-		pointLight.sphere.radius = 10.0f;
-		pointLight.color = glm::vec3(1.0f);
+		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)}));
+		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)}));
 
-		pointLights.emplace_back(pointLight);
-		this->lightObject = EngineLight::createSharedLight(this->device, pointLights);
+		this->lightObject = EngineLight::createSharedLight(this->device, lights);
 
 		// ----------------------------------------------------------------------------		
 
