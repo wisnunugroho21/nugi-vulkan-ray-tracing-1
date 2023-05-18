@@ -61,6 +61,6 @@ namespace nugiEngine {
   struct RasterUBO {
     glm::mat4 projection{1.0f};
     glm::mat4 view{1.0f};
-    alignas(16) glm::vec3 realCameraPos{1.0f};
+    alignas(16) glm::vec3 realCameraPos{0.0f};
   };
 }

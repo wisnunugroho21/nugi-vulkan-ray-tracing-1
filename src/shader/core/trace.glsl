@@ -194,7 +194,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   hit.isHit = false;
   hit.t = tMax;
 
-  for (int i = 0; i < numLight; i++) {
+  for (int i = 0; i < 2; i++) {
     HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
@@ -205,7 +205,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
   return hit;
 }
 
-HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
+/* HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -261,4 +261,4 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   }
 
   return hit;
-}
+} */

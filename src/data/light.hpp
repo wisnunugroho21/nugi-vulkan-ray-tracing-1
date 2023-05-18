@@ -13,7 +13,6 @@
 namespace nugiEngine {
 	struct GlobalLight {
     Light lights[100];
-		int numLight;
   };
 
 	class EngineLight {

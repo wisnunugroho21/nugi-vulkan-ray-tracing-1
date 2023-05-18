@@ -14,8 +14,11 @@ layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;
 	mat4 view;
 	vec3 realCameraPos;
-  vec3 background;
 } ubo;
+
+layout(set = 0, binding = 1) buffer readonly GlobalLight {
+	Light lights[100];
+};
 
 layout(set = 0, binding = 2) buffer readonly GlobalObject {
   Object objects[100];
@@ -23,15 +26,6 @@ layout(set = 0, binding = 2) buffer readonly GlobalObject {
 
 layout(set = 0, binding = 3) buffer readonly GlobalBvh {
   BvhNode bvhNodes[100];
-};
-
-layout(set = 0, binding = 1) buffer readonly GlobalLight {
-	Light lights[100];
-  int numLight;
-};
-
-layout(set = 0, binding = 3) buffer readonly GlobalLightBvh {
-  BvhNode lightBvhNodes[100];
 };
 
 layout(set = 0, binding = 4) buffer readonly GlobalMaterial {
@@ -47,7 +41,7 @@ layout(set = 1, binding = 1, rgba8) uniform readonly image2D albedoResource;
 layout(set = 1, binding = 2, rgba8) uniform readonly image2D normalResource;
 layout(set = 1, binding = 3, rgba8) uniform readonly image2D materialResource;
 
-layout(set = 2, binding = 2, rgba8) uniform writeonly image2D rayTraceImage;
+layout(set = 2, binding = 1, rgba8) uniform writeonly image2D rayTraceImage;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -202,10 +196,10 @@ void main() {
   curRay.origin = ubo.realCameraPos;
   curRay.direction = fragPosWorld - ubo.realCameraPos;
   
-  for(uint i = 0; i < 3; i++) {
+  for(uint i = 0; i < 10; i++) {
     HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
-      totalAttenuation = totalAttenuation + totalIndirect * ubo.background;
+      totalAttenuation = totalAttenuation + totalIndirect * 1.0;
       break;
     }
 

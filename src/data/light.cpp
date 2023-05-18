@@ -25,7 +25,6 @@ namespace nugiEngine {
     }
 
     this->numLight = lightIndex;
-    globalLight.numLight = lightIndex;
 
     EngineBuffer objectStagingBuffer {
 			device,
