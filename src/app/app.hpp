@@ -12,11 +12,9 @@
 #include "../renderer/deferred_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
 #include "../renderer_sub/forward_pass_sub_renderer.hpp"
-#include "../renderer_sub/direct_illumination_sub_renderer.hpp"
 #include "../renderer_system/forward_light_render_system.hpp"
 #include "../renderer_system/forward_pass_render_system.hpp"
-#include "../renderer_system/direct_illumination_render_system.hpp"
-#include "../renderer_system/indirect_illumination_render_system.hpp"
+#include "../renderer_system/ray_trace_render_system.hpp"
 #include "../renderer_system/sampling_render_system.hpp"
 
 #include <memory>
@@ -54,12 +52,10 @@ namespace nugiEngine {
 
 			std::unique_ptr<EngineForwardPassSubRenderer> forwardPassSubRenderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
-			std::unique_ptr<EngineDirectIlluminationSubRenderer> directIlluminationSubRenderer{};
 
 			std::unique_ptr<EngineForwardPassRenderSystem> forwardPassRenderSystem{};
 			std::unique_ptr<EngineForwardLightRenderSystem> forwardLightRenderSystem{};
-			std::unique_ptr<EngineDirectIlluminationRenderSystem> directIlluminationRenderSystem{};
-			std::unique_ptr<EngineIndirectIlluminationRenderSystem> indirectIlluminationRenderSystem{};
+			std::unique_ptr<EngineRayTraceRenderSystem> rayTraceRenderSystem{};
 			std::unique_ptr<EngineSamplingRenderSystem> samplingRenderSystem{};
 
 			std::shared_ptr<EngineGeometry> quadModelObject;

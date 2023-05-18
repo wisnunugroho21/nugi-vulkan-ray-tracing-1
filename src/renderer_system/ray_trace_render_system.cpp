@@ -1,4 +1,4 @@
-#include "indirect_illumination_render_system.hpp"
+#include "ray_trace_render_system.hpp"
 
 #include "../swap_chain/swap_chain.hpp"
 #include "../ubo.hpp"
@@ -13,18 +13,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineIndirectIlluminationRenderSystem::EngineIndirectIlluminationRenderSystem(EngineDevice& device, uint32_t width, uint32_t height, 
+	EngineRayTraceRenderSystem::EngineRayTraceRenderSystem(EngineDevice& device, uint32_t width, uint32_t height, 
 		std::vector<VkDescriptorSetLayout> descSetLayouts) : appDevice{device}, width{width}, height{height}
 	{
 		this->createPipelineLayout(descSetLayouts);
 		this->createPipeline();
 	}
 
-	EngineIndirectIlluminationRenderSystem::~EngineIndirectIlluminationRenderSystem() {
+	EngineRayTraceRenderSystem::~EngineRayTraceRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineIndirectIlluminationRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts) {
+	void EngineRayTraceRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -44,7 +44,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineIndirectIlluminationRenderSystem::createPipeline() {
+	void EngineRayTraceRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
@@ -52,7 +52,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineIndirectIlluminationRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, 
+	void EngineRayTraceRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, 
 		std::vector<VkDescriptorSet> descSets, uint32_t randomSeed) 
 	{
 		this->pipeline->bind(commandBuffer->getCommandBuffer());

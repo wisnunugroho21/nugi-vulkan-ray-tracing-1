@@ -17,7 +17,7 @@ namespace nugiEngine {
     alignas(4) float radius;
   };
 
-  struct Model {
+  struct Object {
     Triangle triangle{};
     alignas(16) glm::vec3 normal{};
     alignas(4) uint32_t materialIndex;
@@ -41,8 +41,8 @@ namespace nugiEngine {
     alignas(4) float fresnelReflect;
   };
 
-  struct PointLight {
-    Sphere sphere;
+  struct Light {
+    Triangle triangle{};
     alignas(16) glm::vec3 color;
   };
 

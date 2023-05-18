@@ -13,27 +13,26 @@
 namespace nugiEngine {
 	EngineRayTraceModel::EngineRayTraceModel(EngineDevice &device, RayTraceModelData &datas) : engineDevice{device} {
 		auto bvhData = this->createBvhData(datas);
-		auto triangleData = this->createModelData(datas);
+		auto triangleData = this->createObjectData(datas);
 
 		this->createBuffers(triangleData, bvhData);
 	}
 
 	EngineRayTraceModel::~EngineRayTraceModel() {}
 
-	ModelData EngineRayTraceModel::createModelData(const RayTraceModelData &data) {
-		ModelData object;
+	ObjectData EngineRayTraceModel::createObjectData(const RayTraceModelData &data) {
+		ObjectData object;
 		for (int i = 0; i < data.objects.size(); i++) {
-			object.objects[i] = data.objects[i];
+			object.objects[i] = *data.objects[i];
 		}
 
 		return object;
 	}
 
 	BvhData EngineRayTraceModel::createBvhData(const RayTraceModelData &data) {
-		std::vector<ModelBoundBox> objects;
+		std::vector<std::shared_ptr<BoundBox>> objects;
 		for (int i = 0; i < data.objects.size(); i++) {
-			Model o = data.objects[i];
-			objects.push_back({i, o});
+			objects.push_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ i, data.objects[i] }));
 		}
 
 		auto bvhNodes = createBvh(objects);
@@ -46,10 +45,10 @@ namespace nugiEngine {
 		return bvh;
 	}
 
-	void EngineRayTraceModel::createBuffers(ModelData &data, BvhData &bvh) {
+	void EngineRayTraceModel::createBuffers(ObjectData &data, BvhData &bvh) {
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
-			sizeof(ModelData),
+			sizeof(ObjectData),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -60,13 +59,13 @@ namespace nugiEngine {
 
 		this->objectBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(ModelData),
+			sizeof(ObjectData),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(ModelData));
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(ObjectData));
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,

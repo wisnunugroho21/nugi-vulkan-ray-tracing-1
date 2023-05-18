@@ -219,14 +219,6 @@ namespace nugiEngine {
     depthDependency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     depthDependency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-    VkSubpassDependency outDependency{};
-    outDependency.srcSubpass = 0;
-    outDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    outDependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    outDependency.dstSubpass = VK_SUBPASS_EXTERNAL;
-    outDependency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    outDependency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
     EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
       .addAttachments(positionAttachment)
 			.addAttachments(albedoAttachment)

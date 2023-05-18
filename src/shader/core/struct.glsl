@@ -11,14 +11,13 @@ struct Triangle {
   vec3 point2;
 };
 
-struct Model {
+struct Object {
   Triangle triangle;
-  vec3 normal;
   uint materialIndex;
 };
 
-struct PointLight {
-	Sphere sphere;
+struct Light {
+  Triangle triangle;
   vec3 color;
 };
 
@@ -33,7 +32,7 @@ struct BvhNode {
 };
 
 struct Material {
-  vec3 color;
+  vec3 baseColor;
 	float metallicness;
   float roughness;
   float fresnelReflect;
@@ -71,10 +70,13 @@ struct HitRecord {
 };
 
 struct ShadeRecord {
-  vec3 colorAttenuation;
-  vec3 colorEmitted;
-
+  vec3 colorAttenuation;  
   Ray raySpecular;
+  float pdf;
+};
+
+struct RadianceRecord {
+  float colorIrradiance;
 };
 
 float pi = 3.14159265359;

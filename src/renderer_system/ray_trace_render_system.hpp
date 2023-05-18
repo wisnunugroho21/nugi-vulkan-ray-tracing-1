@@ -15,14 +15,14 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineIndirectIlluminationRenderSystem {
+	class EngineRayTraceRenderSystem {
 		public:
-			EngineIndirectIlluminationRenderSystem(EngineDevice& device, uint32_t width, uint32_t height, 
+			EngineRayTraceRenderSystem(EngineDevice& device, uint32_t width, uint32_t height, 
 				std::vector<VkDescriptorSetLayout> descSetLayouts);
-			~EngineIndirectIlluminationRenderSystem();
+			~EngineRayTraceRenderSystem();
 
-			EngineIndirectIlluminationRenderSystem(const EngineIndirectIlluminationRenderSystem&) = delete;
-			EngineIndirectIlluminationRenderSystem& operator = (const EngineIndirectIlluminationRenderSystem&) = delete;
+			EngineRayTraceRenderSystem(const EngineRayTraceRenderSystem&) = delete;
+			EngineRayTraceRenderSystem& operator = (const EngineRayTraceRenderSystem&) = delete;
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descSets, 
 				uint32_t randomSeed = 1);

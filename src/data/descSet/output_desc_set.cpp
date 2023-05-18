@@ -1,10 +1,10 @@
 #include "output_desc_set.hpp"
 
 namespace nugiEngine {
-  EngineOutputDescSet::EngineOutputDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t width, uint32_t height, uint32_t imageCount, std::vector<VkDescriptorImageInfo> outputImagesInfo[1]) {
+  EngineOutputDescSet::EngineOutputDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, uint32_t width, uint32_t height, uint32_t imageCount) {
 		this->createAccumulateImages(device, width, height, imageCount);
 		this->createRayTraceOutputImages(device, width, height, imageCount);
-		this->createDescriptor(device, descriptorPool, outputImagesInfo);
+		this->createDescriptor(device, descriptorPool);
   }
   
   void EngineOutputDescSet::createRayTraceOutputImages(EngineDevice& device, uint32_t width, uint32_t height, uint32_t imageCount) {
@@ -37,12 +37,11 @@ namespace nugiEngine {
 		}
   }
 
-  void EngineOutputDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorImageInfo> outputImagesInfo[1]) {
+  void EngineOutputDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool) {
     this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(device)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 
 		this->descriptorSets.clear();
@@ -55,8 +54,7 @@ namespace nugiEngine {
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, &accumulateImageInfo)
-				.writeImage(1, &outputImagesInfo[0][i])
-				.writeImage(2, &rayTraceOutputImageInfo)
+				.writeImage(1, &rayTraceOutputImageInfo)
 				.build(descSet.get());
 
 			this->descriptorSets.emplace_back(descSet);

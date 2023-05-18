@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../model/raster_model.hpp"
+#include "../model/ray_trace_model.hpp"
 #include "../texture/texture.hpp"
 #include "../ubo.hpp"
 #include "../device/device.hpp"
@@ -11,23 +12,18 @@
 
 namespace nugiEngine {
 	struct GlobalLight {
-    PointLight pointLights[100];
-    uint32_t numLight = 0;
+    Light lights[100];
+		int numLight;
   };
 
 	class EngineLight {
 		public:
 			using id_t = unsigned int;
 
-			EngineLight(id_t id, EngineDevice &device, std::vector<PointLight> pointLights);
+			EngineLight(id_t id, EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);
 
-			static EngineLight createLight(EngineDevice &device, std::vector<PointLight> pointLights);
-			static std::shared_ptr<EngineLight> createSharedLight(EngineDevice &device, std::vector<PointLight> pointLights);
-
-			EngineLight(const EngineLight &) = delete;
-			EngineLight& operator = (const EngineLight &) = delete;
-			EngineLight(EngineLight &&) = default;
-			EngineLight& operator = (EngineLight &&) = default;
+			static EngineLight createLight(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);
+			static std::shared_ptr<EngineLight> createSharedLight(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);
 
 			id_t getId() { return this->objectId; }
 			uint32_t getNumLight() { return this->numLight; }
@@ -36,9 +32,10 @@ namespace nugiEngine {
 
 		private:
 			std::shared_ptr<EngineBuffer> lightBuffer;
+
 			uint32_t numLight;
 			id_t objectId;
 
-			void createLightBuffers(EngineDevice &device, std::vector<PointLight> pointLights);
+			void createLightBuffers(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);
 	};
 }

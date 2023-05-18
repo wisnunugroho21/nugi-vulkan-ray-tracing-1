@@ -14,17 +14,15 @@
 
 namespace nugiEngine {
 	struct RayTraceModelData {
-    std::vector<Model> objects;
+    std::vector<std::shared_ptr<Object>> objects;
 	};
 
-  struct ModelData {
-    Model objects[100];
-    uint32_t numObj = 0;
+  struct ObjectData {
+    Object objects[100];
   };
 
   struct BvhData {
     BvhNode bvhNodes[100];
-    uint32_t numBvh = 0;
 	};
 
 	class EngineRayTraceModel {
@@ -44,9 +42,9 @@ namespace nugiEngine {
     std::shared_ptr<EngineBuffer> objectBuffer;
     std::shared_ptr<EngineBuffer> bvhBuffer;
 
-	  ModelData createModelData(const RayTraceModelData &data);
+	  ObjectData createObjectData(const RayTraceModelData &data);
     BvhData createBvhData(const RayTraceModelData &data);
 
-    void createBuffers(ModelData &data, BvhData &bvh);
+    void createBuffers(ObjectData &data, BvhData &bvh);
 	};
 } // namespace nugiEngine

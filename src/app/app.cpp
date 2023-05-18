@@ -51,13 +51,9 @@ namespace nugiEngine {
 				rasterUbo.realCameraPos = camera.getRealCameraPos();
 				this->globalDescSet->writeRasterBuffer(frameIndex, &rasterUbo);
 
-				RayTraceUbo rayTraceUbo = camera.getRayTraceUbo();
-				this->globalDescSet->writeRayTraceBuffer(frameIndex, &rayTraceUbo);
-
 				std::vector<VkDescriptorSet> forwardPassDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
 				std::vector<VkDescriptorSet> forwardLightDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex) };
-				std::vector<VkDescriptorSet> directDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex) };
-				std::vector<VkDescriptorSet> indirectDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex), *this->outputDescSet->getDescriptorSets(imageIndex) };
+				std::vector<VkDescriptorSet> rayTraceDescSets = { *this->globalDescSet->getDescriptorSets(frameIndex), *this->forwardOutputDescSet->getDescriptorSets(imageIndex), *this->outputDescSet->getDescriptorSets(imageIndex) };
 				std::vector<VkDescriptorSet> outputDescSets = { *this->outputDescSet->getDescriptorSets(imageIndex) };
 
 				auto commandBuffer = this->renderer->beginCommand();
@@ -70,14 +66,8 @@ namespace nugiEngine {
 				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->outputDescSet->prepareFrame(commandBuffer, imageIndex);
-				this->indirectIlluminationRenderSystem->render(commandBuffer, indirectDescSets, randomSeed);
+				this->rayTraceRenderSystem->render(commandBuffer, rayTraceDescSets, randomSeed);
 				this->outputDescSet->transferFrame(commandBuffer, imageIndex);
-
-				this->directIlluminationSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->directIlluminationRenderSystem->render(commandBuffer, directDescSets, this->quadModelObject, this->randomSeed);
-				this->directIlluminationSubRenderer->endRenderPass(commandBuffer);
-
-				this->directIlluminationSubRenderer->transferFrame(commandBuffer, imageIndex);
 
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->samplingRenderSystem->render(commandBuffer, outputDescSets, this->quadModelObject, this->randomSeed);
@@ -161,24 +151,17 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		RayTraceModelData modeldata{};
 
-		std::vector<Model> models{};
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 }));
+		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 }));
 
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(1.0f, 0.0f, 0.0f), 2, 0 });
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, glm::vec3(-1.0f, 0.0f, 0.0f), 1, 0 });
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, glm::vec3(0.0f, 1.0f, 0.0f), 0, 0 });
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, glm::vec3(0.0f, -1.0f, 0.0f), 0, 0 });
-
-		models.emplace_back(Model{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 });
-		models.emplace_back(Model{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, glm::vec3(0.0f, 0.0f, -1.0f), 0, 0 });
-
-		modeldata.objects = models;
 		this->gameObject = EngineGeometry::createSharedGeometry(this->device, modeldata);
 
 		// ----------------------------------------------------------------------------
@@ -257,8 +240,8 @@ namespace nugiEngine {
 			this->materials->getMaterialInfo(), 
 			this->transform->getTransformInfo()
 		};
+		
 		VkDescriptorBufferInfo forwardModelBuffersInfo[2] = { this->materials->getMaterialInfo(), this->transform->getTransformInfo() };
-		std::vector<VkDescriptorImageInfo> outputBuffersInfo[1] = { this->directIlluminationSubRenderer->getOutputInfoResources() };
 		std::vector<VkDescriptorImageInfo> forwardOutputBuffersInfo[4] = { 
 			this->forwardPassSubRenderer->getPositionInfoResources(), 
 			this->forwardPassSubRenderer->getAlbedoInfoResources(), 
@@ -268,7 +251,7 @@ namespace nugiEngine {
 		
 		this->globalDescSet = std::make_shared<EngineGlobalDescSet>(this->device, descriptorPool, globalBufferInfo);
 		this->forwardOutputDescSet = std::make_shared<EngineForwardOutputDescSet>(this->device, descriptorPool, forwardOutputBuffersInfo);
-		this->outputDescSet = std::make_shared<EngineOutputDescSet>(this->device, descriptorPool, width, height, imageCount, outputBuffersInfo);
+		this->outputDescSet = std::make_shared<EngineOutputDescSet>(this->device, descriptorPool, width, height, imageCount);
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
@@ -280,25 +263,22 @@ namespace nugiEngine {
 		auto swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, imageCount, width, height);
-		this->directIlluminationSubRenderer = std::make_unique<EngineDirectIlluminationSubRenderer>(this->device, imageCount, width, height);
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, swapChainImages, imageFormat, imageCount, width, height);
 
 		this->createDescriptor(width, height, imageCount);
 
 		auto forwardRenderPass = this->forwardPassSubRenderer->getRenderPass()->getRenderPass();
-		auto directIlluminationRenderPass = this->directIlluminationSubRenderer->getRenderPass()->getRenderPass();
 		auto swapChainRenderPass = this->swapChainSubRenderer->getRenderPass()->getRenderPass();
 
 		std::vector<VkDescriptorSetLayout> forwardPassDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> forwardLightDescLayouts = {  this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> directDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
-		std::vector<VkDescriptorSetLayout> indirectDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
+		std::vector<VkDescriptorSetLayout> rayTraceDescLayouts = { this->globalDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->forwardOutputDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 		std::vector<VkDescriptorSetLayout> outputDescLayouts = { this->outputDescSet->getDescSetLayout()->getDescriptorSetLayout() };
 
 		this->forwardPassRenderSystem = std::make_unique<EngineForwardPassRenderSystem>(this->device, forwardRenderPass, forwardPassDescLayouts);
 		this->forwardLightRenderSystem = std::make_unique<EngineForwardLightRenderSystem>(this->device, forwardRenderPass, forwardLightDescLayouts);
-		this->directIlluminationRenderSystem = std::make_unique<EngineDirectIlluminationRenderSystem>(this->device, directIlluminationRenderPass, directDescLayouts);
-		this->indirectIlluminationRenderSystem = std::make_unique<EngineIndirectIlluminationRenderSystem>(this->device, width, height, indirectDescLayouts);
+		this->rayTraceRenderSystem = std::make_unique<EngineRayTraceRenderSystem>(this->device, width, height, rayTraceDescLayouts);
 		this->samplingRenderSystem = std::make_unique<EngineSamplingRenderSystem>(this->device, swapChainRenderPass, outputDescLayouts);
 	}
 }
