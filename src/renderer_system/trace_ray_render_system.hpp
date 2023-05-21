@@ -17,16 +17,13 @@
 namespace nugiEngine {
 	class EngineTraceRayRenderSystem {
 		public:
-			EngineTraceRayRenderSystem(EngineDevice& device, std::vector<VkDescriptorSetLayout> descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
+			EngineTraceRayRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
 			~EngineTraceRayRenderSystem();
 
-			EngineTraceRayRenderSystem(const EngineTraceRayRenderSystem&) = delete;
-			EngineTraceRayRenderSystem& operator = (const EngineTraceRayRenderSystem&) = delete;
-
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descriptorSets, uint32_t randomSeed = 1);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed = 1);
 
 		private:
-			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
+			void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts);
 			void createPipeline();
 
 			EngineDevice& appDevice;

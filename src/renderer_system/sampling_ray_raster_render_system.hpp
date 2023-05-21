@@ -16,16 +16,13 @@
 namespace nugiEngine {
 	class EngineSamplingRayRasterRenderSystem {
 		public:
-			EngineSamplingRayRasterRenderSystem(EngineDevice& device, std::vector<VkDescriptorSetLayout> descriptorSetLayouts, VkRenderPass renderPass);
+			EngineSamplingRayRasterRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, VkRenderPass renderPass);
 			~EngineSamplingRayRasterRenderSystem();
 
-			EngineSamplingRayRasterRenderSystem(const EngineSamplingRayRasterRenderSystem&) = delete;
-			EngineSamplingRayRasterRenderSystem& operator = (const EngineSamplingRayRasterRenderSystem&) = delete;
-
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descriptorSets, std::shared_ptr<EngineModel> model, uint32_t randomSeed = 1);
+			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineModel> model, uint32_t randomSeed = 1);
 		
 		private:
-			void createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
+			void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts);
 			void createPipeline(VkRenderPass renderPass);
 
 			EngineDevice& appDevice;

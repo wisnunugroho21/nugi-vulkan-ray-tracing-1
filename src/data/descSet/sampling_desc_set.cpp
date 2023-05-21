@@ -12,13 +12,14 @@ namespace nugiEngine {
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 		
-		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			std::shared_ptr<VkDescriptorSet> descSet = std::make_shared<VkDescriptorSet>();
+	this->descriptorSets.clear();
+	for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			VkDescriptorSet descSet{};
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, &samplingResourcesInfo[0][i])
 				.writeImage(1, &samplingResourcesInfo[1][i])
-				.build(descSet.get());
+				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
 		}

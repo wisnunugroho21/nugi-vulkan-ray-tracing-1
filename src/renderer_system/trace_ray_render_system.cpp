@@ -13,7 +13,7 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, std::vector<VkDescriptorSetLayout> descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) : appDevice{device}, width{width}, height{height}, nSample{nSample}
+	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) : appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline();
@@ -23,7 +23,7 @@ namespace nugiEngine {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineTraceRayRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> descriptorSetLayouts) {
+	void EngineTraceRayRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -31,8 +31,8 @@ namespace nugiEngine {
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.setLayoutCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayouts;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
@@ -49,7 +49,7 @@ namespace nugiEngine {
 			.build();
 	}
 
-	void EngineTraceRayRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::vector<VkDescriptorSet> descriptorSets, uint32_t randomSeed) {
+	void EngineTraceRayRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(
@@ -57,8 +57,8 @@ namespace nugiEngine {
 			VK_PIPELINE_BIND_POINT_COMPUTE,
 			this->pipelineLayout,
 			0,
-			static_cast<uint32_t>(descriptorSets.size()),
-			descriptorSets.data(),
+			1,
+			&descriptorSets,
 			0,
 			nullptr
 		);
@@ -75,6 +75,6 @@ namespace nugiEngine {
 			&pushConstant
 		);
 
-		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 8, this->nSample / 2);
+		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 8, this->nSample / 1);
 	}
 }

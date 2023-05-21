@@ -2,14 +2,13 @@
 
 // ------------- layout -------------
 
-#define NSAMPLE 1
 #define SHININESS 64
 #define KEPSILON 0.00001
 
 #include "core/struct.glsl"
 
-layout(local_size_x = 8, local_size_y = 8, local_size_z = 2) in;
-layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage[NSAMPLE];
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
 
 layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 origin;
@@ -43,7 +42,7 @@ layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
-uvec2 imgSize = uvec2(imageSize(targetImage[0]));
+uvec2 imgSize = uvec2(imageSize(targetImage));
 
 #include "core/random.glsl"
 #include "core/trace.glsl"
@@ -175,7 +174,6 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, uint ad
 
 void main() {
   uvec2 imgPosition = gl_GlobalInvocationID.xy;
-  uint imgIndex = gl_GlobalInvocationID.z;
 
   float noiseX = randomFloat(1, 0) * 2.0 - 1.0;
   float noiseY = randomFloat(2, 0) * 2.0 - 1.0;
@@ -229,5 +227,5 @@ void main() {
     curRay = indirectScat.raySpecular;
   }
   
-  imageStore(targetImage[imgIndex], ivec2(imgPosition), vec4(totalAttenuation, 1.0));
+  imageStore(targetImage, ivec2(imgPosition), vec4(totalAttenuation, 1.0));
 }

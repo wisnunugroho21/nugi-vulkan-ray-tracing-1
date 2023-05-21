@@ -17,8 +17,9 @@ namespace nugiEngine {
 				.addBinding(6, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 		
+	this->descriptorSets.clear();
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			std::shared_ptr<VkDescriptorSet> descSet = std::make_shared<VkDescriptorSet>();
+			VkDescriptorSet descSet{};
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, &rayTraceImageInfo[i]) 
@@ -28,7 +29,7 @@ namespace nugiEngine {
 				.writeBuffer(4, &buffersInfo[2])
 				.writeBuffer(5, &buffersInfo[3])
 				.writeBuffer(6, &buffersInfo[4])
-				.build(descSet.get());
+				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
 		}
