@@ -35,24 +35,30 @@ namespace nugiEngine {
 		while (this->isRendering) {
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
-				uint32_t imageIndex = this->renderer->getImageIndex();				
+				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				if (!this->traceRayRender->isFrameUpdated[frameIndex]) {
-					this->traceRayRender->writeGlobalData(frameIndex, this->globalUbo);
-					this->traceRayRender->isFrameUpdated[frameIndex] = true;
-				}
+				this->globalUniforms->writeGlobalData(frameIndex, this->globalUbo);
+
+				std::vector<VkDescriptorSet> rayTraceDescriptors{};
+				std::vector<VkDescriptorSet> samplingDescriptors{};
+
+				rayTraceDescriptors.emplace_back(this->rayTraceDescSet->getDescriptorSets(frameIndex));
+				samplingDescriptors.emplace_back(this->samplingDescSet->getDescriptorSets(frameIndex));
 
 				auto commandBuffer = this->renderer->beginCommand();
-				this->traceRayRender->prepareFrame(commandBuffer, frameIndex);
+				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
 
-				this->traceRayRender->render(commandBuffer, frameIndex, this->randomSeed);
-				this->traceRayRender->transferFrame(commandBuffer, frameIndex);
+				this->traceRayRender->render(commandBuffer, rayTraceDescriptors, this->randomSeed);
+
+				this->rayTraceImage->transferFrame(commandBuffer, frameIndex);
+				this->accumulateImages->transferFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, frameIndex, this->quadModels, this->randomSeed);
+				this->samplingRayRender->render(commandBuffer, samplingDescriptors, this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
-				this->traceRayRender->finishFrame(commandBuffer, frameIndex);				
+				this->rayTraceImage->finishFrame(commandBuffer, frameIndex);
+				this->accumulateImages->finishFrame(commandBuffer, frameIndex);
 
 				this->renderer->endCommand(commandBuffer);
 				this->renderer->submitCommand(commandBuffer);
@@ -75,11 +81,7 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		if (!this->traceRayRender->isFrameUpdated[0]) {
-			this->traceRayRender->writeGlobalData(0, this->globalUbo);
-			this->traceRayRender->isFrameUpdated[0] = true;
-		}
-
+		this->globalUniforms->writeGlobalData(0, this->globalUbo);
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
@@ -107,61 +109,70 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadObjects() {
-		RayTraceModelData modeldata{};
+		std::vector<std::shared_ptr<Object>> objects{};
+		std::vector<std::shared_ptr<Material>> materials{};
+		std::vector<std::shared_ptr<Light>> lights{};
 
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 }));
-
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 2}));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 }));
-
-		// ----------------------------------------------------------------------------
-
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 3 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 2}));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f,}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 }));
 
 		// ----------------------------------------------------------------------------
 
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
-		modeldata.objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 3 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 3 }));
 
 		// ----------------------------------------------------------------------------
 
-		modeldata.materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
-		modeldata.materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f }));
-		modeldata.materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f }));
-		modeldata.materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
+		objects.emplace_back(std::make_shared<Object>(Object{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
 
-		modeldata.lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
-		modeldata.lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
+		// ----------------------------------------------------------------------------
 
-		this->models = std::make_unique<EngineRayTraceModel>(this->device, modeldata);
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
+
+		// ----------------------------------------------------------------------------
+
+		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
+		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
+
+		// ----------------------------------------------------------------------------
+
+		this->geometryModel = std::make_unique<EngineGeometryModel>(this->device, objects);
+		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
+		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights);
+
+		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -218,8 +229,6 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
-		uint32_t nSample = 4;
-
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 
@@ -232,19 +241,32 @@ namespace nugiEngine {
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), this->renderer->getSwapChain()->imageCount(), 
 			width, height);
 
-		std::vector<VkDescriptorBufferInfo> buffersInfo { 
-			this->models->getObjectInfo(), 
-			this->models->getBvhInfo(), 
-			this->models->getMaterialInfo(),
-			this->models->getLightInfo(),
-			this->models->getLightBvhInfo() 
+		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, this->renderer->getSwapChain()->imageCount());
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, this->renderer->getSwapChain()->imageCount());
+
+		VkDescriptorBufferInfo buffersInfo[5] { 
+			this->geometryModel->getObjectInfo(), 
+			this->geometryModel->getBvhInfo(),
+			this->materialModel->getMaterialInfo(),
+			this->lightModel->getLightInfo(),
+			this->lightModel->getBvhInfo() 
 		};
 
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, descriptorPool, 
-			width, height, nSample, buffersInfo);
+		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
+			this->rayTraceImage->getImagesInfo(),
+			this->accumulateImages->getImagesInfo()
+		};
 
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, 
-			this->renderer->getDescriptorPool(), width, height, this->traceRayRender->getStorageImages(), 
-			nSample, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		std::vector<VkDescriptorSetLayout> rayTraceDescSetLayouts;
+		std::vector<VkDescriptorSetLayout> samplingDescSetLayouts;
+
+		rayTraceDescSetLayouts.emplace_back(*this->rayTraceDescSet->getDescSetLayout());
+		samplingDescSetLayouts.emplace_back(*this->samplingDescSet->getDescSetLayout());
+
+		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo);
+		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
+
+		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, rayTraceDescSetLayouts, width, height, 1);
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, samplingDescSetLayouts, this->swapChainSubRenderer->getRenderPass());
 	}
 }

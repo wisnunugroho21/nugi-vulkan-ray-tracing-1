@@ -2,9 +2,14 @@
 
 #include "../window/window.hpp"
 #include "../device/device.hpp"
-#include "../model/ray_trace_model.hpp"
-#include "../model/model.hpp"
-#include "../descriptor/descriptor.hpp"
+#include "../data/accumulate_image.hpp"
+#include "../data/geometry_model.hpp"
+#include "../data/global_uniform.hpp"
+#include "../data/light_model.hpp"
+#include "../data/material_model.hpp"
+#include "../data/ray_trace_image.hpp"
+#include "../data/descSet/ray_trace_desc_set.hpp"
+#include "../data/descSet/sampling_desc_set.hpp"
 #include "../renderer/hybrid_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
 #include "../renderer_system/trace_ray_render_system.hpp"
@@ -47,8 +52,18 @@ namespace nugiEngine {
 			std::unique_ptr<EngineTraceRayRenderSystem> traceRayRender{};
 			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
 
-			std::unique_ptr<EngineRayTraceModel> models;
-			std::shared_ptr<EngineModel> quadModels;
+			std::unique_ptr<EngineAccumulateImage> accumulateImages{};
+			std::unique_ptr<EngineRayTraceImage> rayTraceImage{};
+			std::unique_ptr<EngineGlobalUniform> globalUniforms{};
+
+			std::unique_ptr<EngineGeometryModel> geometryModel{};
+			std::unique_ptr<EngineLightModel> lightModel{};
+			std::unique_ptr<EngineMaterialModel> materialModel{};
+
+			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
+			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
+
+			std::shared_ptr<EngineModel> quadModels{};
 
 			uint32_t randomSeed = 0;
 			bool isRendering = true;
