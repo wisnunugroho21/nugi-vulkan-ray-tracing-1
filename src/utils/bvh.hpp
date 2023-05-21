@@ -8,6 +8,7 @@
 #include "../ray_ubo.hpp"
 
 #include <vector>
+#include <memory>
 #include <algorithm>
 #include <stack>
 

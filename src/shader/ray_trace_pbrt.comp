@@ -2,7 +2,7 @@
 
 // ------------- layout -------------
 
-#define NSAMPLE 4
+#define NSAMPLE 1
 #define SHININESS 64
 #define KEPSILON 0.00001
 
