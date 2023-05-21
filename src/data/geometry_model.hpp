@@ -17,10 +17,6 @@ namespace nugiEngine {
     Object objects[100];
   };
 
-  struct BvhData {
-    BvhNode bvhNodes[100];
-	};
-
 	class EngineGeometryModel {
 	public:
 		EngineGeometryModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects);

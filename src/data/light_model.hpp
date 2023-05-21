@@ -17,10 +17,6 @@ namespace nugiEngine {
     Light lights[100];
   };
 
-  struct BvhData {
-    BvhNode bvhNodes[100];
-	};
-
 	class EngineLightModel {
 	public:
 		EngineLightModel(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);

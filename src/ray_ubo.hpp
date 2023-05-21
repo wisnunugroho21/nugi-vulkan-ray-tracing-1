@@ -55,4 +55,8 @@ namespace nugiEngine {
   struct RayTracePushConstant {
     alignas(4) uint32_t randomSeed;
   };
+
+  struct BvhData {
+    BvhNode bvhNodes[100];
+	};
 }

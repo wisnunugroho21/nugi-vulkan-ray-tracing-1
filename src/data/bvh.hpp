@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include "../utils/sort.hpp"
+#include "ray_ubo.hpp"
 
 #include <vector>
 #include <algorithm>
