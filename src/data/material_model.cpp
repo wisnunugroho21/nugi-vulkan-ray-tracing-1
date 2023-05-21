@@ -8,8 +8,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-#include "bvh.hpp"
-
 namespace nugiEngine {
 	EngineMaterialModel::EngineMaterialModel(EngineDevice &device, std::vector<std::shared_ptr<Material>> materials) : engineDevice{device} {
 		auto materialData = this->createMaterialData(materials);

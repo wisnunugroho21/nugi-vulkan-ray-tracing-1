@@ -8,8 +8,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-#include "bvh.hpp"
-
 namespace nugiEngine {
 	EngineGeometryModel::EngineGeometryModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects) : engineDevice{device} {
 		auto bvhData = this->createBvhData(objects);

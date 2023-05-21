@@ -1,27 +1,8 @@
-#pragma once
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-
-#include "../utils/sort.hpp"
-#include "ray_ubo.hpp"
-
-#include <vector>
-#include <algorithm>
-#include <stack>
+#include "bvh.hpp"
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001f);
-  const int splitNumber = 11;
-
-  // Axis-aligned bounding box.
-  struct Aabb {
-    glm::vec3 min = {FLT_MAX, FLT_MAX, FLT_MAX};
-    glm::vec3 max = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
-
-    int longestAxis() {
-      float x = abs(max[0] - min[0]);
+  int Aabb::longestAxis() {
+    float x = abs(max[0] - min[0]);
       float y = abs(max[1] - min[1]);
       float z = abs(max[2] - min[2]);
 
@@ -35,103 +16,60 @@ namespace nugiEngine {
       }
 
       return longest;
-    }
+  }
 
-    int randomAxis() {
-      return rand() % 3;
-    }
-  };
+  int Aabb::randomAxis() {
+    return rand() % 3;
+  }
 
-  // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
-  struct BoundBox {
-    int index;
+  Aabb TriangleBoundBox::boundingBox() {
+    return Aabb{ 
+      glm::min(glm::min(this->t->point0, this->t->point1), this->t->point2) - eps, 
+      glm::max(glm::max(this->t->point0, this->t->point1), this->t->point2) + eps 
+    };
+  }
 
-    BoundBox(int i) : index{i} {}
+  Aabb SphereBoundBox::boundingBox() {
+    return Aabb { 
+      this->s->center - this->s->radius - eps, 
+      this->s->center + this->s->radius + eps 
+    };
+  }
 
-    virtual Aabb boundingBox() = 0;
-  };
+  Aabb ObjectBoundBox::boundingBox() {
+    return Aabb { 
+      glm::min(glm::min(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) - eps, 
+      glm::max(glm::max(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) + eps 
+    };
+  }
 
-  struct TriangleBoundBox : BoundBox {
-    std::shared_ptr<Triangle> t;
+  Aabb LightBoundBox::boundingBox() {
+    return Aabb { 
+      glm::min(glm::min(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) - eps, 
+      glm::max(glm::max(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) + eps 
+    };
+  }
 
-    TriangleBoundBox(int i, std::shared_ptr<Triangle> t) : BoundBox(i), t{t} {}
+  BvhNode BvhItemBuild::getGpuModel() {
+    bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
 
-    Aabb boundingBox() {
-      return Aabb{ 
-        glm::min(glm::min(this->t->point0, this->t->point1), this->t->point2) - eps, 
-        glm::max(glm::max(this->t->point0, this->t->point1), this->t->point2) + eps 
-      };
-    }
-  };
+    BvhNode node{};
+    node.minimum = box.min;
+    node.maximum = box.max;      
 
-  struct SphereBoundBox : BoundBox {
-    std::shared_ptr<Sphere> s;
+    if (leaf) {
+      node.leftObjIndex = objects[0]->index;
 
-    SphereBoundBox(int i, std::shared_ptr<Sphere> s) : BoundBox(i), s{s} {}
-
-    Aabb boundingBox() {
-      return Aabb { 
-        this->s->center - this->s->radius - eps, 
-        this->s->center + this->s->radius + eps 
-      };
-    }
-  };
-
-  struct ObjectBoundBox : BoundBox {
-    std::shared_ptr<Object> o;
-
-    ObjectBoundBox(int i, std::shared_ptr<Object> o) : BoundBox(i), o{o} {}
-
-    Aabb boundingBox() {
-      return Aabb { 
-        glm::min(glm::min(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) - eps, 
-        glm::max(glm::max(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) + eps 
-      };
-    }
-  };
-
-  struct LightBoundBox : BoundBox {
-    std::shared_ptr<Light> l;
-
-    LightBoundBox(int i, std::shared_ptr<Light> l) : BoundBox(i), l{l} {}
-
-    Aabb boundingBox() {
-      return Aabb { 
-        glm::min(glm::min(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) - eps, 
-        glm::max(glm::max(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) + eps 
-      };
-    }
-  };
-
-  // Intermediate BvhNode structure needed for constructing Bvh.
-  struct BvhItemBuild {
-    Aabb box;
-    int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
-    int leftNodeIndex = -1;
-    int rightNodeIndex = -1;
-    std::vector<std::shared_ptr<BoundBox>> objects;
-
-    BvhNode getGpuModel() {
-      bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
-
-      BvhNode node{};
-      node.minimum = box.min;
-      node.maximum = box.max;      
-
-      if (leaf) {
-        node.leftObjIndex = objects[0]->index;
-
-        if (objects.size() > 1) {
-          node.rightObjIndex = objects[1]->index;
-        }
-      } else {
-        node.leftNode = leftNodeIndex;
-        node.rightNode = rightNodeIndex;
+      if (objects.size() > 1) {
+        node.rightObjIndex = objects[1]->index;
       }
-
-      return node;
+    } else {
+      node.leftNode = leftNodeIndex;
+      node.rightNode = rightNodeIndex;
     }
-  };
+
+    return node;
+  }
 
   bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b) {
     return a.index < b.index;
@@ -155,7 +93,7 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  inline bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis) {
+  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis) {
     Aabb boxA = a->boundingBox();
     Aabb boxB = b->boundingBox();
 
@@ -293,4 +231,4 @@ namespace nugiEngine {
 
     return output;
   }
-}// namespace nugiEngine 
+}

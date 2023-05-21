@@ -42,8 +42,8 @@ namespace nugiEngine {
 				std::vector<VkDescriptorSet> rayTraceDescriptors{};
 				std::vector<VkDescriptorSet> samplingDescriptors{};
 
-				rayTraceDescriptors.emplace_back(this->rayTraceDescSet->getDescriptorSets(frameIndex));
-				samplingDescriptors.emplace_back(this->samplingDescSet->getDescriptorSets(frameIndex));
+				rayTraceDescriptors.emplace_back(*this->rayTraceDescSet->getDescriptorSets(frameIndex));
+				samplingDescriptors.emplace_back(*this->samplingDescSet->getDescriptorSets(frameIndex));
 
 				auto commandBuffer = this->renderer->beginCommand();
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
@@ -260,13 +260,13 @@ namespace nugiEngine {
 		std::vector<VkDescriptorSetLayout> rayTraceDescSetLayouts;
 		std::vector<VkDescriptorSetLayout> samplingDescSetLayouts;
 
-		rayTraceDescSetLayouts.emplace_back(*this->rayTraceDescSet->getDescSetLayout());
-		samplingDescSetLayouts.emplace_back(*this->samplingDescSet->getDescSetLayout());
+		rayTraceDescSetLayouts.emplace_back(this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout());
+		samplingDescSetLayouts.emplace_back(this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout());
 
 		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, rayTraceDescSetLayouts, width, height, 1);
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, samplingDescSetLayouts, this->swapChainSubRenderer->getRenderPass());
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, samplingDescSetLayouts, this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 	}
 }
