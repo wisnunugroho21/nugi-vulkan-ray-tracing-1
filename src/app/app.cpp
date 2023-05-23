@@ -45,7 +45,7 @@ namespace nugiEngine {
 				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
 				this->rayTraceImage->transferFrame(commandBuffer, frameIndex);
-				this->accumulateImages->transferFrame(commandBuffer, frameIndex);
+				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);

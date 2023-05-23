@@ -30,7 +30,7 @@ namespace nugiEngine {
 		}
   }
 
-	void EngineAccumulateImage::transferFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+	void EngineAccumulateImage::prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
 		if (this->accumulateImages[frameIndex]->getLayout() == VK_IMAGE_LAYOUT_UNDEFINED) {
 			this->accumulateImages[frameIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
 				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 

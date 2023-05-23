@@ -14,7 +14,7 @@ namespace nugiEngine {
 
 			std::vector<VkDescriptorImageInfo> getImagesInfo() const;
 
-			void transferFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void prepareFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 			void finishFrame(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 
 		private:
