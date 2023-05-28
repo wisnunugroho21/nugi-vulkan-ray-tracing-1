@@ -126,7 +126,7 @@ namespace nugiEngine {
 					attrib.vertices[3 * vertexIndex2 + 2]
 				};
 
-				objects.emplace_back(std::make_shared<Object>(Object{ Triangle{point1, point2, point3}, 1 }));
+				objects.emplace_back(std::make_shared<Object>(Object{ Triangle{point1, point2, point3}, 0 }));
 			}
 		}
 
