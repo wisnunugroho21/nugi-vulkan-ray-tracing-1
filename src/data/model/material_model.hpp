@@ -4,6 +4,7 @@
 #include "../../buffer/buffer.hpp"
 #include "../../command/command_buffer.hpp"
 #include "../../ray_ubo.hpp"
+#include "../../utils/utils.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

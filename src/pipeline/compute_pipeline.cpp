@@ -1,7 +1,5 @@
 #include "compute_pipeline.hpp"
 
-#include "../model/model.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <stdexcept>

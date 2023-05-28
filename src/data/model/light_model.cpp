@@ -1,5 +1,4 @@
 #include "light_model.hpp"
-#include "../utils/utils.hpp"
 
 #include <cstring>
 #include <iostream>

@@ -1,6 +1,6 @@
 #include "graphic_pipeline.hpp"
 
-#include "../model/model.hpp"
+#include "../data/model/vertex_model.hpp"
 
 #include <fstream>
 #include <iostream>
