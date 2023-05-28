@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../device/device.hpp"
-#include "../buffer/buffer.hpp"
-#include "../command/command_buffer.hpp"
-#include "../ray_ubo.hpp"
+#include "../../device/device.hpp"
+#include "../../buffer/buffer.hpp"
+#include "../../command/command_buffer.hpp"
+#include "../../ray_ubo.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

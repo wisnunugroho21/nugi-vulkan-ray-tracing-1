@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../device/device.hpp"
-#include "../buffer/buffer.hpp"
-#include "../descriptor/descriptor.hpp"
-#include "../image/image.hpp"
+#include "../../device/device.hpp"
+#include "../../buffer/buffer.hpp"
+#include "../../descriptor/descriptor.hpp"
+#include "../../image/image.hpp"
 
 #include <memory>
 
