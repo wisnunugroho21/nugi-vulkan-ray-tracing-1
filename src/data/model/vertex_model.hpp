@@ -11,8 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine
-{
+namespace nugiEngine {
 	struct Vertex {
 		glm::vec3 position{};
 		glm::vec3 color{};
@@ -28,24 +27,23 @@ namespace nugiEngine
 		}
 	};
 
-	struct ModelData
+	struct VertexModelData
 	{
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};
 
-		void loadModel(const std::string &filePath);
+		void loadVertexModel(const std::string &filePath);
 	};
 
-	class EngineModel
-	{
+	class EngineVertexModel {
 	public:
-		EngineModel(EngineDevice &device, const ModelData &data);
-		~EngineModel();
+		EngineVertexModel(EngineDevice &device, const VertexModelData &data);
+		~EngineVertexModel();
 
-		EngineModel(const EngineModel&) = delete;
-		EngineModel& operator = (const EngineModel&) = delete;
+		EngineVertexModel(const EngineVertexModel&) = delete;
+		EngineVertexModel& operator = (const EngineVertexModel&) = delete;
 
-		static std::unique_ptr<EngineModel> createModelFromFile(EngineDevice &device, const std::string &filePath);
+		static std::unique_ptr<EngineVertexModel> createVertexModelFromFile(EngineDevice &device, const std::string &filePath);
 
 		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);

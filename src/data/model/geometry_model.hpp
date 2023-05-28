@@ -25,6 +25,8 @@ namespace nugiEngine {
 
     VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
+
+    static std::vector<std::shared_ptr<Object>> createGeometryObjectsFromFile(EngineDevice &device, const std::string &filePath);
 		
 	private:
 		EngineDevice &engineDevice;

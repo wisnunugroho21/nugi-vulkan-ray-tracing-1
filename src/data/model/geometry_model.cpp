@@ -5,8 +5,8 @@
 #include <iostream>
 #include <unordered_map>
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
 
 namespace nugiEngine {
 	EngineGeometryModel::EngineGeometryModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects) : engineDevice{device} {
@@ -88,6 +88,50 @@ namespace nugiEngine {
 
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
 	}
-    
+
+	std::vector<std::shared_ptr<Object>> EngineGeometryModel::createGeometryObjectsFromFile(EngineDevice &device, const std::string &filePath) {
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {
+			throw std::runtime_error(warn + err);
+		}
+
+		std::vector<std::shared_ptr<Object>> objects{};
+
+		for (const auto &shape: shapes) {
+			uint32_t numTriangle = shape.mesh.indices.size() / 3;
+
+			for (uint32_t i = 0; i < numTriangle; i++) {
+				int vertexIndex0 = shape.mesh.indices[3 * i + 0].vertex_index;
+				int vertexIndex1 = shape.mesh.indices[3 * i + 1].vertex_index;
+				int vertexIndex2 = shape.mesh.indices[3 * i + 2].vertex_index;
+				
+				glm::vec3 point1 = {
+					attrib.vertices[3 * vertexIndex0 + 0],
+					attrib.vertices[3 * vertexIndex0 + 1],
+					attrib.vertices[3 * vertexIndex0 + 2]
+				};
+
+				glm::vec3 point2 = {
+					attrib.vertices[3 * vertexIndex1 + 0],
+					attrib.vertices[3 * vertexIndex1 + 1],
+					attrib.vertices[3 * vertexIndex1 + 2]
+				};
+
+				glm::vec3 point3 = {
+					attrib.vertices[3 * vertexIndex2 + 0],
+					attrib.vertices[3 * vertexIndex2 + 1],
+					attrib.vertices[3 * vertexIndex2 + 2]
+				};
+
+				objects.emplace_back(std::make_shared<Object>(Object{ Triangle{point1, point2, point3}, 1 }));
+			}
+		}
+
+		return objects;
+	} 
 } // namespace nugiEngine
 

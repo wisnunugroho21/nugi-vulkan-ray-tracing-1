@@ -1,11 +1,8 @@
 #include "app.hpp"
 
 #include "../camera/camera.hpp"
-#include "../mouse_controller/mouse_controller.hpp"
-#include "../keyboard_controller/keyboard_controller.hpp"
 #include "../buffer/buffer.hpp"
 #include "../frame_info.hpp"
-
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -170,7 +167,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadQuadModels() {
-		ModelData modelData{};
+		VertexModelData modelData{};
 
 		std::vector<Vertex> vertices;
 
@@ -191,7 +188,7 @@ namespace nugiEngine {
 			0, 1, 2, 2, 3, 0
 		};
 
-		this->quadModels = std::make_shared<EngineModel>(this->device, modelData);
+		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
 	}
 
 	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
