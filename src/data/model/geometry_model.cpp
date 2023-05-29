@@ -101,12 +101,10 @@ namespace nugiEngine {
 		std::vector<std::shared_ptr<Object>> objects{};
 
 		for (const auto &shape: shapes) {
-			uint32_t numTriangle = shape.mesh.indices.size() / 3;
-
-			for (uint32_t i = 0; i < numTriangle; i++) {
-				int vertexIndex0 = shape.mesh.indices[3 * i + 0].vertex_index;
-				int vertexIndex1 = shape.mesh.indices[3 * i + 1].vertex_index;
-				int vertexIndex2 = shape.mesh.indices[3 * i + 2].vertex_index;
+			for (uint32_t indexFace = 0; indexFace < shape.mesh.material_ids.size(); indexFace++) {
+				int vertexIndex0 = shape.mesh.indices[3 * indexFace + 0].vertex_index;
+				int vertexIndex1 = shape.mesh.indices[3 * indexFace + 1].vertex_index;
+				int vertexIndex2 = shape.mesh.indices[3 * indexFace + 2].vertex_index;
 				
 				glm::vec3 point1 = {
 					attrib.vertices[3 * vertexIndex0 + 0],
