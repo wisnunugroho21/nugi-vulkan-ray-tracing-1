@@ -19,23 +19,23 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
-  Object objects[100];
+  Object objects[];
 };
 
 layout(set = 0, binding = 3) buffer readonly BvhSsbo {
-  BvhNode bvhNodes[100];
+  BvhNode bvhNodes[];
 };
 
 layout(set = 0, binding = 4) buffer readonly MaterialSsbo {
-  Material materials[100];
+  Material materials[];
 };
 
 layout(set = 0, binding = 5) buffer readonly LightSsbo {
-  Light lights[100];
+  Light lights[];
 };
 
 layout(set = 0, binding = 6) buffer readonly LightBvhSsbo {
-  BvhNode lightBvhNodes[100];
+  BvhNode lightBvhNodes[];
 };
 
 layout(push_constant) uniform Push {

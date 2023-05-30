@@ -15,7 +15,7 @@
 
 namespace nugiEngine {
   struct MaterialData {
-    Material materials[100];
+    Material *materials;
   };
 
 	class EngineMaterialModel {

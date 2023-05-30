@@ -16,12 +16,12 @@ namespace nugiEngine {
 	EngineMaterialModel::~EngineMaterialModel() {}
 
 	MaterialData EngineMaterialModel::createMaterialData(std::vector<std::shared_ptr<Material>> materials) {
-		MaterialData materialData{};
+		std::vector<Material> realMaterials{};
 		for (int i = 0; i < materials.size(); i++) {
-			materialData.materials[i] = *materials[i];
+			realMaterials.emplace_back(*materials[i]);
 		}
 
-		return materialData;
+		return MaterialData{ realMaterials.data() };
 	}
 
 	void EngineMaterialModel::createBuffers(MaterialData &data) {

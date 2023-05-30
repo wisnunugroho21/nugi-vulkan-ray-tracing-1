@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
   struct LightData {
-    Light lights[100];
+    Light *lights;
   };
 
 	class EngineLightModel {
