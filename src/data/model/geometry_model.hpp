@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
   struct ObjectData {
-    Object *objects;
+    Object objects[100];
   };
 
 	class EngineGeometryModel {

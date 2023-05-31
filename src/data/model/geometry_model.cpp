@@ -34,12 +34,12 @@ namespace nugiEngine {
 	}
 
 	ObjectData EngineGeometryModel::createObjectData(std::vector<std::shared_ptr<Object>> objects) {
-		std::vector<Object> realObjects{};
+		ObjectData objectData{};
 		for (int i = 0; i < objects.size(); i++) {
-			realObjects.emplace_back(*objects[i]);
+			objectData.objects[i] = *objects[i];
 		}
 
-		return ObjectData{ realObjects.data() };
+		return objectData;
 	}
 
 	void EngineGeometryModel::createBuffers(ObjectData &data, BvhData &bvh) {

@@ -34,12 +34,12 @@ namespace nugiEngine {
 	}
 
 	LightData EngineLightModel::createLightData(std::vector<std::shared_ptr<Light>> lights) {
-		std::vector<Light> realLights{};
+		LightData lightData{};
 		for (int i = 0; i < lights.size(); i++) {
-			realLights.emplace_back(*lights[i]);
+			lightData.lights[i] = *lights[i];
 		}
 
-		return LightData{ realLights.data() };
+		return lightData;
 	}
 
 	void EngineLightModel::createBuffers(LightData &data, BvhData &bvh) {
