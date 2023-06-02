@@ -129,7 +129,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return tNear < tFar;
 }
 
-HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex) {
+HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int firstPrimitiveIndex) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -137,7 +137,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
   int stack[30];
   int stackIndex = 0;
 
-  stack[0] = firstBvhIndex;
+  stack[0] = 0;
   stackIndex++;
 
   while(stackIndex > 0 && stackIndex <= 30) {
@@ -147,37 +147,37 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
       continue;
     }
 
-    if (!intersectAABB(r, primitiveBvhNodes[currentNode].minimum, primitiveBvhNodes[currentNode].maximum)) {
+    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex].minimum, primitiveBvhNodes[currentNode + firstBvhIndex].maximum)) {
       continue;
     }
 
-    int primIndex = primitiveBvhNodes[currentNode].leftObjIndex;
+    int primIndex = primitiveBvhNodes[currentNode + firstBvhIndex].leftObjIndex;
     if (primIndex >= 0) {
       HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = primIndex;
+        hit.hitIndex = primIndex + firstPrimitiveIndex;
       }
     }
 
-    primIndex = primitiveBvhNodes[currentNode].rightObjIndex;    
+    primIndex = primitiveBvhNodes[currentNode + firstBvhIndex].rightObjIndex;    
     if (primIndex >= 0) {
       HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = primIndex;
+        hit.hitIndex = primIndex + firstPrimitiveIndex;
       }
     }
 
-    int bvhNode = primitiveBvhNodes[currentNode].leftNode;
+    int bvhNode = primitiveBvhNodes[currentNode + firstBvhIndex].leftNode;
     if (bvhNode >= 0) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    bvhNode = primitiveBvhNodes[currentNode].rightNode;
+    bvhNode = primitiveBvhNodes[currentNode + firstBvhIndex].rightNode;
     if (bvhNode >= 0) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
@@ -215,7 +215,6 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = objIndex;
       }
     }
 
@@ -225,7 +224,6 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = objIndex;
       }
     }
 

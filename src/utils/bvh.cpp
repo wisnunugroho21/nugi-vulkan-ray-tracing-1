@@ -214,7 +214,7 @@ namespace nugiEngine {
         continue;
       } else {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
-        int mid = findPrimitiveSplitIndex(currentNode, axis, length); // std::ceil(objectSpan / 2);
+        int mid = findPrimitiveSplitIndex(currentNode, axis, length); //  std::ceil(objectSpan / 2);
 
         float posBarrier = length * (mid + 1) / (splitNumber + 1) + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;

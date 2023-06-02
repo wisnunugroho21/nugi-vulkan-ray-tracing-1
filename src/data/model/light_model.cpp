@@ -27,7 +27,7 @@ namespace nugiEngine {
 		BvhData bvh{};
 
 		for (int i = 0; i < bvhNodes.size(); i++) {
-			bvh.bvhNodes[i] = bvhNodes[i];
+			bvh.bvhNodes[i] = *bvhNodes[i];
 		}
 
 		return bvh;

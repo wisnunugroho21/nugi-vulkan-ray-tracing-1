@@ -31,8 +31,8 @@ namespace nugiEngine {
 				.writeBuffer(4, &buffersInfo[2])
 				.writeBuffer(5, &buffersInfo[3])
 				.writeBuffer(6, &buffersInfo[4])
-				.writeBuffer(5, &buffersInfo[5])
-				.writeBuffer(6, &buffersInfo[6])
+				.writeBuffer(7, &buffersInfo[5])
+				.writeBuffer(8, &buffersInfo[6])
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);

@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
   struct ObjectData {
-    Object objects[100];
+    Object objects[200];
   };
 
 	class EngineObjectModel {

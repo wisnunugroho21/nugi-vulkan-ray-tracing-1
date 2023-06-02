@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
   struct PrimitiveData {
-    Primitive primitives[100];
+    Primitive primitives[200];
   };
 
 	class EnginePrimitiveModel {
@@ -26,8 +26,8 @@ namespace nugiEngine {
     VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-    uint32_t getPrimitiveSize() const { return static_cast<uint32_t>(this->primitives.size()); }
-    uint32_t getBvhSize() const { return static_cast<uint32_t>(this->bvhNodes.size()); }
+    int getPrimitiveSize() const { return this->primitives.size(); }
+    int getBvhSize() const { return this->bvhNodes.size(); }
 
     void addPrimitive(std::vector<std::shared_ptr<Primitive>> primitives);
     void createBuffers();

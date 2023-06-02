@@ -22,7 +22,7 @@ layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
   Object objects[100];
 };
 
-layout(set = 0, binding = 3) buffer readonly BvhSsbo {
+layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
   BvhNode objectBvhNodes[100];
 };
 
@@ -30,7 +30,7 @@ layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
   Primitive primitives[100];
 };
 
-layout(set = 0, binding = 5) buffer readonly BvhSsbo {
+layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
   BvhNode primitiveBvhNodes[100];
 };
 
@@ -118,7 +118,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, uint additi
   int lightIndex = (randomInt(0, 1, 1, additionalRandomSeed) + randomInt(0, 1, 2, additionalRandomSeed)) % 2;
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
-  HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1000000.0);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -158,7 +158,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, uint ad
   int lightIndex = (randomInt(0, 1, 1, additionalRandomSeed) + randomInt(0, 1, 2, additionalRandomSeed)) % 2;
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
-  HitRecord occludedHit = hitBvh(shadowRay, 0.001, 1000000.0);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1000000.0);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -200,7 +200,7 @@ void main() {
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
   for(uint i = 0; i < 3; i++) {
-    HitRecord hit = hitBvh(curRay, 0.001, 1000000.0);
+    HitRecord hit = hitObjectBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
       totalAttenuation = totalAttenuation + totalIndirect * ubo.background;
       break;
@@ -209,15 +209,15 @@ void main() {
     HitRecord hittedLight = hitLightBvh(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
       if (i > 0) {
-        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.objIndex);
+        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.hitIndex);
       }
 
-      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.objIndex].color;
+      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.hitIndex].color;
       break;
     }
 
     totalIndirect = totalIndirect / indirectScat.pdf;
-    uint materialIndex = objects[hit.objIndex].materialIndex;
+    uint materialIndex = primitives[hit.hitIndex].materialIndex;
 
     if (materials[materialIndex].metallicness >= randomFloat(0, i)) {
       indirectScat = indirectGgxShade(curRay, hit, materialIndex, i);

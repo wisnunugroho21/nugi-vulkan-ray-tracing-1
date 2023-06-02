@@ -4,24 +4,24 @@
 #include <iostream>
 #include <unordered_map>
 
-#define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
 	void EngineObjectModel::addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives) {
-		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{this->objects.size(), object, primitives}));
+		this->objects.emplace_back(object);
+		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{static_cast<int>(this->boundBoxes.size()), object, primitives}));
 	}
 
 	void EngineObjectModel::createBuffers() {
 		auto bvhNodes = createBvh(this->boundBoxes);
 
 		ObjectData data{};
-		for (uint32_t i = 0; i < this->objects.size(); i++) {
+		for (int i = 0; i < this->objects.size(); i++) {
 			data.objects[i] = *this->objects[i];
 		}
 
 		BvhData bvh{};
-		for (uint32_t i = 0; i < bvhNodes.size(); i++) {
+		for (int i = 0; i < bvhNodes.size(); i++) {
 			bvh.bvhNodes[i] = *bvhNodes[i];
 		}
 

@@ -19,14 +19,13 @@ namespace nugiEngine {
 
   struct Primitive {
     Triangle triangle{};
-    alignas(4) uint32_t objectIndex;
-    alignas(4) uint32_t materialIndex;
+    alignas(4) int materialIndex;
   };
 
   struct Object {
-    alignas(4) uint32_t firstBvhIndex;
-    alignas(4) uint32_t firstPrimitiveIndex;
-    alignas(4) uint32_t transformIndex;
+    alignas(4) int firstBvhIndex;
+    alignas(4) int firstPrimitiveIndex;
+    alignas(4) int transformIndex;
   };
 
   struct BvhNode {
@@ -64,6 +63,6 @@ namespace nugiEngine {
   };
 
   struct BvhData {
-    BvhNode bvhNodes[100];
+    BvhNode bvhNodes[200];
 	};
 }
