@@ -19,25 +19,23 @@ namespace nugiEngine {
     Object objects[100];
   };
 
-	class EngineGeometryModel {
+	class EngineObjectModel {
 	public:
-		EngineGeometryModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects);
-		~EngineGeometryModel();
+		EngineObjectModel(EngineDevice &device) : engineDevice{device} {}
 
     VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-    static std::vector<std::shared_ptr<Object>> createGeometryObjectsFromFile(EngineDevice &device, const std::string &filePath);
+    void addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives);
+    void createBuffers();
 		
 	private:
 		EngineDevice &engineDevice;
+
+    std::vector<std::shared_ptr<Object>> objects{};
+    std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		
     std::shared_ptr<EngineBuffer> objectBuffer;
     std::shared_ptr<EngineBuffer> bvhBuffer;
-    
-    ObjectData createObjectData(std::vector<std::shared_ptr<Object>> objects);
-    BvhData createBvhData(std::vector<std::shared_ptr<Object>> objects);
-
-    void createBuffers(ObjectData &data, BvhData &bvh);
 	};
 } // namespace nugiEngine

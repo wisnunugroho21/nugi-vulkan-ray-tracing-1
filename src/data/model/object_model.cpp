@@ -1,0 +1,73 @@
+#include "object_model.hpp"
+
+#include <cstring>
+#include <iostream>
+#include <unordered_map>
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
+namespace nugiEngine {
+	void EngineObjectModel::addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives) {
+		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{this->objects.size(), object, primitives}));
+	}
+
+	void EngineObjectModel::createBuffers() {
+		auto bvhNodes = createBvh(this->boundBoxes);
+
+		ObjectData data{};
+		for (uint32_t i = 0; i < this->objects.size(); i++) {
+			data.objects[i] = *this->objects[i];
+		}
+
+		BvhData bvh{};
+		for (uint32_t i = 0; i < bvhNodes.size(); i++) {
+			bvh.bvhNodes[i] = *bvhNodes[i];
+		}
+
+		EngineBuffer objectStagingBuffer {
+			this->engineDevice,
+			sizeof(ObjectData),
+			1,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		};
+
+		objectStagingBuffer.map();
+		objectStagingBuffer.writeToBuffer(&data);
+
+		this->objectBuffer = std::make_shared<EngineBuffer>(
+			this->engineDevice,
+			sizeof(ObjectData),
+			1,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), sizeof(ObjectData));
+
+		// -------------------------------------------------
+
+		EngineBuffer bvhStagingBuffer {
+			this->engineDevice,
+			sizeof(BvhData),
+			1,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		};
+
+		bvhStagingBuffer.map();
+		bvhStagingBuffer.writeToBuffer(&bvh);
+
+		this->bvhBuffer = std::make_shared<EngineBuffer>(
+			this->engineDevice,
+			sizeof(BvhData),
+			1,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+		);
+
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
+	} 
+} // namespace nugiEngine
+

@@ -25,15 +25,15 @@ FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
 
 // ------------- Sphere -------------
 
-HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
+HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 oc = r.origin - obj.center;
+  vec3 oc = r.origin - sphere.center;
 
   float a = dot(r.direction, r.direction);
   float half_b = dot(oc, r.direction);
-  float c = dot(oc, oc) - obj.radius * obj.radius;
+  float c = dot(oc, oc) - sphere.radius * sphere.radius;
 
   float discriminant = half_b * half_b - a * c;
 
@@ -56,7 +56,7 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
   hit.t = root;
   hit.point = rayAt(r, hit.t);
 
-  vec3 outwardNormal = (hit.point - obj.center) / obj.radius;
+  vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
   hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
   
   return hit;
@@ -64,12 +64,12 @@ HitRecord hitSphere(Sphere obj, Ray r, float tMin, float tMax) {
 
 // ------------- Triangle -------------
 
-HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
+HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = obj.point1 - obj.point0;
-  vec3 v0v2 = obj.point2 - obj.point0;
+  vec3 v0v1 = tri.point1 - tri.point0;
+  vec3 v0v2 = tri.point2 - tri.point0;
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
@@ -79,7 +79,7 @@ HitRecord hitTriangle(Triangle obj, Ray r, float tMin, float tMax) {
     
   float invDet = 1.0 / det;
 
-  vec3 tvec = r.origin - obj.point0;
+  vec3 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
     return hit;
@@ -129,7 +129,65 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return tNear < tFar;
 }
 
-HitRecord hitBvh(Ray r, float tMin, float tMax) {
+HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex) {
+  HitRecord hit;
+  hit.isHit = false;
+  hit.t = tMax;
+
+  int stack[30];
+  int stackIndex = 0;
+
+  stack[0] = firstBvhIndex;
+  stackIndex++;
+
+  while(stackIndex > 0 && stackIndex <= 30) {
+    stackIndex--;
+    int currentNode = stack[stackIndex];
+    if (currentNode < 0) {
+      continue;
+    }
+
+    if (!intersectAABB(r, primitiveBvhNodes[currentNode].minimum, primitiveBvhNodes[currentNode].maximum)) {
+      continue;
+    }
+
+    int primIndex = primitiveBvhNodes[currentNode].leftObjIndex;
+    if (primIndex >= 0) {
+      HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex].triangle, r, tMin, hit.t);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = primIndex;
+      }
+    }
+
+    primIndex = primitiveBvhNodes[currentNode].rightObjIndex;    
+    if (primIndex >= 0) {
+      HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex].triangle, r, tMin, hit.t);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = primIndex;
+      }
+    }
+
+    int bvhNode = primitiveBvhNodes[currentNode].leftNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
+      stackIndex++;
+    }
+
+    bvhNode = primitiveBvhNodes[currentNode].rightNode;
+    if (bvhNode >= 0) {
+      stack[stackIndex] = bvhNode;
+      stackIndex++;
+    }
+  }
+
+  return hit;
+}
+
+HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -147,37 +205,37 @@ HitRecord hitBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    if (!intersectAABB(r, bvhNodes[currentNode].minimum, bvhNodes[currentNode].maximum)) {
+    if (!intersectAABB(r, objectBvhNodes[currentNode].minimum, objectBvhNodes[currentNode].maximum)) {
       continue;
     }
 
-    int objIndex = bvhNodes[currentNode].leftObjIndex;
+    int objIndex = objectBvhNodes[currentNode].leftObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.objIndex = objIndex;
+        hit.hitIndex = objIndex;
       }
     }
 
-    objIndex = bvhNodes[currentNode].rightObjIndex;    
+    objIndex = objectBvhNodes[currentNode].rightObjIndex;    
     if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(objects[objIndex].triangle, r, tMin, hit.t);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.objIndex = objIndex;
+        hit.hitIndex = objIndex;
       }
     }
 
-    int bvhNode = bvhNodes[currentNode].leftNode;
+    int bvhNode = objectBvhNodes[currentNode].leftNode;
     if (bvhNode >= 0) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    bvhNode = bvhNodes[currentNode].rightNode;
+    bvhNode = objectBvhNodes[currentNode].rightNode;
     if (bvhNode >= 0) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
@@ -198,7 +256,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
     HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t);
     if (tempHit.isHit) {
       hit = tempHit;
-      hit.objIndex = i;
+      hit.hitIndex = i;
     }
   }
 
@@ -227,23 +285,23 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    int objIndex = lightBvhNodes[currentNode].leftObjIndex;
-    if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(lights[objIndex].triangle, r, tMin, hit.t);
+    int lightIndex = lightBvhNodes[currentNode].leftObjIndex;
+    if (lightIndex >= 0) {
+      HitRecord tempHit = hitTriangle(lights[lightIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.objIndex = objIndex;
+        hit.hitIndex = lightIndex;
       }
     }
 
-    objIndex = lightBvhNodes[currentNode].rightObjIndex;    
-    if (objIndex >= 0) {
-      HitRecord tempHit = hitTriangle(lights[objIndex].triangle, r, tMin, hit.t);
+    lightIndex = lightBvhNodes[currentNode].rightObjIndex;    
+    if (lightIndex >= 0) {
+      HitRecord tempHit = hitTriangle(lights[lightIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.objIndex = objIndex;
+        hit.hitIndex = lightIndex;
       }
     }
 

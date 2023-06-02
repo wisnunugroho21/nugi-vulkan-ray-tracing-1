@@ -17,9 +17,16 @@ namespace nugiEngine {
     alignas(4) float radius;
   };
 
-  struct Object {
+  struct Primitive {
     Triangle triangle{};
+    alignas(4) uint32_t objectIndex;
     alignas(4) uint32_t materialIndex;
+  };
+
+  struct Object {
+    alignas(4) uint32_t firstBvhIndex;
+    alignas(4) uint32_t firstPrimitiveIndex;
+    alignas(4) uint32_t transformIndex;
   };
 
   struct BvhNode {

@@ -5,7 +5,8 @@
 #include "../texture/texture.hpp"
 #include "../data/image/accumulate_image.hpp"
 #include "../data/image/ray_trace_image.hpp"
-#include "../data/model/geometry_model.hpp"
+#include "../data/model/primitive_model.hpp"
+#include "../data/model/object_model.hpp"
 #include "../data/model/light_model.hpp"
 #include "../data/model/material_model.hpp"
 #include "../data/buffer/global_uniform.hpp"
@@ -56,7 +57,8 @@ namespace nugiEngine {
 			std::unique_ptr<EngineRayTraceImage> rayTraceImage{};
 			std::unique_ptr<EngineGlobalUniform> globalUniforms{};
 
-			std::unique_ptr<EngineGeometryModel> geometryModel{};
+			std::unique_ptr<EnginePrimitiveModel> primitiveModel{};
+			std::unique_ptr<EngineObjectModel> objectModel{};
 			std::unique_ptr<EngineLightModel> lightModel{};
 			std::unique_ptr<EngineMaterialModel> materialModel{};
 			std::shared_ptr<EngineVertexModel> quadModels{};

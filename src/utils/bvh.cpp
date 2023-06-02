@@ -24,30 +24,67 @@ namespace nugiEngine {
 
   Aabb TriangleBoundBox::boundingBox() {
     return Aabb{ 
-      glm::min(glm::min(this->t->point0, this->t->point1), this->t->point2) - eps, 
-      glm::max(glm::max(this->t->point0, this->t->point1), this->t->point2) + eps 
+      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - eps, 
+      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + eps 
     };
   }
 
   Aabb SphereBoundBox::boundingBox() {
     return Aabb { 
-      this->s->center - this->s->radius - eps, 
-      this->s->center + this->s->radius + eps 
+      this->spheres->center - this->spheres->radius - eps, 
+      this->spheres->center + this->spheres->radius + eps 
     };
   }
 
-  Aabb ObjectBoundBox::boundingBox() {
+  Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) - eps, 
-      glm::max(glm::max(this->o->triangle.point0, this->o->triangle.point1), this->o->triangle.point2) + eps 
+      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - eps, 
+      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + eps 
     };
   }
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) - eps, 
-      glm::max(glm::max(this->l->triangle.point0, this->l->triangle.point1), this->l->triangle.point2) + eps 
+      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - eps, 
+      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + eps 
     };
+  }
+
+  Aabb ObjectBoundBox::boundingBox() {
+    float minX = this->findMin(0);
+    float minY = this->findMin(1);
+    float minZ = this->findMin(2);
+
+    float maxX = this->findMax(0);
+    float maxY = this->findMax(1);
+    float maxZ = this->findMax(2);
+
+    return Aabb { 
+      glm::vec3(minX, minY, minZ) - eps, 
+      glm::vec3(maxX, maxY, maxZ) + eps 
+    };
+  }
+
+  float ObjectBoundBox::findMax(uint32_t index) {
+    float max = -999.0f;
+    for (auto &&primitive : this->primitives) {
+      if (primitive->triangle.point0[index] > max) max = primitive->triangle.point0[index];
+      if (primitive->triangle.point1[index] > max) max = primitive->triangle.point1[index];
+      if (primitive->triangle.point2[index] > max) max = primitive->triangle.point2[index];
+    }
+
+    return max;
+  }
+
+  float ObjectBoundBox::findMin(uint32_t index) {
+    float min = 999.0f;
+    for (auto &&primitive : this->primitives) {
+      if (primitive->triangle.point0[index] < min) min = primitive->triangle.point0[index];
+      if (primitive->triangle.point1[index] < min) min = primitive->triangle.point1[index];
+      if (primitive->triangle.point2[index] < min) min = primitive->triangle.point2[index];
+    }
+
+    return min;
   }
 
   BvhNode BvhItemBuild::getGpuModel() {
@@ -115,7 +152,7 @@ namespace nugiEngine {
     return boxCompare(a, b, 2);
   }
 
-  int findObjectSplitIndex(BvhItemBuild node, int axis, float length) {
+  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length) {
     float costArr[splitNumber]{};
 
     for (int i = 0; i < splitNumber; i++) {
@@ -146,14 +183,14 @@ namespace nugiEngine {
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<std::shared_ptr<BoundBox>> srcObjects) {
+  std::vector<std::shared_ptr<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes) {
     int nodeCounter = 0;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
 
     BvhItemBuild root;
     root.index = nodeCounter;
-    root.objects = srcObjects;
+    root.objects = boundedBoxes;
 
     nodeCounter++;
     nodeStack.push(root);
@@ -177,7 +214,7 @@ namespace nugiEngine {
         continue;
       } else {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
-        int mid = findObjectSplitIndex(currentNode, axis, length); // std::ceil(objectSpan / 2);
+        int mid = findPrimitiveSplitIndex(currentNode, axis, length); // std::ceil(objectSpan / 2);
 
         float posBarrier = length * (mid + 1) / (splitNumber + 1) + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;
@@ -223,10 +260,11 @@ namespace nugiEngine {
     }
 
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
-    std::vector<BvhNode> output;
+    std::vector<std::shared_ptr<BvhNode>> output;
 
     for (int i = 0; i < intermediate.size(); i++) {
-      output.emplace_back(intermediate[i].getGpuModel());
+      auto node = std::make_shared<BvhNode>(intermediate[i].getGpuModel());
+      output.emplace_back(node);
     }
 
     return output;

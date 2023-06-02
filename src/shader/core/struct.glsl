@@ -11,9 +11,16 @@ struct Triangle {
   vec3 point2;
 };
 
-struct Object {
-  Triangle triangle;
+struct Primitive {
+  Triangle triangle{};
+  uint objectIndex;
   uint materialIndex;
+};
+
+struct Object {
+  uint firstBvhIndex;
+  uint firstPrimitiveIndex;
+  uint transformIndex;
 };
 
 struct Light {
@@ -60,7 +67,7 @@ struct MaterialHitRecord {
 
 struct HitRecord {
   bool isHit;
-  uint objIndex;
+  uint hitIndex;
 
   float t;
   vec3 point;
