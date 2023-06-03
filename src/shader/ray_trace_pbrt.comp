@@ -225,6 +225,9 @@ void main() {
     int transformIndex = objects[hit.hitObjIndex].transformIndex;
     int materialIndex = primitives[hit.hitPrimIndex].materialIndex;
 
+    curRay.origin = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].translationVector + curRay.origin);
+    curRay.direction = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].scalingVector * curRay.direction);
+
     if (materials[materialIndex].metallicness >= randomFloat(0, i)) {
       indirectScat = indirectGgxShade(curRay, hit, materialIndex, i);
       directScat = directGgxShade(curRay, hit, materialIndex, i);
@@ -238,8 +241,7 @@ void main() {
     totalAttenuation = totalAttenuation + totalIndirect * directScat.colorAttenuation * directScat.pdf / totalPdf;
     totalIndirect = totalIndirect * indirectScat.colorAttenuation * indirectScat.pdf / totalPdf;
 
-    curRay.origin = (transformations[transformIndex].matrix * vec4(indirectScat.raySpecular.origin, 1.0)).xyz;
-    curRay.direction = (transformations[transformIndex].matrix * vec4(indirectScat.raySpecular.direction, 1.0)).xyz;
+    curRay = indirectScat.raySpecular;
   }
   
   imageStore(targetImage, ivec2(imgPosition), vec4(totalAttenuation, 1.0));
