@@ -6,6 +6,7 @@
 
 #include "../utils/sort.hpp"
 #include "../ray_ubo.hpp"
+#include "transform.hpp"
 
 #include <vector>
 #include <memory>
@@ -60,10 +61,10 @@ namespace nugiEngine {
 
   struct ObjectBoundBox : BoundBox {
     std::shared_ptr<Object> objects;
-    std::shared_ptr<Transformation> transformation;
+    std::shared_ptr<TransformComponent> transformation;
     std::vector<std::shared_ptr<Primitive>> primitives{};
 
-    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<Transformation> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
+    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
 
     Aabb boundingBox();
 

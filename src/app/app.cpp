@@ -109,6 +109,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+
+		// ----------------------------------------------------------------------------
+
 		// kanan
 		auto rightWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), 0 });
 		std::vector<std::shared_ptr<Primitive>> rightWallPrimitives;
@@ -117,7 +121,7 @@ namespace nugiEngine {
 		rightWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 }));
 		
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
-		this->objectModel->addObject(rightWallObject, rightWallPrimitives);
+		this->objectModel->addObject(rightWallObject, rightWallPrimitives, transforms[0]);
 		
 		// kiri
 		auto leftWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), 0 });
@@ -127,7 +131,7 @@ namespace nugiEngine {
 		leftWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 }));
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
-		this->objectModel->addObject(leftWallObject, leftWallPrimitives);
+		this->objectModel->addObject(leftWallObject, leftWallPrimitives, transforms[0]);
 		
 		// bawah
 		auto bottomWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), 0 });
@@ -137,7 +141,7 @@ namespace nugiEngine {
 		bottomWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 }));
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
-		this->objectModel->addObject(bottomWallObject, bottomWallPrimitives);
+		this->objectModel->addObject(bottomWallObject, bottomWallPrimitives, transforms[0]);
 		
 		// atas
 		auto topWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), 0 });
@@ -147,7 +151,7 @@ namespace nugiEngine {
 		topWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 }));
 
 		this->primitiveModel->addPrimitive(topWallPrimitives);		
-		this->objectModel->addObject(topWallObject, topWallPrimitives);
+		this->objectModel->addObject(topWallObject, topWallPrimitives, transforms[0]);
 		
 		//// depan
 		auto frontWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), 0 });
@@ -157,7 +161,7 @@ namespace nugiEngine {
 		frontWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 }));
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
-		this->objectModel->addObject(frontWallObject, frontWallPrimitives);
+		this->objectModel->addObject(frontWallObject, frontWallPrimitives, transforms[0]);
 
 		// ----------------------------------------------------------------------------
 
@@ -178,7 +182,7 @@ namespace nugiEngine {
 		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 }));
 
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
-		this->objectModel->addObject(firstBoxesObject, firstBoxesPrimitives);
+		this->objectModel->addObject(firstBoxesObject, firstBoxesPrimitives, transforms[0]);
 
 		// ----------------------------------------------------------------------------
 
@@ -199,7 +203,7 @@ namespace nugiEngine {
 		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
-		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives);
+		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives, transforms[0]);
 
 		// ----------------------------------------------------------------------------
 
@@ -212,10 +216,6 @@ namespace nugiEngine {
 
 		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
 		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
-
-		// ----------------------------------------------------------------------------
-
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 
 		// ----------------------------------------------------------------------------
 

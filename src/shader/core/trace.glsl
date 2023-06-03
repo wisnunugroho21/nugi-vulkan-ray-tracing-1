@@ -214,7 +214,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
     int objIndex = objectBvhNodes[currentNode].leftObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -222,9 +222,9 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
       }
     }
 
-    objIndex = objectBvhNodes[currentNode].rightObjIndex;    
+    objIndex = objectBvhNodes[currentNode].rightObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;

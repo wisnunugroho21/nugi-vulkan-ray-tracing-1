@@ -26,7 +26,7 @@ namespace nugiEngine {
     VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-    void addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives);
+    void addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives, std::shared_ptr<TransformComponent> transformation);
     void createBuffers();
 		
 	private:

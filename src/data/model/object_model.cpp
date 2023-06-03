@@ -7,9 +7,9 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
-	void EngineObjectModel::addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives) {
+	void EngineObjectModel::addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives, std::shared_ptr<TransformComponent> transformation) {
 		this->objects.emplace_back(object);
-		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{static_cast<int>(this->boundBoxes.size()), object, primitives}));
+		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(this->boundBoxes.size()), object, primitives, transformation }));
 	}
 
 	void EngineObjectModel::createBuffers() {
