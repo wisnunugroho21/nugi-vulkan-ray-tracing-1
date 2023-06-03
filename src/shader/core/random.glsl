@@ -36,17 +36,17 @@ int randomInt(float min, float max, uint index, uint additionalRandomSeed) {
   return int(randomFloatAt(min, max + 1, index, additionalRandomSeed));
 }
 
-vec4 randomVecThree(uint index, uint additionalRandomSeed) {
-  return vec4(randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed), 1.0);
+vec3 randomVecThree(uint index, uint additionalRandomSeed) {
+  return vec3(randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed), randomFloat(index, additionalRandomSeed));
 }
 
-vec4 randomVecThreeAt(float min, float max, uint index, uint additionalRandomSeed) {
-  return vec4(randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed), 1.0);
+vec3 randomVecThreeAt(float min, float max, uint index, uint additionalRandomSeed) {
+  return vec3(randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed), randomFloatAt(min, max, index, additionalRandomSeed));
 }
 
-vec4 randomInUnitSphere(uint index, uint additionalRandomSeed) {
+vec3 randomInUnitSphere(uint index, uint additionalRandomSeed) {
   while (true) {
-    vec4 p = randomVecThreeAt(-1.0, 1.0, index, additionalRandomSeed);
+    vec3 p = randomVecThreeAt(-1.0, 1.0, index, additionalRandomSeed);
 
     if (dot(p, p) < 1) {
       return p;
@@ -54,8 +54,8 @@ vec4 randomInUnitSphere(uint index, uint additionalRandomSeed) {
   }
 }
 
-vec4 randomInHemisphere(vec4 normal, uint index, uint additionalRandomSeed) {
-  vec4 in_unit_sphere = randomInUnitSphere(index, additionalRandomSeed);
+vec3 randomInHemisphere(vec3 normal, uint index, uint additionalRandomSeed) {
+  vec3 in_unit_sphere = randomInUnitSphere(index, additionalRandomSeed);
 
   // In the same hemisphere as the normal
   if (dot(in_unit_sphere, normal) > 0.0) {
@@ -65,9 +65,9 @@ vec4 randomInHemisphere(vec4 normal, uint index, uint additionalRandomSeed) {
   }   
 }
 
-vec4 randomInUnitDisk(uint index, uint additionalRandomSeed) {
+vec3 randomInUnitDisk(uint index, uint additionalRandomSeed) {
   while (true) {
-    vec4 p = vec4(randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), 0.0, 1.0);
+    vec3 p = vec3(randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), randomFloatAt(-1.0, 1.0, index, additionalRandomSeed), 0.0);
 
     if (dot(p, p) < 1) {
       return p;

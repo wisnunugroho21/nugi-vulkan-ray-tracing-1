@@ -1,14 +1,14 @@
 // ------------- Integrand ------------- 
 
-vec4 integrandOverHemisphere(vec4 color, float brdf, float NoL, float pdf) {
+vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
   return color * brdf * NoL / pdf; 
 }
 
-vec4 integrandOverArea(vec4 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
+vec3 integrandOverArea(vec3 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
   return color * brdf * NoL * NloL * area / squareDistance;
 }
 
-vec4 partialIntegrand(vec4 color, float brdf, float NoL) {
+vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
   return color * brdf * NoL;
 }
 
