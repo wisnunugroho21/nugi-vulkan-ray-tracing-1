@@ -51,17 +51,12 @@ namespace nugiEngine {
   }
 
   Aabb ObjectBoundBox::boundingBox() {
-    float minX = this->findMin(0);
-    float minY = this->findMin(1);
-    float minZ = this->findMin(2);
-
-    float maxX = this->findMax(0);
-    float maxY = this->findMax(1);
-    float maxZ = this->findMax(2);
+    auto min = this->transformation->matrix * glm::vec4(this->findMin(0), this->findMin(1), this->findMin(2), 1.0f);
+    auto max = this->transformation->matrix * glm::vec4(this->findMax(0), this->findMax(1), this->findMax(2), 1.0f);
 
     return Aabb { 
-      glm::vec3(minX, minY, minZ) - eps, 
-      glm::vec3(maxX, maxY, maxZ) + eps 
+      glm::vec3(min.x, min.y, min.z) - eps, 
+      glm::vec3(max.x, max.y, max.z) + eps 
     };
   }
 

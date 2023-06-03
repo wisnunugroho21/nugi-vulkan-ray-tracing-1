@@ -45,6 +45,11 @@ namespace nugiEngine {
     alignas(4) float fresnelReflect;
   };
 
+  struct Transformation {
+    alignas(64) glm::mat4 matrix;
+    alignas(64) glm::mat4 inverseMatrix;
+  };
+
   struct Light {
     Triangle triangle{};
     alignas(16) glm::vec3 color;

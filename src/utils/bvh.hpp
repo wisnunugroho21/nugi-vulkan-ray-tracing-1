@@ -60,9 +60,10 @@ namespace nugiEngine {
 
   struct ObjectBoundBox : BoundBox {
     std::shared_ptr<Object> objects;
-    std::vector<std::shared_ptr<Primitive>> primitives;
+    std::shared_ptr<Transformation> transformation;
+    std::vector<std::shared_ptr<Primitive>> primitives{};
 
-    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p) : BoundBox(i), objects{o}, primitives{p} {}
+    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<Transformation> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
 
     Aabb boundingBox();
 

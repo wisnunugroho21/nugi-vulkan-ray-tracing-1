@@ -104,6 +104,7 @@ namespace nugiEngine {
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device);
 
 		std::vector<std::shared_ptr<Material>> materials{};
+		std::vector<std::shared_ptr<TransformComponent>> transforms{};
 		std::vector<std::shared_ptr<Light>> lights{};
 
 		// ----------------------------------------------------------------------------
@@ -214,6 +215,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+
+		// ----------------------------------------------------------------------------
+
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
 		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights);
 
@@ -292,14 +297,15 @@ namespace nugiEngine {
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, this->renderer->getSwapChain()->imageCount());
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, this->renderer->getSwapChain()->imageCount());
 
-		VkDescriptorBufferInfo buffersInfo[7] { 
+		VkDescriptorBufferInfo buffersInfo[8] { 
 			this->objectModel->getObjectInfo(), 
 			this->objectModel->getBvhInfo(),
 			this->primitiveModel->getPrimitiveInfo(), 
 			this->primitiveModel->getBvhInfo(),
-			this->materialModel->getMaterialInfo(),
 			this->lightModel->getLightInfo(),
-			this->lightModel->getBvhInfo() 
+			this->lightModel->getBvhInfo(),
+			this->materialModel->getMaterialInfo(),
+			this->transformationModel->getTransformationInfo() 
 		};
 
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {

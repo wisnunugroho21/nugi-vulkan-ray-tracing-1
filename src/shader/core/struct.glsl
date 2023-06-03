@@ -44,9 +44,9 @@ struct Material {
   float fresnelReflect;
 };
 
-struct Transform {
-  mat4 modelMatrix;
-	mat4 normalMatrix;
+struct Transformation {
+  mat4 matrix;
+  mat4 inverseMatrix;
 };
 
 struct Ray {
@@ -66,7 +66,9 @@ struct MaterialHitRecord {
 
 struct HitRecord {
   bool isHit;
-  int hitIndex;
+
+  int hitPrimIndex;
+  int hitObjIndex;
 
   float t;
   vec3 point;
