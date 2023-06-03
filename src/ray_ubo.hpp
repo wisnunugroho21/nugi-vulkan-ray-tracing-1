@@ -63,6 +63,6 @@ namespace nugiEngine {
   };
 
   struct BvhData {
-    BvhNode bvhNodes[200];
+    BvhNode bvhNodes[100];
 	};
 }

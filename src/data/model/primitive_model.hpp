@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
   struct PrimitiveData {
-    Primitive primitives[200];
+    Primitive primitives[100];
   };
 
 	class EnginePrimitiveModel {
