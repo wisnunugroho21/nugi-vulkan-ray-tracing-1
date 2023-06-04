@@ -51,8 +51,8 @@ namespace nugiEngine {
   }
 
   Aabb ObjectBoundBox::boundingBox() {
-    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
-    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
+    auto min = (glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) + this->transformation->translation) * this->transformation->scale; 
+    auto max = (glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + this->transformation->translation) * this->transformation->scale;
 
     return Aabb { 
       min - eps,
