@@ -208,7 +208,7 @@ namespace nugiEngine {
 		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{165.0f, 0.0f, 0.0f}, glm::vec3{165.0f, 0.0f, 165.0f} }, 0 }));
 		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{165.0f, 0.0f, 165.0f}, glm::vec3{0.0f, 0.0f, 165.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 }));
 		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 165.0f, 0.0f}, glm::vec3{165.0f, 165.0f, 0.0f}, glm::vec3{165.0f, 165.0f, 165.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{165.0f, 165.0f, 165.0f}, glm::vec3{130, 165.0f, 165.0f}, glm::vec3{0.0f, 165.0f, 0.0f} }, 0 }));
+		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{165.0f, 165.0f, 165.0f}, glm::vec3{0, 165.0f, 165.0f}, glm::vec3{0.0f, 165.0f, 0.0f} }, 0 }));
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives, transforms[transformIndex]);
