@@ -14,13 +14,13 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001f);
+  const glm::vec4 eps(0.0001f, 0.0001f, 0.0001f, 0.0f);
   const int splitNumber = 11;
 
   // Axis-aligned bounding box.
   struct Aabb {
-    glm::vec3 min = {FLT_MAX, FLT_MAX, FLT_MAX};
-    glm::vec3 max = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    glm::vec4 min = glm::vec4{FLT_MAX};
+    glm::vec4 max = glm::vec4{-FLT_MAX};
 
     int longestAxis();
     int randomAxis();
