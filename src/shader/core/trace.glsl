@@ -54,10 +54,10 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = rayAt(r, hit.t);
+  hit.point = rayAt(r, hit.t) + transformations[transformIndex].translationVector;
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
+  hit.faceNormal = setFaceNormal(r.direction * transformations[transformIndex].scalingVector, outwardNormal);
   
   return hit;
 }
@@ -103,11 +103,11 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = rayAt(r, t);
+  hit.point = rayAt(r, t) + transformations[transformIndex].translationVector;
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
+  hit.faceNormal = setFaceNormal(r.direction * transformations[transformIndex].scalingVector, outwardNormal);
 
   return hit;
 }
@@ -139,6 +139,9 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
 
   stack[0] = 0;
   stackIndex++;
+
+  r.origin = r.origin - transformations[transformIndex].translationVector;
+  r.direction = r.direction / transformations[transformIndex].scalingVector;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
