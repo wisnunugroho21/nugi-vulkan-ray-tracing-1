@@ -7,13 +7,13 @@
 
 namespace nugiEngine {
   struct Triangle {
-    glm::vec4 point0;
-    glm::vec4 point1;
-    glm::vec4 point2;
+    glm::vec3 point0;
+    glm::vec3 point1;
+    glm::vec3 point2;
   };
 
   struct Sphere {
-    glm::vec4 center;
+    glm::vec3 center;
     float radius;
   };
 
@@ -34,36 +34,36 @@ namespace nugiEngine {
     int leftObjIndex = -1;
     int rightObjIndex = -1;
 
-    glm::vec4 maximum;
-    glm::vec4 minimum;
+    glm::vec3 maximum;
+    glm::vec3 minimum;
   };
 
   struct Material {
-    glm::vec4 baseColor;
+    glm::vec3 baseColor;
     float metallicness;
     float roughness;
     float fresnelReflect;
   };
 
   struct Transformation {
-    glm::vec4 translationVector{0.0f};
-    glm::mat4 rotationMatrix{0.0f};
-    glm::vec4 scalingVector{1.0f};
-    glm::mat4 rotationInverseMatrix{0.0f};
-    glm::mat4 normalMatriks{1.0f};
+    glm::vec3 translationVector{0.0f};
+    glm::mat3 rotationMatrix{0.0f};
+    glm::vec3 scalingVector{1.0f};
+    glm::mat3 rotationInverseMatrix{0.0f};
+    glm::mat3 normalMatriks{1.0f};
   };
 
   struct Light {
     Triangle triangle{};
-    glm::vec4 color;
+    glm::vec3 color;
   };
 
   struct RayTraceUbo {
-    glm::vec4 origin;
-    glm::vec4 horizontal;
-    glm::vec4 vertical;
-    glm::vec4 lowerLeftCorner;
-    glm::vec4 background;
+    glm::vec3 origin;
+    glm::vec3 horizontal;
+    glm::vec3 vertical;
+    glm::vec3 lowerLeftCorner;
+    glm::vec3 background;
   };
 
   struct RayTracePushConstant {

@@ -1,7 +1,7 @@
 // ------------- Sphere ------------- 
 
-FaceNormal sphereFaceNormal(Sphere obj, vec4 hitPoint, vec4 rayDirection) {
-  vec4 outwardNormal = (hitPoint - obj.center) / obj.radius;
+FaceNormal sphereFaceNormal(Sphere obj, vec3 hitPoint, vec3 rayDirection) {
+  vec3 outwardNormal = (hitPoint - obj.center) / obj.radius;
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
@@ -9,9 +9,9 @@ float areaSphere(Sphere obj) {
   return 4 * pi * obj.radius * obj.radius;
 }
 
-vec4 sphereGenerateRandom(Sphere sphere, vec4 origin, uint additionalRandomSeed) {
-  vec4 dist = sphere.center - origin;
-  vec4[3] globalOnb = buildOnb(dist);
+vec3 sphereGenerateRandom(Sphere sphere, vec3 origin, uint additionalRandomSeed) {
+  vec3 dist = sphere.center - origin;
+  vec3[3] globalOnb = buildOnb(dist);
 
   float r1 = randomFloat(1, additionalRandomSeed);
   float r2 = randomFloat(2, additionalRandomSeed);
@@ -26,25 +26,25 @@ vec4 sphereGenerateRandom(Sphere sphere, vec4 origin, uint additionalRandomSeed)
 
 // ------------- Triangle -------------
 
-FaceNormal triangleFaceNormal(Triangle obj, vec4 rayDirection) {
-  vec4 v0v1 = obj.point1 - obj.point0;
-  vec4 v0v2 = obj.point2 - obj.point0;
+FaceNormal triangleFaceNormal(Triangle obj, vec3 rayDirection) {
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
 
-  vec4 outwardNormal = vec4(normalize(cross(v0v1.xyz, v0v2.xyz)), 1.0);
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
 float areaTriangle(Triangle obj) {
-  vec4 v0v1 = obj.point1 - obj.point0;
-  vec4 v0v2 = obj.point2 - obj.point0;
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
 
-  vec4 pvec = vec4(cross(v0v1.xyz, v0v2.xyz), 1.0);
+  vec3 pvec = cross(v0v1, v0v2);
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-vec4 triangleGenerateRandom(Triangle obj, vec4 origin, uint additionalRandomSeed) {
-  vec4 a = obj.point1 - obj.point0;
-  vec4 b = obj.point2 - obj.point0;
+vec3 triangleGenerateRandom(Triangle obj, vec3 origin, uint additionalRandomSeed) {
+  vec3 a = obj.point1 - obj.point0;
+  vec3 b = obj.point2 - obj.point0;
 
   float u1 = randomFloat(1, additionalRandomSeed);
   float u2 = randomFloat(2, additionalRandomSeed);
@@ -54,6 +54,6 @@ vec4 triangleGenerateRandom(Triangle obj, vec4 origin, uint additionalRandomSeed
     u2 = 1 - u2;
   }
 
-  vec4 randomTriangle = u1 * a + u2 * b + obj.point0;
+  vec3 randomTriangle = u1 * a + u2 * b + obj.point0;
   return randomTriangle - origin;
 }
