@@ -270,8 +270,8 @@ namespace nugiEngine {
 		float viewportWidth = aspectRatio * viewportHeight;
 
 		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::vec3(glm::normalize(glm::cross(glm::vec3(vup), glm::vec3(w))), 1.0);
-		glm::vec3 v = glm::vec3(glm::cross(glm::vec3(w), glm::vec3(u)));
+		glm::vec3 u = glm::normalize(glm::cross(vup, w));
+		glm::vec3 v = glm::cross(w, u);
 
 		ubo.origin = lookFrom;
 		ubo.horizontal = viewportWidth * u;
