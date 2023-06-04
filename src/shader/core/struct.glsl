@@ -1,14 +1,14 @@
 // ------------- Struct ------------- 
 
 struct Sphere {
-  vec3 center;
+  vec4 center;
   float radius;
 };
 
 struct Triangle {
-  vec3 point0;
-  vec3 point1;
-  vec3 point2;
+  vec4 point0;
+  vec4 point1;
+  vec4 point2;
 };
 
 struct Primitive {
@@ -24,7 +24,7 @@ struct Object {
 
 struct Light {
   Triangle triangle;
-  vec3 color;
+  vec4 color;
 };
 
 struct BvhNode {
@@ -33,12 +33,12 @@ struct BvhNode {
   int leftObjIndex;
   int rightObjIndex;
 
-  vec3 maximum;
-  vec3 minimum;
+  vec4 maximum;
+  vec4 minimum;
 };
 
 struct Material {
-  vec3 baseColor;
+  vec4 baseColor;
 	float metallicness;
   float roughness;
   float fresnelReflect;
@@ -53,13 +53,13 @@ struct Transformation {
 };
 
 struct Ray {
-  vec3 origin;
-  vec3 direction;
+  vec4 origin;
+  vec4 direction;
 };
 
 struct FaceNormal {
   bool frontFace;
-  vec3 normal;
+  vec4 normal;
 };
 
 struct MaterialHitRecord {
@@ -74,14 +74,14 @@ struct HitRecord {
   int hitObjIndex;
 
   float t;
-  vec3 point;
+  vec4 point;
   vec2 uv;
 
   FaceNormal faceNormal;
 };
 
 struct ShadeRecord {
-  vec3 colorAttenuation;  
+  vec4 colorAttenuation;  
   Ray raySpecular;
   float pdf;
 };

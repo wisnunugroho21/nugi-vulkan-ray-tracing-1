@@ -1,20 +1,20 @@
 // ------------- Basic -------------
 
-vec3 rayAt(Ray r, float t) {
+vec4 rayAt(Ray r, float t) {
   return r.origin + t * r.direction;
 }
 
-vec3[3] buildOnb(vec3 normal) {
-  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+vec4[3] buildOnb(vec4 normal) {
+  vec4 a = abs(normalize(normal).x) > 0.9 ? vec4(0.0, 1.0, 0.0, 1.0) : vec4(1.0, 0.0, 0.0, 1.0);
 
-  vec3 z = normalize(normal);
-  vec3 y = normalize(cross(z, a));
-  vec3 x = cross(z, y);
+  vec4 z = normalize(normal);
+  vec4 y = vec4(normalize(cross(z.xyz, a.xyz)), 1.0);
+  vec4 x = vec4(cross(z.xyz, y.xyz), 1.0);
 
-  return vec3[3](x, y, z);
+  return vec4[3](x, y, z);
 }
 
-FaceNormal setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
+FaceNormal setFaceNormal(vec4 r_direction, vec4 outwardNormal) {
   FaceNormal faceNormal;
 
   faceNormal.frontFace = dot(r_direction, outwardNormal) < 0.0;
@@ -29,7 +29,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 oc = r.origin - sphere.center;
+  vec4 oc = r.origin - sphere.center;
 
   float a = dot(r.direction, r.direction);
   float half_b = dot(oc, r.direction);
@@ -56,8 +56,8 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
   hit.t = root;
   hit.point = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].translationVector + rayAt(r, hit.t));
 
-  vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, transformations[transformIndex].normalMatrix * outwardNormal);
+  vec4 outwardNormal = (hit.point - sphere.center) / sphere.radius;
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
   
   return hit;
 }
@@ -68,9 +68,9 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = tri.point1 - tri.point0;
-  vec3 v0v2 = tri.point2 - tri.point0;
-  vec3 pvec = cross(r.direction, v0v2);
+  vec4 v0v1 = tri.point1 - tri.point0;
+  vec4 v0v2 = tri.point2 - tri.point0;
+  vec4 pvec = vec4(cross(r.direction.xyz, v0v2.xyz), 1.0);
   float det = dot(v0v1, pvec);
   
   if (abs(det) < KEPSILON) {
@@ -79,13 +79,13 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
     
   float invDet = 1.0 / det;
 
-  vec3 tvec = r.origin - tri.point0;
+  vec4 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
     return hit;
   }
 
-  vec3 qvec = cross(tvec, v0v1);
+  vec4 qvec = vec4(cross(tvec.xyz, v0v1.xyz), 1.0);
   float v = dot(r.direction, qvec) * invDet;
   if (v < 0.0 || u + v > 1.0) {
     return hit;
@@ -106,23 +106,23 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
   hit.point = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].translationVector + rayAt(r, t));
   hit.uv = vec2(u, v);
 
-  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, transformations[transformIndex].normalMatrix * outwardNormal);
+  vec4 outwardNormal = vec4(normalize(cross(v0v1.xyz, v0v2.xyz)), 1.0);
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
   return hit;
 }
 
 // ------------- Bvh -------------
 
-bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+bool intersectAABB(Ray r, vec4 boxMin, vec4 boxMax) {
   if (all(lessThan(boxMin, r.origin)) && all(greaterThan(boxMax, r.origin))) {
     return true;
   }
 
-  vec3 tMin = (boxMin - r.origin) / r.direction;
-  vec3 tMax = (boxMax - r.origin) / r.direction;
-  vec3 t1 = min(tMin, tMax);
-  vec3 t2 = max(tMin, tMax);
+  vec4 tMin = (boxMin - r.origin) / r.direction;
+  vec4 tMax = (boxMax - r.origin) / r.direction;
+  vec4 t1 = min(tMin, tMax);
+  vec4 t2 = max(tMin, tMax);
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
@@ -139,9 +139,6 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
 
   stack[0] = 0;
   stackIndex++;
-
-  r.origin = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].translationVector + r.origin);
-  r.direction = transformations[transformIndex].rotationMatrix * (transformations[transformIndex].scalingVector * r.direction);
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
