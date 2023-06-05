@@ -46,10 +46,7 @@ struct Material {
 
 struct Transformation {
   vec3 translationVector;
-  mat3 rotationMatrix;
   vec3 scalingVector;
-  mat3 rotationInverseMatrix;
-  mat3 normalMatrix;
 };
 
 struct Ray {
