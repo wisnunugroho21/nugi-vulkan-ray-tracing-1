@@ -48,8 +48,6 @@ namespace nugiEngine {
   struct Transformation {
     alignas(16) glm::vec3 translationVector{0.0f};
     alignas(16) glm::vec3 scalingVector{1.0f};
-    alignas(64) glm::mat3 rotationMatrix{1.0f};
-    alignas(64) glm::mat3 inverseRotationMatrix{1.0f};
   };
 
   struct Light {
