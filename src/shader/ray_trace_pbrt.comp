@@ -212,18 +212,14 @@ void main() {
 
     HitRecord hittedLight = hitLightBvh(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      if (i > 0) {
-        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.hitPrimIndex);
-      }
+      if (i > 0) totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.hitIndex);
 
-      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.hitPrimIndex].color;
+      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.hitIndex].color;
       break;
     }
 
     totalIndirect = totalIndirect / indirectScat.pdf;
-
-    int transformIndex = objects[hit.hitObjIndex].transformIndex;
-    int materialIndex = primitives[hit.hitPrimIndex].materialIndex;
+    int materialIndex = primitives[hit.hitIndex].materialIndex;
 
     if (materials[materialIndex].metallicness >= randomFloat(0, i)) {
       indirectScat = indirectGgxShade(curRay, hit, materialIndex, i);

@@ -54,7 +54,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = (rayAt(r, hit.t) + transformations[transformIndex].translationVector) * transformations[transformIndex].scalingVector;
+  hit.point = rayAt(r, root) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector;
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
   hit.faceNormal = setFaceNormal(r.direction, normalize(outwardNormal / transformations[transformIndex].scalingVector));
@@ -160,7 +160,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitPrimIndex = primIndex + firstPrimitiveIndex;
+        hit.hitIndex = primIndex + firstPrimitiveIndex;
       }
     }
 
@@ -170,7 +170,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitPrimIndex = primIndex + firstPrimitiveIndex;
+        hit.hitIndex = primIndex + firstPrimitiveIndex;
       }
     }
 
@@ -218,7 +218,6 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitObjIndex = objIndex;
       }
     }
 
@@ -228,7 +227,6 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitObjIndex = objIndex;
       }
     }
 
@@ -259,7 +257,7 @@ HitRecord hitLightList(Ray r, float tMin, float tMax) {
     HitRecord tempHit = hitTriangle(lights[i].triangle, r, tMin, hit.t, 0);
     if (tempHit.isHit) {
       hit = tempHit;
-      hit.hitPrimIndex = i;
+      hit.hitIndex = i;
     }
   }
 
@@ -294,7 +292,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitPrimIndex = lightIndex;
+        hit.hitIndex = lightIndex;
       }
     }
 
@@ -304,7 +302,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitPrimIndex = lightIndex;
+        hit.hitIndex = lightIndex;
       }
     }
 

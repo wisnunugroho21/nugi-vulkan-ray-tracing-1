@@ -66,9 +66,7 @@ struct MaterialHitRecord {
 
 struct HitRecord {
   bool isHit;
-
-  int hitPrimIndex;
-  int hitObjIndex;
+  int hitIndex;
 
   float t;
   vec3 point;
