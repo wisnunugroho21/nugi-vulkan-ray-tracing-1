@@ -29,7 +29,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 oc = r.origin - sphere.center;
+  vec3 oc = r.origin - sphere.center.xyz;
 
   float a = dot(r.direction, r.direction);
   float half_b = dot(oc, r.direction);
@@ -54,10 +54,10 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = rayAt(r, root) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector;
+  hit.point = rayAt(r, root) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz;
 
-  vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, normalize((outwardNormal / transformations[transformIndex].scalingVector)));
+  vec3 outwardNormal = (hit.point - sphere.center.xyz) / sphere.radius;
+  hit.faceNormal = setFaceNormal(r.direction, normalize((outwardNormal / transformations[transformIndex].scalingVector.xyz)));
   
   return hit;
 }
@@ -68,8 +68,8 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = tri.point1 - tri.point0;
-  vec3 v0v2 = tri.point2 - tri.point0;
+  vec3 v0v1 = tri.point1.xyz - tri.point0.xyz;
+  vec3 v0v2 = tri.point2.xyz - tri.point0.xyz;
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
@@ -79,7 +79,7 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
     
   float invDet = 1.0 / det;
 
-  vec3 tvec = r.origin - tri.point0;
+  vec3 tvec = r.origin - tri.point0.xyz;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
     return hit;
@@ -103,11 +103,11 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = rayAt(r, t) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector;
+  hit.point = rayAt(r, t) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz;
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, normalize((outwardNormal / transformations[transformIndex].scalingVector)));
+  hit.faceNormal = setFaceNormal(r.direction, normalize((outwardNormal / transformations[transformIndex].scalingVector.xyz)));
 
   return hit;
 }
@@ -140,8 +140,8 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   stack[0] = 0;
   stackIndex++;
 
-  r.origin = (r.origin - transformations[transformIndex].translationVector) / transformations[transformIndex].scalingVector;
-  r.direction = r.direction / transformations[transformIndex].scalingVector;
+  r.origin = (r.origin - transformations[transformIndex].translationVector.xyz) / transformations[transformIndex].scalingVector.xyz;
+  r.direction = r.direction / transformations[transformIndex].scalingVector.xyz;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
@@ -150,7 +150,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
       continue;
     }
 
-    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex].minimum, primitiveBvhNodes[currentNode + firstBvhIndex].maximum)) {
+    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex].minimum.xyz, primitiveBvhNodes[currentNode + firstBvhIndex].maximum.xyz)) {
       continue;
     }
 
@@ -208,7 +208,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    if (!intersectAABB(r, objectBvhNodes[currentNode].minimum, objectBvhNodes[currentNode].maximum)) {
+    if (!intersectAABB(r, objectBvhNodes[currentNode].minimum.xyz, objectBvhNodes[currentNode].maximum.xyz)) {
       continue;
     }
 
@@ -282,7 +282,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    if (!intersectAABB(r, lightBvhNodes[currentNode].minimum, lightBvhNodes[currentNode].maximum)) {
+    if (!intersectAABB(r, lightBvhNodes[currentNode].minimum.xyz, lightBvhNodes[currentNode].maximum.xyz)) {
       continue;
     }
 
