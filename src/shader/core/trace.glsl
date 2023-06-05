@@ -54,10 +54,10 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = rayAt(r, root) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector;
+  hit.point = transformations[transformIndex].rotationMatrix * (rayAt(r, root) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector);
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, normalize(outwardNormal / transformations[transformIndex].scalingVector));
+  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].rotationMatrix * (outwardNormal / transformations[transformIndex].scalingVector)));
   
   return hit;
 }
@@ -103,11 +103,11 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = rayAt(r, t) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector;
+  hit.point = transformations[transformIndex].rotationMatrix * (rayAt(r, t) * transformations[transformIndex].scalingVector + transformations[transformIndex].translationVector);
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, normalize(outwardNormal / transformations[transformIndex].scalingVector));
+  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].rotationMatrix * (outwardNormal / transformations[transformIndex].scalingVector)));
 
   return hit;
 }
@@ -140,8 +140,8 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   stack[0] = 0;
   stackIndex++;
 
-  r.origin = (r.origin - transformations[transformIndex].translationVector) / transformations[transformIndex].scalingVector ;
-  r.direction = r.direction / transformations[transformIndex].scalingVector;
+  r.origin = transformations[transformIndex].rotationMatrix * ((r.origin - transformations[transformIndex].translationVector) / transformations[transformIndex].scalingVector);
+  r.direction = transformations[transformIndex].rotationMatrix * (r.direction / transformations[transformIndex].scalingVector);
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
