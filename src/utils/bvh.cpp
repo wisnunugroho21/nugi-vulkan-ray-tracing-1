@@ -3,19 +3,19 @@
 namespace nugiEngine {
   int Aabb::longestAxis() {
     float x = abs(max[0] - min[0]);
-      float y = abs(max[1] - min[1]);
-      float z = abs(max[2] - min[2]);
+    float y = abs(max[1] - min[1]);
+    float z = abs(max[2] - min[2]);
 
-      int longest = 0;
-      if (y > x && y > z) {
-        longest = 1;
-      }
+    int longest = 0;
+    if (y > x && y > z) {
+      longest = 1;
+    }
 
-      if (z > x && z > y) {
-        longest = 2;
-      }
+    if (z > x && z > y) {
+      longest = 2;
+    }
 
-      return longest;
+    return longest;
   }
 
   int Aabb::randomAxis() {
@@ -24,29 +24,29 @@ namespace nugiEngine {
 
   Aabb TriangleBoundBox::boundingBox() {
     return Aabb{ 
-      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - eps, 
-      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + eps 
+      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb SphereBoundBox::boundingBox() {
     return Aabb { 
-      this->spheres->center - this->spheres->radius - eps, 
-      this->spheres->center + this->spheres->radius + eps 
+      this->spheres->center - this->spheres->radius - glm::vec4(eps, 0.0f),
+      this->spheres->center + this->spheres->radius + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - eps, 
-      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + eps 
+      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - eps, 
-      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + eps 
+      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + glm::vec4(eps, 0.0f)
     };
   }
 

@@ -145,7 +145,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
     float area = areaTriangle(lights[lightIndex].triangle);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color.xyz;
   }  
 
   return scat;
@@ -176,7 +176,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color.xyz;
   }  
 
   return scat;
