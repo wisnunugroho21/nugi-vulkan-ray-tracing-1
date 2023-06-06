@@ -3,14 +3,14 @@
 // ---------------------- buffer struct ----------------------
 
 struct Sphere {
-  vec4 center;
+  vec3 center;
   float radius;
 };
 
 struct Triangle {
-  vec4 point0;
-  vec4 point1;
-  vec4 point2;
+  vec3 point0;
+  vec3 point1;
+  vec3 point2;
 };
 
 struct Primitive {
@@ -26,7 +26,7 @@ struct Object {
 
 struct Light {
   Triangle triangle;
-  vec4 color;
+  vec3 color;
 };
 
 struct BvhNode {
@@ -35,20 +35,20 @@ struct BvhNode {
   int leftObjIndex;
   int rightObjIndex;
 
-  vec4 maximum;
-  vec4 minimum;
+  vec3 maximum;
+  vec3 minimum;
 };
 
 struct Material {
-  vec4 baseColor;
+  vec3 baseColor;
 	float metallicness;
   float roughness;
   float fresnelReflect;
 };
 
 struct Transformation {
-  vec4 translationVector;
-  vec4 scalingVector;
+  vec3 translationVector;
+  vec3 scalingVector;
 };
 
 // ---------------------- internal struct ----------------------

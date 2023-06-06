@@ -7,13 +7,13 @@
 
 namespace nugiEngine {
   struct Triangle {
-    glm::vec4 point0;
-    glm::vec4 point1;
-    glm::vec4 point2;
+    alignas(16) glm::vec3 point0;
+    alignas(16) glm::vec3 point1;
+    alignas(16) glm::vec3 point2;
   };
 
   struct Sphere {
-    glm::vec4 center;
+    alignas(16) glm::vec3 center;
     float radius;
   };
 
@@ -34,25 +34,25 @@ namespace nugiEngine {
     int leftObjIndex = -1;
     int rightObjIndex = -1;
 
-    glm::vec4 maximum;
-    glm::vec4 minimum;
+    alignas(16) glm::vec3 maximum;
+    alignas(16) glm::vec3 minimum;
   };
 
   struct Material {
-    glm::vec4 baseColor;
+    alignas(16) glm::vec3 baseColor;
     float metallicness;
     float roughness;
     float fresnelReflect;
   };
 
   struct Transformation {
-    glm::vec4 translationVector{0.0f};
-    glm::vec4 scalingVector{1.0f};
+    alignas(16) glm::vec3 translationVector{0.0f};
+    alignas(16) glm::vec3 scalingVector{1.0f};
   };
 
   struct Light {
     Triangle triangle{};
-    alignas(16) glm::vec4 color;
+    alignas(16) alignas(16) glm::vec3 color;
   };
 
   struct RayTraceUbo {

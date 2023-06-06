@@ -1,7 +1,7 @@
 // ------------- Sphere ------------- 
 
 FaceNormal sphereFaceNormal(Sphere obj, vec3 hitPoint, vec3 rayDirection) {
-  vec3 outwardNormal = (hitPoint - obj.center.xyz) / obj.radius;
+  vec3 outwardNormal = (hitPoint - obj.center) / obj.radius;
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
@@ -10,7 +10,7 @@ float areaSphere(Sphere obj) {
 }
 
 vec3 sphereGenerateRandom(Sphere sphere, vec3 origin, uint additionalRandomSeed) {
-  vec3 dist = sphere.center.xyz - origin;
+  vec3 dist = sphere.center - origin;
   vec3[3] globalOnb = buildOnb(dist);
 
   float r1 = randomFloat(1, additionalRandomSeed);
@@ -27,24 +27,24 @@ vec3 sphereGenerateRandom(Sphere sphere, vec3 origin, uint additionalRandomSeed)
 // ------------- Triangle -------------
 
 FaceNormal triangleFaceNormal(Triangle obj, vec3 rayDirection) {
-  vec3 v0v1 = obj.point1.xyz - obj.point0.xyz;
-  vec3 v0v2 = obj.point2.xyz - obj.point0.xyz;
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
 float areaTriangle(Triangle obj) {
-  vec3 v0v1 = obj.point1.xyz - obj.point0.xyz;
-  vec3 v0v2 = obj.point2.xyz - obj.point0.xyz;
+  vec3 v0v1 = obj.point1 - obj.point0;
+  vec3 v0v2 = obj.point2 - obj.point0;
 
   vec3 pvec = cross(v0v1, v0v2);
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
 vec3 triangleGenerateRandom(Triangle obj, vec3 origin, uint additionalRandomSeed) {
-  vec3 a = obj.point1.xyz - obj.point0.xyz;
-  vec3 b = obj.point2.xyz - obj.point0.xyz;
+  vec3 a = obj.point1 - obj.point0;
+  vec3 b = obj.point2 - obj.point0;
 
   float u1 = randomFloat(1, additionalRandomSeed);
   float u2 = randomFloat(2, additionalRandomSeed);
@@ -54,6 +54,6 @@ vec3 triangleGenerateRandom(Triangle obj, vec3 origin, uint additionalRandomSeed
     u2 = 1 - u2;
   }
 
-  vec3 randomTriangle = u1 * a + u2 * b + obj.point0.xyz;
+  vec3 randomTriangle = u1 * a + u2 * b + obj.point0;
   return randomTriangle - origin;
 }
