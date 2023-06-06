@@ -49,6 +49,8 @@ struct Material {
 struct Transformation {
   vec4 translationVector;
   vec4 scalingVector;
+  mat4 rotationMatrix;
+  mat4 inverseRotationMatrix;
 };
 
 // ---------------------- internal struct ----------------------

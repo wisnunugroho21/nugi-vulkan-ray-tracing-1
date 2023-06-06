@@ -7,9 +7,9 @@
 
 namespace nugiEngine {
   struct Triangle {
-      glm::vec4 point0;
-      glm::vec4 point1;
-      glm::vec4 point2;
+    glm::vec4 point0;
+    glm::vec4 point1;
+    glm::vec4 point2;
   };
 
   struct Sphere {
@@ -23,31 +23,33 @@ namespace nugiEngine {
   };
 
   struct Object {
-      int firstBvhIndex;
-      int firstPrimitiveIndex;
-      int transformIndex;
+    int firstBvhIndex;
+    int firstPrimitiveIndex;
+    int transformIndex;
   };
 
   struct BvhNode {
-      int leftNode = -1;
-      int rightNode = -1;
-      int leftObjIndex = -1;
-      int rightObjIndex = -1;
+    int leftNode = -1;
+    int rightNode = -1;
+    int leftObjIndex = -1;
+    int rightObjIndex = -1;
 
-      glm::vec4 maximum;
-      glm::vec4 minimum;
+    glm::vec4 maximum;
+    glm::vec4 minimum;
   };
 
   struct Material {
-      alignas(16) glm::vec4 baseColor;
-      float metallicness;
-      float roughness;
-      float fresnelReflect;
+    alignas(16) glm::vec4 baseColor;
+    float metallicness;
+    float roughness;
+    float fresnelReflect;
   };
 
   struct Transformation {
     glm::vec4 translationVector{0.0f};
     glm::vec4 scalingVector{1.0f};
+    glm::mat4 rotationMatrix{0.0f};
+    glm::mat4 inverseRotationMatrix{0.0f};
   };
 
   struct Light {
