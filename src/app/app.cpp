@@ -109,7 +109,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(0.0f), glm::vec4(1.0f), glm::vec4(0.0f) }));
 
 		// ----------------------------------------------------------------------------
 
@@ -167,7 +167,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(265.0f, 0.0f, 295.0f), glm::vec3(1.0f), glm::vec3(0.0f, 15.0f, 0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(265.0f, 0.0f, 295.0f, 0.0f), glm::vec4(1.0f), glm::vec4(0.0f, 15.0f, 0.0f, 0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		auto firstBoxesObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -191,7 +191,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(130.0f, 0.0f, 65.0f), glm::vec3(1.5f), glm::vec3(0.0f, -18.0f, 0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(130.0f, 0.0f, 65.0f, 0.0f), glm::vec4(1.5f), glm::vec4(0.0f, -18.0f, 0.0f, 0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		auto secondBoxesObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -215,10 +215,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec4(0.73f, 0.73f, 0.73f, 1.0f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec4(0.12f, 0.45f, 0.15f, 1.0f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec4(0.65f, 0.05f, 0.05f, 1.0f), 0.0f, 0.1f, 0.5f }));
+		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec4(0.73f, 0.73f, 0.73f, 1.0f), 0.0f, 0.1f, 0.5f }));
 
 		// ----------------------------------------------------------------------------
 
@@ -284,7 +284,7 @@ namespace nugiEngine {
 		ubo.origin = glm::vec4(lookFrom, 0.0f);
 		ubo.horizontal = glm::vec4(viewportWidth * u, 0.0f);
 		ubo.vertical = glm::vec4(viewportHeight * v, 0.0f);
-		ubo.lowerLeftCorner = glm::vec4(ubo.origin - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w, 0.0f);
+		ubo.lowerLeftCorner = glm::vec4(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w, 0.0f);
 		ubo.background = glm::vec4(0.0f);
 
 		return ubo;

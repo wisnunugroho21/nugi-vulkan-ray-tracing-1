@@ -55,8 +55,8 @@ namespace nugiEngine {
     auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
 
     return Aabb { 
-      (min - eps) * this->transformation->scale + this->transformation->translation,
-      (max + eps) * this->transformation->scale + this->transformation->translation
+      glm::vec4(min - eps, 0.0f) * this->transformation->scale + this->transformation->translation,
+      glm::vec4(max + eps, 0.0f) * this->transformation->scale + this->transformation->translation
     };
   }
 

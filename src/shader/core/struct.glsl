@@ -40,15 +40,15 @@ struct BvhNode {
 };
 
 struct Material {
-  vec3 baseColor;
+  vec4 baseColor;
 	float metallicness;
   float roughness;
   float fresnelReflect;
 };
 
 struct Transformation {
-  vec3 translationVector;
-  vec3 scalingVector;
+  vec4 translationVector;
+  vec4 scalingVector;
 };
 
 // ---------------------- internal struct ----------------------

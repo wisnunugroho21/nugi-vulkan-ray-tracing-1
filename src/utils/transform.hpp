@@ -10,7 +10,7 @@ namespace nugiEngine {
 		glm::vec4 rotation{0.0f};
 
 		glm::mat3 rotationMatrix();
-    glm::mat3 inverserotationMatrix();
+		glm::mat3 inverserotationMatrix();
 		glm::mat3 normalMatrix();
 	};
 }

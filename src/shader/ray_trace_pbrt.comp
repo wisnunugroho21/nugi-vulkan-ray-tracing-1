@@ -85,7 +85,7 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint addit
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
 
   scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
+  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL);
   
   return scat;
 }
@@ -106,7 +106,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint a
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
-  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL); 
+  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL); 
   
   return scat;
 }
@@ -145,7 +145,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
     float area = areaTriangle(lights[lightIndex].triangle);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -176,7 +176,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;

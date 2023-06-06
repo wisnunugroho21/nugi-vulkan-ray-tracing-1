@@ -39,20 +39,20 @@ namespace nugiEngine {
   };
 
   struct Material {
-    alignas(16) glm::vec3 baseColor;
-    float metallicness;
-    float roughness;
-    float fresnelReflect;
+      alignas(16) glm::vec4 baseColor;
+      float metallicness;
+      float roughness;
+      float fresnelReflect;
   };
 
   struct Transformation {
-    alignas(16) glm::vec3 translationVector{0.0f};
-    alignas(16) glm::vec3 scalingVector{1.0f};
+    glm::vec4 translationVector{0.0f};
+    glm::vec4 scalingVector{1.0f};
   };
 
   struct Light {
     Triangle triangle{};
-    alignas(16) alignas(16) glm::vec3 color;
+    alignas(16) glm::vec3 color;
   };
 
   struct RayTraceUbo {
