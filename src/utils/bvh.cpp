@@ -54,13 +54,9 @@ namespace nugiEngine {
     auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps;
     auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
 
-    auto rotationMat = glm::mat3(this->transformation->rotationMatrix());
-    auto scaleVec = glm::vec3(this->transformation->scale);
-    auto transVec = glm::vec3(this->transformation->translation);    
-
     return Aabb { 
-        glm::vec4(rotationMat * (min * scaleVec) + transVec, 1.0f),
-        glm::vec4(rotationMat * (max * scaleVec) + transVec, 1.0f),
+      this->transformation->directionTransfMatrix() * glm::vec4(min, 1.0f),
+      this->transformation->directionTransfMatrix() * glm::vec4(max, 1.0f)
     };
   }
 

@@ -46,10 +46,11 @@ namespace nugiEngine {
   };
 
   struct Transformation {
-      glm::vec4 translationVector{0.0f};
-      glm::vec4 scalingVector{1.0f};
-      glm::mat4 rotationMatrix{1.0f};
-      glm::mat4 inverseRotationMatrix{1.0f};
+    glm::mat4 originTransfMatrix{1.0f};
+    glm::mat4 inverseOriginTransfMatrix{1.0f};
+    glm::mat4 directionTransfMatrix{1.0f};
+    glm::mat4 inverseDirectionTransfMatrix{1.0f};
+    glm::mat4 normalMatrix{1.0f};
   };
 
   struct Light {
