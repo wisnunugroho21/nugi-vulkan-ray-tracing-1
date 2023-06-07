@@ -186,10 +186,10 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   int stackIndex = 0;
 
   stack[0] = 0;
-  stackIndex++;
+  stackIndex++;  
 
-  r.origin = mat3(transformations[transformIndex].inverseRotationMatrix) * ((r.origin - transformations[transformIndex].translationVector.xyz) / transformations[transformIndex].scalingVector.xyz);
-  r.direction = mat3(transformations[transformIndex].inverseRotationMatrix) * (r.direction / transformations[transformIndex].scalingVector.xyz);
+  r.origin = mat3(transformations[transformIndex].inverseRotationMatrix) * (r.origin - transformations[transformIndex].translationVector.xyz) / transformations[transformIndex].scalingVector.xyz;
+  r.direction = mat3(transformations[transformIndex].inverseRotationMatrix) * r.direction / transformations[transformIndex].scalingVector.xyz;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
