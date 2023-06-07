@@ -167,7 +167,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(265.0f, 0.0f, 295.0f, 0.0f), glm::vec4(1.0f), glm::vec4(glm::radians(0.0f), glm::radians(30.0f), glm::radians(0.0f), 0.0f)}));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(265.0f, 0.0f, 295.0f, 0.0f), glm::vec4(1.0f), glm::vec4(glm::radians(0.0f), glm::radians(15.0f), glm::radians(0.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		auto firstBoxesObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -191,7 +191,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(130.0f, 0.0f, 65.0f, 0.0f), glm::vec4(1.0f), glm::vec4(glm::radians(0.0f), glm::radians(60.0f), glm::radians(0.0f), 0.0f)}));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec4(130.0f, 0.0f, 65.0f, 0.0f), glm::vec4(1.0f), glm::vec4(glm::radians(0.0f), glm::radians(-18.0f), glm::radians(0.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		auto secondBoxesObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });

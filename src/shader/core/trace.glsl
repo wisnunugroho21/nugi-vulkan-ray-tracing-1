@@ -189,7 +189,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   stackIndex++;  
 
   r.origin = (transformations[transformIndex].inverseOriginTransfMatrix * vec4(r.origin, 1.0)).xyz;
-  r.direction = (transformations[transformIndex].inverseDirectionTransfMatrix * vec4(r.direction, 1.0)).xyz;
+  r.direction = (transformations[transformIndex].inverseDirectionTransfMatrix * vec4(r.direction, 0.0)).xyz;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
