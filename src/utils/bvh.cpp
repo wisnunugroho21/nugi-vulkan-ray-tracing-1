@@ -24,29 +24,29 @@ namespace nugiEngine {
 
   Aabb TriangleBoundBox::boundingBox() {
     return Aabb{ 
-      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - eps,
-      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + eps
+      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb SphereBoundBox::boundingBox() {
     return Aabb { 
-      this->spheres->center - this->spheres->radius - eps,
-      this->spheres->center + this->spheres->radius + eps
+      this->spheres->center - this->spheres->radius - glm::vec4(eps, 0.0f),
+      this->spheres->center + this->spheres->radius + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - eps,
-      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + eps
+      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - eps,
-      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + eps
+      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + glm::vec4(eps, 0.0f)
     };
   }
 
@@ -55,8 +55,8 @@ namespace nugiEngine {
     auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
 
     return Aabb { 
-      this->transformation->rotationMatrix() * min * this->transformation->scale + this->transformation->translation,
-      this->transformation->rotationMatrix() * max * this->transformation->scale + this->transformation->translation
+        glm::vec4(glm::mat3(this->transformation->rotationMatrix()) * ((min + glm::vec3(this->transformation->translation)) * glm::vec3(this->transformation->scale)), 0.0f),
+        glm::vec4(glm::mat3(this->transformation->rotationMatrix()) * ((max + glm::vec3(this->transformation->translation)) * glm::vec3(this->transformation->scale)), 0.0f),
     };
   }
 
