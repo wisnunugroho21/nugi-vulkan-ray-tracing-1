@@ -11,11 +11,11 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
 
 layout(set = 0, binding = 1) uniform readonly GlobalUbo {
-  vec4 origin;
-  vec4 horizontal;
-  vec4 vertical;
-  vec4 lowerLeftCorner;
-  vec4 background;
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  vec3 background;
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
@@ -85,7 +85,7 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint addit
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
 
   scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL);
+  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
   
   return scat;
 }
@@ -106,7 +106,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint a
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
-  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL); 
+  scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL); 
   
   return scat;
 }
@@ -145,7 +145,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
     float area = areaTriangle(lights[lightIndex].triangle);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color.xyz;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -176,7 +176,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor.xyz, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color.xyz;
+    scat.colorAttenuation = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -200,13 +200,13 @@ void main() {
   Ray curRay;
 
   indirectScat.pdf = 1.0;
-  curRay.origin = ubo.origin.xyz;
-  curRay.direction = ubo.lowerLeftCorner.xyz + uv.x * ubo.horizontal.xyz - uv.y * ubo.vertical.xyz - ubo.origin.xyz;
+  curRay.origin = ubo.origin;
+  curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
   for(uint i = 0; i < 3; i++) {
     HitRecord hit = hitObjectBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
-      totalAttenuation = totalAttenuation + totalIndirect * ubo.background.xyz;
+      totalAttenuation = totalAttenuation + totalIndirect * ubo.background;
       break;
     }
 
@@ -214,7 +214,7 @@ void main() {
     if (hittedLight.isHit) {
       if (i > 0) totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.hitIndex);
 
-      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.hitIndex].color.xyz;
+      totalAttenuation = totalAttenuation + totalIndirect * lights[hittedLight.hitIndex].color;
       break;
     }
 
