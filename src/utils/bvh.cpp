@@ -51,12 +51,12 @@ namespace nugiEngine {
   }
 
   Aabb ObjectBoundBox::boundingBox() {
-    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
-    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
+    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps;
+    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
 
     return Aabb { 
-      glm::vec4(min - eps, 0.0f) * this->transformation->scale + this->transformation->translation,
-      glm::vec4(max + eps, 0.0f) * this->transformation->scale + this->transformation->translation
+        glm::vec4(glm::mat3(this->transformation->rotationMatrix()) * ((min + glm::vec3(this->transformation->translation)) * glm::vec3(this->transformation->scale)), 0.0f),
+        glm::vec4(glm::mat3(this->transformation->rotationMatrix()) * ((max + glm::vec3(this->transformation->translation)) * glm::vec3(this->transformation->scale)), 0.0f),
     };
   }
 

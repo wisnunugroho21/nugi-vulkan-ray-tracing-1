@@ -11,17 +11,17 @@ namespace nugiEngine {
 
     return glm::mat4{
       {
-        (s1 * s2 * c3 - c1 * s3),
-        (s1 * s2 * s3 + c1 * c3),
-        (s1 * c2),
-        0.0f
-      },
-      {
         (c2 * c3),
         (c2 * s3),
         (-s2),
         0.0f
       },
+      {
+        (s1 * s2 * c3 - c1 * s3),
+        (s1 * s2 * s3 + c1 * c3),
+        (s1 * c2),
+        0.0f
+      },      
       {
         (c1 * s2 * c3 + s1 * s3),
         (c1 * s2 * s3 - s1 * c3),

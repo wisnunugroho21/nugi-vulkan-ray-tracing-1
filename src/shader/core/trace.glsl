@@ -54,10 +54,10 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = mat3(transformations[transformIndex].inverseRotationMatrix) * (rayAt(r, root) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz);
+  hit.point = mat3(transformations[transformIndex].rotationMatrix) * rayAt(r, root) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz;
 
   vec3 outwardNormal = (hit.point - sphere.center.xyz) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, normalize(mat3(transformations[transformIndex].inverseRotationMatrix) * (outwardNormal / transformations[transformIndex].scalingVector.xyz)));
+  hit.faceNormal = setFaceNormal(r.direction, normalize(mat3(transformations[transformIndex].rotationMatrix) * (outwardNormal / transformations[transformIndex].scalingVector.xyz)));
   
   return hit;
 }
@@ -103,11 +103,59 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = mat3(transformations[transformIndex].inverseRotationMatrix) * (rayAt(r, t) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz);
+  hit.point = mat3(transformations[transformIndex].rotationMatrix) * rayAt(r, t) * transformations[transformIndex].scalingVector.xyz + transformations[transformIndex].translationVector.xyz;
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, normalize(mat3(transformations[transformIndex].inverseRotationMatrix) * (outwardNormal / transformations[transformIndex].scalingVector.xyz)));
+  hit.faceNormal = setFaceNormal(r.direction, normalize(mat3(transformations[transformIndex].rotationMatrix) * (outwardNormal / transformations[transformIndex].scalingVector.xyz)));
+
+  return hit;
+}
+
+HitRecord hitLight(Triangle tri, Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+
+  vec3 v0v1 = tri.point1.xyz - tri.point0.xyz;
+  vec3 v0v2 = tri.point2.xyz - tri.point0.xyz;
+  vec3 pvec = cross(r.direction, v0v2);
+  float det = dot(v0v1, pvec);
+  
+  if (abs(det) < KEPSILON) {
+    return hit;
+  }
+    
+  float invDet = 1.0 / det;
+
+  vec3 tvec = r.origin - tri.point0.xyz;
+  float u = dot(tvec, pvec) * invDet;
+  if (u < 0.0 || u > 1.0) {
+    return hit;
+  }
+
+  vec3 qvec = cross(tvec, v0v1);
+  float v = dot(r.direction, qvec) * invDet;
+  if (v < 0.0 || u + v > 1.0) {
+    return hit;
+  }
+  
+  float t = dot(v0v2, qvec) * invDet;
+
+  if (t <= KEPSILON) {
+    return hit;
+  }
+
+  if (t < tMin || t > tMax) {
+    return hit;
+  }
+
+  hit.isHit = true;
+  hit.t = t;
+  hit.point = rayAt(r, t);
+  hit.uv = vec2(u, v);
+
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  hit.faceNormal = setFaceNormal(r.direction, outwardNormal);
 
   return hit;
 }
@@ -288,7 +336,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     int lightIndex = lightBvhNodes[currentNode].leftObjIndex;
     if (lightIndex >= 0) {
-      HitRecord tempHit = hitTriangle(lights[lightIndex].triangle, r, tMin, hit.t, 0);
+      HitRecord tempHit = hitLight(lights[lightIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -298,7 +346,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode].rightObjIndex;    
     if (lightIndex >= 0) {
-      HitRecord tempHit = hitTriangle(lights[lightIndex].triangle, r, tMin, hit.t, 0);
+      HitRecord tempHit = hitLight(lights[lightIndex].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
