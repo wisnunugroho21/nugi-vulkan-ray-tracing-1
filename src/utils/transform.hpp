@@ -9,10 +9,7 @@ namespace nugiEngine {
 		glm::vec4 scale{1.0f};
 		glm::vec4 rotation{0.0f};
 
-		glm::mat4 originTransfMatrix();
-    glm::mat4 inverseOriginTransfMatrix();
-    glm::mat4 directionTransfMatrix();
-    glm::mat4 inverseDirectionTransfMatrix();
-    glm::mat4 normalMatrix();
+		glm::mat4 rotationMatrix();
+    glm::mat4 inverseRotationMatrix();
 	};
 }

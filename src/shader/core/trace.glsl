@@ -29,7 +29,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 oc = r.origin - sphere.center.xyz;
+  vec3 oc = r.origin - sphere.center;
 
   float a = dot(r.direction, r.direction);
   float half_b = dot(oc, r.direction);
@@ -54,10 +54,10 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = (transformations[transformIndex].originTransfMatrix * vec4(rayAt(r, root), 1.0)).xyz;
+  hit.point = transformations[transformIndex].rotationMatrix * (rayAt(r, root) * transformations[transformIndex].scaleVector + transformations[transformIndex].translationVector); 
 
-  vec3 outwardNormal = (hit.point - sphere.center.xyz) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].normalMatrix * vec4(outwardNormal, 0.0)).xyz);
+  vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
+  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].rotationMatrix * (outwardNormal / transformations[transformIndex].scaleVector)));
   
   return hit;
 }
@@ -68,8 +68,8 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = tri.point1.xyz - tri.point0.xyz;
-  vec3 v0v2 = tri.point2.xyz - tri.point0.xyz;
+  vec3 v0v1 = tri.point1 - tri.point0;
+  vec3 v0v2 = tri.point2 - tri.point0;
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
@@ -79,7 +79,7 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
     
   float invDet = 1.0 / det;
 
-  vec3 tvec = r.origin - tri.point0.xyz;
+  vec3 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
     return hit;
@@ -103,11 +103,11 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = (transformations[transformIndex].originTransfMatrix * vec4(rayAt(r, t), 1.0)).xyz;
+  hit.point = transformations[transformIndex].rotationMatrix * (rayAt(r, t) * transformations[transformIndex].scaleVector + transformations[transformIndex].translationVector);
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].normalMatrix * vec4(outwardNormal, 0.0)).xyz);
+  hit.faceNormal = setFaceNormal(r.direction, normalize(transformations[transformIndex].rotationMatrix * (outwardNormal / transformations[transformIndex].scaleVector)));
 
   return hit;
 }
@@ -116,8 +116,8 @@ HitRecord hitLight(Triangle tri, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = tri.point1.xyz - tri.point0.xyz;
-  vec3 v0v2 = tri.point2.xyz - tri.point0.xyz;
+  vec3 v0v1 = tri.point1 - tri.point0;
+  vec3 v0v2 = tri.point2 - tri.point0;
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
@@ -127,7 +127,7 @@ HitRecord hitLight(Triangle tri, Ray r, float tMin, float tMax) {
     
   float invDet = 1.0 / det;
 
-  vec3 tvec = r.origin - tri.point0.xyz;
+  vec3 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0 || u > 1.0) {
     return hit;
@@ -188,8 +188,8 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   stack[0] = 0;
   stackIndex++;  
 
-  r.origin = (transformations[transformIndex].inverseOriginTransfMatrix * vec4(r.origin, 1.0)).xyz;
-  r.direction = (transformations[transformIndex].inverseDirectionTransfMatrix * vec4(r.direction, 1.0)).xyz;
+  r.origin = transformations[transformIndex].inverseRotationMatrix * (r.origin - transformations[transformIndex].translationVector) / transformations[transformIndex].scaleVector;
+  r.direction = transformations[transformIndex].inverseRotationMatrix * r.direction / transformations[transformIndex].scaleVector;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
@@ -198,7 +198,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
       continue;
     }
 
-    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex].minimum.xyz, primitiveBvhNodes[currentNode + firstBvhIndex].maximum.xyz)) {
+    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex].minimum, primitiveBvhNodes[currentNode + firstBvhIndex].maximum)) {
       continue;
     }
 
@@ -256,7 +256,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    if (!intersectAABB(r, objectBvhNodes[currentNode].minimum.xyz, objectBvhNodes[currentNode].maximum.xyz)) {
+    if (!intersectAABB(r, objectBvhNodes[currentNode].minimum, objectBvhNodes[currentNode].maximum)) {
       continue;
     }
 
@@ -330,7 +330,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
       continue;
     }
 
-    if (!intersectAABB(r, lightBvhNodes[currentNode].minimum.xyz, lightBvhNodes[currentNode].maximum.xyz)) {
+    if (!intersectAABB(r, lightBvhNodes[currentNode].minimum, lightBvhNodes[currentNode].maximum)) {
       continue;
     }
 
