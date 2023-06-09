@@ -19,8 +19,8 @@ namespace nugiEngine {
 
   // Axis-aligned bounding box.
   struct Aabb {
-    glm::vec4 min = glm::vec4{FLT_MAX};
-    glm::vec4 max = glm::vec4{-FLT_MAX};
+    glm::vec3 min = glm::vec3{FLT_MAX};
+    glm::vec3 max = glm::vec3{-FLT_MAX};
 
     int longestAxis();
     int randomAxis();

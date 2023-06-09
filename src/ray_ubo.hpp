@@ -7,13 +7,13 @@
 
 namespace nugiEngine {
   struct Triangle {
-    glm::vec4 point0;
-    glm::vec4 point1;
-    glm::vec4 point2;
+    alignas(16) glm::vec3 point0;
+    alignas(16) glm::vec3 point1;
+    alignas(16) glm::vec3 point2;
   };
 
   struct Sphere {
-    alignas(16) glm::vec4 center;
+    alignas(16)  alignas(16) glm::vec3 center;
     float radius;
   };
 
@@ -34,35 +34,35 @@ namespace nugiEngine {
     int leftObjIndex = -1;
     int rightObjIndex = -1;
 
-    glm::vec4 maximum;
-    glm::vec4 minimum;
+     alignas(16) glm::vec3 maximum;
+     alignas(16) glm::vec3 minimum;
   };
 
   struct Material {
-    alignas(16) glm::vec4 baseColor;
+    alignas(16)  glm::vec3 baseColor;
     float metallicness;
     float roughness;
     float fresnelReflect;
   };
 
   struct Transformation {
-    glm::vec4 translationVector;
-    glm::vec4 scaleVector;
-    glm::mat4 rotationMatrix{1.0f};
-    glm::mat4 inverseRotationMatrix{1.0f};
+    alignas(16) glm::vec3 translationVector;
+    alignas(16) glm::vec3 scaleVector;
+    alignas(16) glm::mat4 rotationMatrix{1.0f};
+    alignas(16) glm::mat4 inverseRotationMatrix{1.0f};
   };
 
   struct Light {
     Triangle triangle{};
-    alignas(16) glm::vec4 color;
+    alignas(16) glm::vec3 color;
   };
 
   struct RayTraceUbo {
-    glm::vec4 origin;
-    glm::vec4 horizontal;
-    glm::vec4 vertical;
-    glm::vec4 lowerLeftCorner;
-    glm::vec4 background;
+     alignas(16) glm::vec3 origin;
+     alignas(16) glm::vec3 horizontal;
+     alignas(16) glm::vec3 vertical;
+     alignas(16) glm::vec3 lowerLeftCorner;
+     alignas(16) glm::vec3 background;
   };
 
   struct RayTracePushConstant {
