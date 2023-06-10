@@ -13,7 +13,7 @@ namespace nugiEngine {
   };
 
   struct Sphere {
-    alignas(16)  alignas(16) glm::vec3 center;
+    alignas(16) glm::vec3 center;
     float radius;
   };
 
@@ -34,8 +34,8 @@ namespace nugiEngine {
     int leftObjIndex = -1;
     int rightObjIndex = -1;
 
-     alignas(16) glm::vec3 maximum;
-     alignas(16) glm::vec3 minimum;
+    alignas(16) glm::vec3 maximum;
+    alignas(16) glm::vec3 minimum;
   };
 
   struct Material {
@@ -46,10 +46,10 @@ namespace nugiEngine {
   };
 
   struct Transformation {
-    alignas(16) glm::vec3 translationVector;
-    alignas(16) glm::vec3 scaleVector;
-    alignas(16) glm::mat4 rotationMatrix{1.0f};
-    alignas(16) glm::mat4 inverseRotationMatrix{1.0f};
+    glm::vec4 translationVector{0.0f};
+    glm::vec4 scaleVector{0.0f};
+    glm::mat4 rotationMatrix{1.0f};
+    glm::mat4 inverseRotationMatrix{1.0f};
   };
 
   struct Light {
@@ -58,11 +58,11 @@ namespace nugiEngine {
   };
 
   struct RayTraceUbo {
-     alignas(16) glm::vec3 origin;
-     alignas(16) glm::vec3 horizontal;
-     alignas(16) glm::vec3 vertical;
-     alignas(16) glm::vec3 lowerLeftCorner;
-     alignas(16) glm::vec3 background;
+    alignas(16) glm::vec3 origin;
+    alignas(16) glm::vec3 horizontal;
+    alignas(16) glm::vec3 vertical;
+    alignas(16) glm::vec3 lowerLeftCorner;
+    alignas(16) glm::vec3 background;
   };
 
   struct RayTracePushConstant {

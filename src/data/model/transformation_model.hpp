@@ -24,8 +24,6 @@ namespace nugiEngine {
 		EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations);
 		EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformations);
 
-		~EngineTransformationModel();
-
 		EngineTransformationModel(const EngineTransformationModel&) = delete;
 		EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
 
