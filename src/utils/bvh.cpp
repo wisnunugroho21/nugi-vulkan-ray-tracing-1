@@ -55,7 +55,7 @@ namespace nugiEngine {
     auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
 
     auto newMin = glm::vec3{FLT_MAX};
-    auto newMax = glm::vec3{FLT_MIN};
+    auto newMax = glm::vec3{FLT_MIN};    
 
     for (int i = 0; i < 2; i++) {
       for (int j = 0; j < 2; j++) {
@@ -64,7 +64,7 @@ namespace nugiEngine {
           auto y = j * max.y + (1 - j) * min.y;
           auto z = k * max.z + (1 - k) * min.z;
 
-          auto newTransf = glm::mat3(this->transformation->rotationMatrix()) * (glm::vec3(x, y, z) * this->transformation->scale + this->transformation->translation);
+          auto newTransf = glm::mat3(this->transformation->rotationMatrix()) * glm::vec3(x, y, z);
 
           newMin = glm::min(newMin, newTransf);
           newMax = glm::max(newMax, newTransf);
@@ -72,9 +72,11 @@ namespace nugiEngine {
       }
     }
 
+    auto c = (newMax - newMin) / 2.0f + newMin;
+
     return Aabb {
-      newMin,
-      newMax
+      (newMin - c) * this->transformation->scale + c + this->transformation->translation,
+      (newMax - c) * this->transformation->scale + c + this->transformation->translation
     };
   }
 
