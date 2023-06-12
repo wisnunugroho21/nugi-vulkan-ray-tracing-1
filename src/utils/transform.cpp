@@ -8,12 +8,13 @@ namespace nugiEngine {
     curTransf = glm::translate(curTransf, this->translation);
     
     curTransf = glm::translate(curTransf, originScalePosition);
-    curTransf = glm::scale(curTransf, this->scale);
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);    
 
     curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     return curTransf;
   }
