@@ -78,19 +78,17 @@ namespace nugiEngine {
       }
     }
 
-    auto c = (newMax - newMin) / 2.0f + newMin;
     curTransf = glm::mat4{1.0f};
+    curTransf = glm::translate(curTransf, this->transformation->scale);
 
     auto originScalePosition = glm::vec3((newMax - newMin) / 2.0f + newMin);
     curTransf = glm::translate(curTransf, originScalePosition);
     curTransf = glm::scale(curTransf, this->transformation->scale);
     curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
-    curTransf = glm::translate(curTransf, this->transformation->scale);
-
     return Aabb {
-      curTransf * newMin,
-      curTransf * newMax
+      glm::vec3(curTransf * newMin),
+      glm::vec3(curTransf * newMax)
     };
   }
 
