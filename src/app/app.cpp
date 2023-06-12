@@ -165,6 +165,12 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 		this->objectModel->addObject(frontWallObject, frontWallPrimitives, transforms[transformIndex]);
 
+		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
 		// ----------------------------------------------------------------------------
 
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f)}));
@@ -189,6 +195,12 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
 		this->objectModel->addObject(firstBoxesObject, firstBoxesPrimitives, transforms[transformIndex]);
 
+		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
 		// ----------------------------------------------------------------------------
 
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(-18.0f), 0.0f)}));
@@ -212,6 +224,12 @@ namespace nugiEngine {
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives, transforms[transformIndex]);
+
+		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
 
 		// ----------------------------------------------------------------------------
 

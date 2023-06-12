@@ -1,59 +1,54 @@
 #include "transform.hpp"
 
 namespace nugiEngine {
-  glm::mat3 TransformComponent::rotationMatrix() {
-    const float c3 = glm::cos(this->rotation.z);
-    const float s3 = glm::sin(this->rotation.z);
-    const float c2 = glm::cos(this->rotation.y);
-    const float s2 = glm::sin(this->rotation.y);
-    const float c1 = glm::cos(this->rotation.x);
-    const float s1 = glm::sin(this->rotation.x);
+  glm::mat4 TransformComponent::getPointMatrix() {
+    glm::mat4 curTransf = glm::mat4{1.0f};
 
-    return glm::mat3{
-      {
-        (c1 * c2),
-        (s1 * c2),
-        (-s2)
-      },
-      {
-        (c1 * s2 * s3 - s1 * c3),
-        (s1 * s2 * s3 + c1 * c3),
-        (c2 * s3)
-      },
-      {
-        (c1 * s2 * c3 + s1 * s3),
-        (s1 * s2 * c3 - c1 * s3),
-        (c2 * c3)
-      }
-    };
+    curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, originScalePosition);
+
+    curTransf = glm::translate(curTransf, this->translation);
+    return curTransf;
   }
 
-  glm::mat3 TransformComponent::inverseRotationMatrix() {
-    const float c3 = glm::cos(this->rotation.z);
-    const float s3 = glm::sin(this->rotation.z);
-    const float c2 = glm::cos(this->rotation.y);
-    const float s2 = glm::sin(this->rotation.y);
-    const float c1 = glm::cos(this->rotation.x);
-    const float s1 = glm::sin(this->rotation.x);
+  glm::mat4 TransformComponent::getPointInverseMatrix() {
+    return glm::inverse(this->getPointMatrix());
+  }
 
-    auto rotMat = glm::mat3{
-      {
-        (c1 * c2),
-        (s1 * c2),
-        (-s2)
-      },
-      {
-        (c1 * s2 * s3 - s1 * c3),
-        (s1 * s2 * s3 + c1 * c3),
-        (c2 * s3)
-      },
-      {
-        (c1 * s2 * c3 + s1 * s3),
-        (s1 * s2 * c3 - c1 * s3),
-        (c2 * c3)
-      }
-    };
+  glm::mat4 TransformComponent::getDirInverseMatrix() {
+    glm::mat4 curTransf = glm::mat4{1.0f};
 
-    return glm::inverse(rotMat);
+    curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, originScalePosition);
+
+    curTransf = glm::inverse(curTransf);
+    return curTransf;
+  }
+
+  glm::mat4 TransformComponent::getNormalMatrix() {
+    glm::mat4 curTransf = glm::mat4{1.0f};
+
+    curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, originScalePosition);
+
+    return glm::inverseTranspose(curTransf);
   }
 } // namespace nugiEngine

@@ -39,17 +39,17 @@ namespace nugiEngine {
   };
 
   struct Material {
-    alignas(16)  glm::vec3 baseColor;
+    alignas(16) glm::vec3 baseColor;
     float metallicness;
     float roughness;
     float fresnelReflect;
   };
 
   struct Transformation {
-    glm::vec4 translationVector{0.0f};
-    glm::vec4 scaleVector{0.0f};
-    glm::mat4 rotationMatrix{1.0f};
-    glm::mat4 inverseRotationMatrix{1.0f};
+    glm::mat4 pointMatrix{1.0f};
+    glm::mat4 pointInverseMatrix{1.0f};
+    glm::mat4 dirInverseMatrix{1.0f};
+    glm::mat4 normalInverseMatrix{1.0f};
   };
 
   struct Light {
