@@ -54,7 +54,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, root), 0.0)).xyz; 
+  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, root), 1.0)).xyz; 
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
   hit.faceNormal = setFaceNormal(r.direction, (transformations[transformIndex].normalMatrix * vec4(outwardNormal, 0.0)).xyz);
@@ -103,7 +103,7 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 0.0)).xyz;
+  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0)).xyz;
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));

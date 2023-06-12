@@ -109,13 +109,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
-
-		// ----------------------------------------------------------------------------
-
-		int transformIndex = static_cast<int>(transforms.size() - 1);
-
 		// kanan
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		int transformIndex = static_cast<int>(transforms.size() - 1);
+		
 		auto rightWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		std::vector<std::shared_ptr<Primitive>> rightWallPrimitives;
 
@@ -124,8 +121,19 @@ namespace nugiEngine {
 		
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 		this->objectModel->addObject(rightWallObject, rightWallPrimitives, transforms[transformIndex]);
+
+		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
+		// ----------------------------------------------------------------------------
 		
 		// kiri
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transformIndex = static_cast<int>(transforms.size() - 1);
+
 		auto leftWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		std::vector<std::shared_ptr<Primitive>> leftWallPrimitives{};
 
@@ -134,8 +142,19 @@ namespace nugiEngine {
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		this->objectModel->addObject(leftWallObject, leftWallPrimitives, transforms[transformIndex]);
+
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
+		// ----------------------------------------------------------------------------
 		
 		// bawah
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transformIndex = static_cast<int>(transforms.size() - 1);
+
 		auto bottomWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		std::vector<std::shared_ptr<Primitive>> bottomWallPrimitives{};
 
@@ -144,8 +163,19 @@ namespace nugiEngine {
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		this->objectModel->addObject(bottomWallObject, bottomWallPrimitives, transforms[transformIndex]);
+
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
+		// ----------------------------------------------------------------------------
 		
 		// atas
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transformIndex = static_cast<int>(transforms.size() - 1);
+
 		auto topWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		std::vector<std::shared_ptr<Primitive>> topWallPrimitives{};
 
@@ -154,8 +184,19 @@ namespace nugiEngine {
 
 		this->primitiveModel->addPrimitive(topWallPrimitives);		
 		this->objectModel->addObject(topWallObject, topWallPrimitives, transforms[transformIndex]);
+
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+
+		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
+		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+
+		// ----------------------------------------------------------------------------
 		
 		//// depan
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transformIndex = static_cast<int>(transforms.size() - 1);
+
 		auto frontWallObject = std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		std::vector<std::shared_ptr<Primitive>> frontWallPrimitives{};
 
@@ -165,8 +206,8 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 		this->objectModel->addObject(frontWallObject, frontWallPrimitives, transforms[transformIndex]);
 
-		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
 
 		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
 		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
@@ -195,8 +236,8 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
 		this->objectModel->addObject(firstBoxesObject, firstBoxesPrimitives, transforms[transformIndex]);
 
-		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
 
 		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
 		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
@@ -225,8 +266,8 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives, transforms[transformIndex]);
 
-		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
 
 		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
 		transforms[transformIndex]->objectMinimum = objectBoundBox.min;

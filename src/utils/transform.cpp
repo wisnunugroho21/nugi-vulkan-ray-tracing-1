@@ -9,9 +9,9 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
     auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
-    curTransf = glm::scale(curTransf, this->scale);
     curTransf = glm::translate(curTransf, originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     curTransf = glm::translate(curTransf, this->translation);
     return curTransf;
@@ -29,9 +29,9 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
     auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
-    curTransf = glm::scale(curTransf, this->scale);
     curTransf = glm::translate(curTransf, originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     curTransf = glm::inverse(curTransf);
     return curTransf;
@@ -45,9 +45,9 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
     auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
-    curTransf = glm::scale(curTransf, this->scale);
     curTransf = glm::translate(curTransf, originScalePosition);
+    curTransf = glm::scale(curTransf, this->scale);
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     return glm::inverseTranspose(curTransf);
   }
