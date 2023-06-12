@@ -24,11 +24,8 @@ namespace nugiEngine {
 
   glm::mat4 TransformComponent::getDirInverseMatrix() {
     auto curTransf = glm::mat4{1.0f};
-    auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
 
-    curTransf = glm::translate(curTransf, originScalePosition);
     curTransf = glm::scale(curTransf, this->scale);
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -40,11 +37,8 @@ namespace nugiEngine {
 
   glm::mat4 TransformComponent::getNormalMatrix() {
     auto curTransf = glm::mat4{1.0f};
-    auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
 
-    curTransf = glm::translate(curTransf, originScalePosition);
     curTransf = glm::scale(curTransf, this->scale);
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
 
     curTransf = glm::rotate(curTransf, this->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
