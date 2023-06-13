@@ -177,7 +177,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return tNear < tFar;
 }
 
-HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int firstPrimitiveIndex, int transformIndex, vec3 objectMinimum, vec3 objectMaximum) {
+HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int firstPrimitiveIndex, int transformIndex) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -262,7 +262,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
     int objIndex = objectBvhNodes[currentNode].leftObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex, objectBvhNodes[currentNode].minimum, objectBvhNodes[currentNode].maximum);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -271,7 +271,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
     objIndex = objectBvhNodes[currentNode].rightObjIndex;
     if (objIndex >= 0) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex, objectBvhNodes[currentNode].minimum, objectBvhNodes[currentNode].maximum);
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex].firstBvhIndex, objects[objIndex].firstPrimitiveIndex, objects[objIndex].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
