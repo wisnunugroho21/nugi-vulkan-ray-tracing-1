@@ -54,6 +54,17 @@ namespace nugiEngine {
     auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps;
     auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
 
+    auto curTransf = glm::mat4{ 1.0f };
+    auto originScalePosition = glm::vec3((max - min) / 2.0f + min);
+
+    curTransf = glm::translate(curTransf, originScalePosition);
+
+    curTransf = glm::rotate(curTransf, this->transformation->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->transformation->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    curTransf = glm::rotate(curTransf, this->transformation->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
+
     auto newMin = glm::vec4{FLT_MAX, FLT_MAX, FLT_MAX, 1.0f};
     auto newMax = glm::vec4{FLT_MIN, FLT_MIN, FLT_MIN, 1.0f};
 
@@ -64,17 +75,6 @@ namespace nugiEngine {
           auto y = j * max.y + (1 - j) * min.y;
           auto z = k * max.z + (1 - k) * min.z;
 
-          auto curTransf = glm::mat4{ 1.0f };
-          auto originScalePosition = glm::vec3((max - min) / 2.0f + min);
-
-          curTransf = glm::translate(curTransf, originScalePosition);
-
-          curTransf = glm::rotate(curTransf, this->transformation->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-          curTransf = glm::rotate(curTransf, this->transformation->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-          curTransf = glm::rotate(curTransf, this->transformation->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
-
-          curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
-
           auto newTransf = curTransf * glm::vec4(x, y, z, 1.0f);
 
           newMin = glm::min(newMin, newTransf);
@@ -83,10 +83,10 @@ namespace nugiEngine {
       }
     }
 
-    auto curTransf = glm::mat4{1.0f};
+    curTransf = glm::mat4{1.0f};
     curTransf = glm::translate(curTransf, this->transformation->scale);
 
-    auto originScalePosition = glm::vec3((newMax - newMin) / 2.0f + newMin);
+    originScalePosition = glm::vec3((newMax - newMin) / 2.0f + newMin);
     curTransf = glm::translate(curTransf, originScalePosition);
     curTransf = glm::scale(curTransf, this->transformation->scale);
     curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
