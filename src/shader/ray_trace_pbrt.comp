@@ -96,7 +96,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint a
 
   int triangleRand = randomInt(0, 2, 0, additionalRandomSeed);
 
-  if (triangleRand == 0) {
+  if (triangleRand < 2) {
     scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
   } else {
     scat.nextRay.direction = lambertGenerateRandom(buildOnb(hit.normal), additionalRandomSeed);
