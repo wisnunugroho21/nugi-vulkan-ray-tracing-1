@@ -92,6 +92,9 @@ namespace nugiEngine {
     };
   }
 
+  glm::vec3 ObjectBoundBox::getOriginalMin() { return glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps; }
+  glm::vec3 ObjectBoundBox::getOriginalMax() { return glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps; }
+
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
     for (auto &&primitive : this->primitives) {
