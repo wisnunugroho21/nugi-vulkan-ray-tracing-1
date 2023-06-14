@@ -14,19 +14,25 @@ namespace nugiEngine {
 
   struct Sphere {
     alignas(16) glm::vec3 center;
-    alignas(4) float radius;
+    float radius;
+  };
+
+  struct Primitive {
+    alignas(16) Triangle triangle{};
+    int materialIndex;
   };
 
   struct Object {
-    Triangle triangle{};
-    alignas(4) uint32_t materialIndex;
+    int firstBvhIndex;
+    int firstPrimitiveIndex;
+    int transformIndex;
   };
 
   struct BvhNode {
-    alignas(4) int leftNode = -1;
-    alignas(4) int rightNode = -1;
-    alignas(4) int leftObjIndex = -1;
-    alignas(4) int rightObjIndex = -1;
+    int leftNode = -1;
+    int rightNode = -1;
+    int leftObjIndex = -1;
+    int rightObjIndex = -1;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;
@@ -34,9 +40,16 @@ namespace nugiEngine {
 
   struct Material {
     alignas(16) glm::vec3 baseColor;
-    alignas(4) float metallicness;
-    alignas(4) float roughness;
-    alignas(4) float fresnelReflect;
+    float metallicness;
+    float roughness;
+    float fresnelReflect;
+  };
+
+  struct Transformation {
+    glm::mat4 pointMatrix{1.0f};
+    glm::mat4 pointInverseMatrix{1.0f};
+    glm::mat4 dirInverseMatrix{1.0f};
+    glm::mat4 normalInverseMatrix{1.0f};
   };
 
   struct Light {
@@ -53,7 +66,7 @@ namespace nugiEngine {
   };
 
   struct RayTracePushConstant {
-    alignas(4) uint32_t randomSeed;
+    uint32_t randomSeed;
   };
 
   struct BvhData {

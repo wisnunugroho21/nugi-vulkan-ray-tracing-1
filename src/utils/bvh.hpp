@@ -3,9 +3,11 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "../utils/sort.hpp"
 #include "../ray_ubo.hpp"
+#include "transform.hpp"
 
 #include <vector>
 #include <memory>
@@ -18,8 +20,8 @@ namespace nugiEngine {
 
   // Axis-aligned bounding box.
   struct Aabb {
-    glm::vec3 min = {FLT_MAX, FLT_MAX, FLT_MAX};
-    glm::vec3 max = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+    glm::vec3 min = glm::vec3{FLT_MAX};
+    glm::vec3 max = glm::vec3{FLT_MIN};
 
     int longestAxis();
     int randomAxis();
@@ -32,36 +34,56 @@ namespace nugiEngine {
     BoundBox(int i) : index{i} {}
 
     virtual Aabb boundingBox() = 0;
+
+    virtual glm::vec3 getOriginalMin() { return glm::vec3(0.0f); }
+    virtual glm::vec3 getOriginalMax() { return glm::vec3(0.0f); }
   };
 
   struct TriangleBoundBox : BoundBox {
-    std::shared_ptr<Triangle> t;
+    std::shared_ptr<Triangle> triangles;
 
-    TriangleBoundBox(int i, std::shared_ptr<Triangle> t) : BoundBox(i), t{t} {}
+    TriangleBoundBox(int i, std::shared_ptr<Triangle> t) : BoundBox(i), triangles{t} {}
 
     Aabb boundingBox();
   };
 
   struct SphereBoundBox : BoundBox {
-    std::shared_ptr<Sphere> s;
+    std::shared_ptr<Sphere> spheres;
 
-    SphereBoundBox(int i, std::shared_ptr<Sphere> s) : BoundBox(i), s{s} {}
+    SphereBoundBox(int i, std::shared_ptr<Sphere> s) : BoundBox(i), spheres{s} {}
+
+    Aabb boundingBox();
+  };
+
+  struct PrimitiveBoundBox : BoundBox {
+    std::shared_ptr<Primitive> primitives;
+
+    PrimitiveBoundBox(int i, std::shared_ptr<Primitive> p) : BoundBox(i), primitives{p} {}
 
     Aabb boundingBox();
   };
 
   struct ObjectBoundBox : BoundBox {
-    std::shared_ptr<Object> o;
+    std::shared_ptr<Object> objects;
+    std::shared_ptr<TransformComponent> transformation;
+    std::vector<std::shared_ptr<Primitive>> primitives{};
 
-    ObjectBoundBox(int i, std::shared_ptr<Object> o) : BoundBox(i), o{o} {}
+    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
 
+    glm::vec3 getOriginalMin();
+    glm::vec3 getOriginalMax();
+    
     Aabb boundingBox();
+
+    private:
+      float findMax(uint32_t index);
+      float findMin(uint32_t index);
   };
 
   struct LightBoundBox : BoundBox {
-    std::shared_ptr<Light> l;
+    std::shared_ptr<Light> lights;
 
-    LightBoundBox(int i, std::shared_ptr<Light> l) : BoundBox(i), l{l} {}
+    LightBoundBox(int i, std::shared_ptr<Light> l) : BoundBox(i), lights{l} {}
 
     Aabb boundingBox();
   };
@@ -84,10 +106,10 @@ namespace nugiEngine {
   bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  int findObjectSplitIndex(BvhItemBuild node, int axis, float length);
+  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length);
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<BvhNode> createBvh(const std::vector<std::shared_ptr<BoundBox>> srcObjects);
+  std::vector<std::shared_ptr<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes);
 
 }// namespace nugiEngine 

@@ -30,11 +30,9 @@ namespace nugiEngine {
 		
 	private:
 		EngineDevice &engineDevice;
-		
     std::shared_ptr<EngineBuffer> materialBuffer;
 
     MaterialData createMaterialData(std::vector<std::shared_ptr<Material>> materials);
-
     void createBuffers(MaterialData &data);
 	};
 } // namespace nugiEngine

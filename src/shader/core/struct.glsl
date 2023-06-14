@@ -1,5 +1,7 @@
 // ------------- Struct ------------- 
 
+// ---------------------- buffer struct ----------------------
+
 struct Sphere {
   vec3 center;
   float radius;
@@ -11,9 +13,15 @@ struct Triangle {
   vec3 point2;
 };
 
-struct Object {
+struct Primitive {
   Triangle triangle;
-  uint materialIndex;
+  int materialIndex;
+};
+
+struct Object {
+  int firstBvhIndex;
+  int firstPrimitiveIndex;
+  int transformIndex;
 };
 
 struct Light {
@@ -38,10 +46,14 @@ struct Material {
   float fresnelReflect;
 };
 
-struct Transform {
-  mat4 modelMatrix;
-	mat4 normalMatrix;
+struct Transformation {
+  mat4 pointMatrix;
+  mat4 pointInverseMatrix;
+  mat4 dirInverseMatrix;
+  mat4 normalMatrix;
 };
+
+// ---------------------- internal struct ----------------------
 
 struct Ray {
   vec3 origin;
@@ -54,24 +66,23 @@ struct FaceNormal {
 };
 
 struct MaterialHitRecord {
-  uint materialType;
-  uint materialIndex;
+  int materialType;
+  int materialIndex;
 };
 
 struct HitRecord {
   bool isHit;
-  uint objIndex;
+  int hitIndex;
 
   float t;
   vec3 point;
+  vec3 normal;
   vec2 uv;
-
-  FaceNormal faceNormal;
 };
 
 struct ShadeRecord {
-  vec3 colorAttenuation;  
-  Ray raySpecular;
+  vec3 radiance;  
+  Ray nextRay;
   float pdf;
 };
 
