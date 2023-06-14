@@ -84,7 +84,7 @@ namespace nugiEngine {
     }
 
     curTransf = glm::mat4{1.0f};
-    curTransf = glm::translate(curTransf, this->transformation->scale);
+    curTransf = glm::translate(curTransf, this->transformation->translation);
 
     originScalePosition = glm::vec3((newMax - newMin) / 2.0f + newMin);
     curTransf = glm::translate(curTransf, originScalePosition);
