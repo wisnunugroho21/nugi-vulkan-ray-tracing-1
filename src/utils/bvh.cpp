@@ -51,8 +51,8 @@ namespace nugiEngine {
   }
 
   Aabb ObjectBoundBox::boundingBox() {
-    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps;
-    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps;
+    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
+    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
 
     auto curTransf = glm::mat4{ 1.0f };
     auto originScalePosition = glm::vec3((max - min) / 2.0f + min);
@@ -87,13 +87,13 @@ namespace nugiEngine {
     }
 
     return Aabb {
-      glm::vec3(newMin),
-      glm::vec3(newMax)
+      glm::vec3(newMin) - eps,
+      glm::vec3(newMax) + eps
     };
   }
 
-  glm::vec3 ObjectBoundBox::getOriginalMin() { return glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps; }
-  glm::vec3 ObjectBoundBox::getOriginalMax() { return glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps; }
+  glm::vec3 ObjectBoundBox::getOriginalMin() { return glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)); }
+  glm::vec3 ObjectBoundBox::getOriginalMax() { return glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)); }
 
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
