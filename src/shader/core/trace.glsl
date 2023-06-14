@@ -57,7 +57,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, root), 1.0)).xyz; 
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
-  hit.faceNormal = setFaceNormal(r.direction, (transformations[transformIndex].normalMatrix * vec4(outwardNormal, 0.0)).xyz);
+  hit.faceNormal = setFaceNormal(normalize(r.direction), normalize(mat3(transformations[transformIndex].normalMatrix) * outwardNormal));
   
   return hit;
 }
@@ -106,8 +106,8 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0)).xyz;
   hit.uv = vec2(u, v);
 
-  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.faceNormal = setFaceNormal(r.direction, (transformations[transformIndex].normalMatrix * vec4(outwardNormal, 0.0)).xyz);
+  vec3 outwardNormal = cross(v0v1, v0v2);
+  hit.faceNormal = setFaceNormal(normalize(r.direction), normalize(mat3(transformations[transformIndex].normalMatrix) * outwardNormal));
 
   return hit;
 }
@@ -189,7 +189,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
   stackIndex++;  
 
   r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0)).xyz;
-  r.direction = (transformations[transformIndex].dirInverseMatrix * vec4(r.direction, 0.0)).xyz;
+  r.direction = mat3(transformations[transformIndex].dirInverseMatrix) * r.direction;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;

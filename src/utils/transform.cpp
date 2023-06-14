@@ -32,8 +32,7 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    curTransf = glm::inverse(curTransf);
-    return curTransf;
+    return glm::mat4(glm::inverse(glm::mat3(curTransf)));
   }
 
   glm::mat4 TransformComponent::getNormalMatrix() {
@@ -45,6 +44,6 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    return glm::inverseTranspose(curTransf);
+    return glm::mat4(glm::inverseTranspose(glm::mat3(curTransf)));
   }
 } // namespace nugiEngine
