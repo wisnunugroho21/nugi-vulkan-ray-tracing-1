@@ -123,10 +123,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(rightWallObject, rightWallPrimitives, transforms[transformIndex]);
 
 		auto objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		auto objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
@@ -144,10 +144,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(leftWallObject, leftWallPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
@@ -165,10 +165,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(bottomWallObject, bottomWallPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
@@ -186,10 +186,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(topWallObject, topWallPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
@@ -207,10 +207,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(frontWallObject, frontWallPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
@@ -237,10 +237,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(firstBoxesObject, firstBoxesPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
@@ -267,10 +267,10 @@ namespace nugiEngine {
 		this->objectModel->addObject(secondBoxesObject, secondBoxesPrimitives, transforms[transformIndex]);
 
 		objectIndex = static_cast<int>(this->objectModel->getBoundBoxes().size() - 1);
-		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex]->boundingBox();
+		objectBoundBox = this->objectModel->getBoundBoxes()[objectIndex];
 
-		transforms[transformIndex]->objectMaximum = objectBoundBox.max;
-		transforms[transformIndex]->objectMinimum = objectBoundBox.min;
+		transforms[transformIndex]->objectMaximum = objectBoundBox->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = objectBoundBox->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 

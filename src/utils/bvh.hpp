@@ -34,6 +34,9 @@ namespace nugiEngine {
     BoundBox(int i) : index{i} {}
 
     virtual Aabb boundingBox() = 0;
+
+    glm::vec3 getOriginalMin() { return glm::vec3(0.0f); }
+    glm::vec3 getOriginalMax() { return glm::vec3(0.0f); }
   };
 
   struct TriangleBoundBox : BoundBox {
@@ -67,6 +70,9 @@ namespace nugiEngine {
 
     ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
 
+    glm::vec3 getOriginalMin() { return glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)) - eps; }
+    glm::vec3 getOriginalMax() { return glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)) + eps; }
+    
     Aabb boundingBox();
 
     private:

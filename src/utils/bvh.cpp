@@ -57,7 +57,10 @@ namespace nugiEngine {
     auto curTransf = glm::mat4{ 1.0f };
     auto originScalePosition = glm::vec3((max - min) / 2.0f + min);
 
+    curTransf = glm::translate(curTransf, this->transformation->translation);
+    
     curTransf = glm::translate(curTransf, originScalePosition);
+    curTransf = glm::scale(curTransf, this->transformation->scale);    
 
     curTransf = glm::rotate(curTransf, this->transformation->rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->transformation->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -83,22 +86,14 @@ namespace nugiEngine {
       }
     }
 
-    curTransf = glm::mat4{1.0f};
-    curTransf = glm::translate(curTransf, this->transformation->translation);
-
-    originScalePosition = glm::vec3((newMax - newMin) / 2.0f + newMin);
-    curTransf = glm::translate(curTransf, originScalePosition);
-    curTransf = glm::scale(curTransf, this->transformation->scale);
-    curTransf = glm::translate(curTransf, -1.0f * originScalePosition);
-
     return Aabb {
-      glm::vec3(curTransf * newMin),
-      glm::vec3(curTransf * newMax)
+      glm::vec3(newMin),
+      glm::vec3(newMax)
     };
   }
 
   float ObjectBoundBox::findMax(uint32_t index) {
-    float max = -999.0f;
+    float max = FLT_MIN;
     for (auto &&primitive : this->primitives) {
       if (primitive->triangle.point0[index] > max) max = primitive->triangle.point0[index];
       if (primitive->triangle.point1[index] > max) max = primitive->triangle.point1[index];
@@ -109,7 +104,7 @@ namespace nugiEngine {
   }
 
   float ObjectBoundBox::findMin(uint32_t index) {
-    float min = 999.0f;
+    float min = FLT_MAX;
     for (auto &&primitive : this->primitives) {
       if (primitive->triangle.point0[index] < min) min = primitive->triangle.point0[index];
       if (primitive->triangle.point1[index] < min) min = primitive->triangle.point1[index];
