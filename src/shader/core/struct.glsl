@@ -76,14 +76,13 @@ struct HitRecord {
 
   float t;
   vec3 point;
+  vec3 normal;
   vec2 uv;
-
-  FaceNormal faceNormal;
 };
 
 struct ShadeRecord {
   vec3 radiance;  
-  Ray raySpecular;
+  Ray nextRay;
   float pdf;
 };
 

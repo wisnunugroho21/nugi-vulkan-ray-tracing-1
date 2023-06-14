@@ -1,6 +1,6 @@
 // ------------- Sphere ------------- 
 
-FaceNormal sphereFaceNormal(Sphere obj, vec3 hitPoint, vec3 rayDirection) {
+vec3 sphereFaceNormal(Sphere obj, vec3 hitPoint, vec3 rayDirection) {
   vec3 outwardNormal = (hitPoint - obj.center) / obj.radius;
   return setFaceNormal(rayDirection, outwardNormal);
 }
@@ -26,7 +26,7 @@ vec3 sphereGenerateRandom(Sphere sphere, vec3 origin, uint additionalRandomSeed)
 
 // ------------- Triangle -------------
 
-FaceNormal triangleFaceNormal(Triangle obj, vec3 rayDirection) {
+vec3 triangleFaceNormal(Triangle obj, vec3 rayDirection) {
   vec3 v0v1 = obj.point1 - obj.point0;
   vec3 v0v2 = obj.point2 - obj.point0;
 

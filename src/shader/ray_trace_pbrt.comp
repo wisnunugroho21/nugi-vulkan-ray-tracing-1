@@ -67,19 +67,19 @@ uvec2 imgSize = uvec2(imageSize(targetImage));
 
 ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
   ShadeRecord scat;
-  scat.raySpecular.origin = hit.point;
+  scat.nextRay.origin = hit.point;
 
   vec3 unitViewDirection = normalize(r.direction);
   float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect);
 
-  vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, hit.faceNormal.normal));
-  scat.raySpecular.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness, additionalRandomSeed);
+  vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, hit.normal));
+  scat.nextRay.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness, additionalRandomSeed);
 
-  vec3 H = normalize(scat.raySpecular.direction - r.direction); // half vector
+  vec3 H = normalize(scat.nextRay.direction - r.direction); // half vector
 
-  float NoL = max(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.001);
-  float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001);
-  float NoH = max(dot(hit.faceNormal.normal, H), 0.001);
+  float NoL = max(dot(hit.normal, normalize(scat.nextRay.direction)), 0.001);
+  float NoV = max(dot(hit.normal, -1.0 * unitViewDirection), 0.001);
+  float NoH = max(dot(hit.normal, H), 0.001);
   float VoH = max(dot(unitViewDirection, H), 0.001);
 
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
@@ -92,17 +92,17 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint addit
 
 ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
   ShadeRecord scat;
-  scat.raySpecular.origin = hit.point;
+  scat.nextRay.origin = hit.point;
 
   int triangleRand = randomInt(0, 2, 0, additionalRandomSeed);
 
   if (triangleRand == 0) {
-    scat.raySpecular.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
+    scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
   } else {
-    scat.raySpecular.direction = lambertGenerateRandom(buildOnb(hit.faceNormal.normal), additionalRandomSeed);
+    scat.nextRay.direction = lambertGenerateRandom(buildOnb(hit.normal), additionalRandomSeed);
   }
 
-  float NoL = max(dot(hit.faceNormal.normal, normalize(scat.raySpecular.direction)), 0.001);
+  float NoL = max(dot(hit.normal, normalize(scat.nextRay.direction)), 0.001);
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
@@ -126,18 +126,18 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    FaceNormal hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
 
-    float NloL = max(dot(hittedLightFaceNormal.normal, -1.0 * unitLightDirection), 0.001);
-    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);    
+    float NloL = max(dot(hittedLightFaceNormal, -1.0 * unitLightDirection), 0.001);
+    float NoL = max(dot(hit.normal, unitLightDirection), 0.001);    
 
     vec3 unitViewDirection = normalize(r.direction);
     vec3 H = normalize(shadowRay.direction - r.direction); // half vector
 
     float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect);
     
-    float NoV = max(dot(hit.faceNormal.normal, -1.0 * unitViewDirection), 0.001);
-    float NoH = max(dot(hit.faceNormal.normal, H), 0.001);
+    float NoV = max(dot(hit.normal, -1.0 * unitViewDirection), 0.001);
+    float NoH = max(dot(hit.normal, H), 0.001);
     float VoH = max(dot(unitViewDirection, H), 0.001);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
@@ -166,10 +166,10 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    FaceNormal hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
 
-    float NloL = max(dot(hittedLightFaceNormal.normal, -1.0 * unitLightDirection), 0.001);
-    float NoL = max(dot(hit.faceNormal.normal, unitLightDirection), 0.001);    
+    float NloL = max(dot(hittedLightFaceNormal, -1.0 * unitLightDirection), 0.001);
+    float NoL = max(dot(hit.normal, unitLightDirection), 0.001);    
 
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
     float area = areaTriangle(lights[lightIndex].triangle);
@@ -234,7 +234,7 @@ void main() {
     totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance * directShadeResult.pdf / totalPdf;
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
-    curRay = indirectShadeResult.raySpecular;
+    curRay = indirectShadeResult.nextRay;
   }
   
   imageStore(targetImage, ivec2(imgPosition), vec4(totalRadiance, 1.0));
