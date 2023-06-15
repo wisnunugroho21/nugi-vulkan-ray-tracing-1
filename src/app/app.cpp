@@ -101,7 +101,6 @@ namespace nugiEngine {
 
 	void EngineApp::loadObjects() {
 		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device);
 
 		std::vector<std::shared_ptr<Object>> objects{};
     std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
