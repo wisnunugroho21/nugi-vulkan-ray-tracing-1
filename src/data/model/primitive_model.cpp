@@ -97,6 +97,36 @@ namespace nugiEngine {
 
 		std::vector<std::shared_ptr<Primitive>> primitives{};
 
+		for (const auto &shape: shapes) {
+			uint32_t numTriangle = shape.mesh.indices.size() / 3;
+
+			for (uint32_t i = 0; i < numTriangle; i++) {
+				int vertexIndex0 = shape.mesh.indices[3 * i + 0].vertex_index;
+				int vertexIndex1 = shape.mesh.indices[3 * i + 1].vertex_index;
+				int vertexIndex2 = shape.mesh.indices[3 * i + 2].vertex_index;
+				
+				glm::vec3 point1 = {
+					attrib.vertices[3 * vertexIndex0 + 0],
+					attrib.vertices[3 * vertexIndex0 + 1],
+					attrib.vertices[3 * vertexIndex0 + 2]
+				};
+
+				glm::vec3 point2 = {
+					attrib.vertices[3 * vertexIndex1 + 0],
+					attrib.vertices[3 * vertexIndex1 + 1],
+					attrib.vertices[3 * vertexIndex1 + 2]
+				};
+
+				glm::vec3 point3 = {
+					attrib.vertices[3 * vertexIndex2 + 0],
+					attrib.vertices[3 * vertexIndex2 + 1],
+					attrib.vertices[3 * vertexIndex2 + 2]
+				};
+
+				primitives.emplace_back(std::make_shared<Object>( Primitive{ Triangle{point1, point2, point3}, 1 } ));
+			}
+		}
+
 
 		return primitives;
 	} 
