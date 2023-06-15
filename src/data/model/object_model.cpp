@@ -7,17 +7,16 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
-	void EngineObjectModel::addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives, std::shared_ptr<TransformComponent> transformation) {
-		this->objects.emplace_back(object);
-		this->boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(this->boundBoxes.size()), object, primitives, transformation }));
+	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
+		this->createBuffers(objects, boundBoxes);
 	}
 
-	void EngineObjectModel::createBuffers() {
-		auto bvhNodes = createBvh(this->boundBoxes);
+	void EngineObjectModel::createBuffers(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) {
+		auto bvhNodes = createBvh(boundBoxes);
 
 		ObjectData data{};
-		for (int i = 0; i < this->objects.size(); i++) {
-			data.objects[i] = *this->objects[i];
+		for (int i = 0; i < objects.size(); i++) {
+			data.objects[i] = *objects[i];
 		}
 
 		BvhData bvh{};

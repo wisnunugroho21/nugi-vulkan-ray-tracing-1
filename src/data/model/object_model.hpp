@@ -21,23 +21,17 @@ namespace nugiEngine {
 
 	class EngineObjectModel {
 	public:
-		EngineObjectModel(EngineDevice &device) : engineDevice{device} {}
+		EngineObjectModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {}
 
     VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
     VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
-
-    std::vector<std::shared_ptr<BoundBox>> getBoundBoxes() const { return this->boundBoxes; }
-
-    void addObject(std::shared_ptr<Object> object, std::vector<std::shared_ptr<Primitive>> primitives, std::shared_ptr<TransformComponent> transformation);
-    void createBuffers();
-		
+    
 	private:
 		EngineDevice &engineDevice;
-
-    std::vector<std::shared_ptr<Object>> objects{};
-    std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		
     std::shared_ptr<EngineBuffer> objectBuffer;
     std::shared_ptr<EngineBuffer> bvhBuffer;
+
+    void createBuffers(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
 	};
 } // namespace nugiEngine
