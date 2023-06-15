@@ -180,7 +180,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		int objectIndex = static_cast<int>(objects.size() - 1);
+		objectIndex = static_cast<int>(objects.size() - 1);
 
 		std::vector<std::shared_ptr<Primitive>> topWallPrimitives{};
 		topWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
@@ -189,7 +189,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], topWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -201,7 +201,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		int objectIndex = static_cast<int>(objects.size() - 1);
+		objectIndex = static_cast<int>(objects.size() - 1);
 
 		std::vector<std::shared_ptr<Primitive>> frontWallPrimitives{};
 		frontWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
@@ -210,7 +210,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -221,7 +221,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		int objectIndex = static_cast<int>(objects.size() - 1);
+		objectIndex = static_cast<int>(objects.size() - 1);
 
 		std::vector<std::shared_ptr<Primitive>> firstBoxesPrimitives{};
 		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 0 }));
@@ -240,7 +240,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -251,7 +251,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		int objectIndex = static_cast<int>(objects.size() - 1);
+		objectIndex = static_cast<int>(objects.size() - 1);
 
 		std::vector<std::shared_ptr<Primitive>> secondBoxesPrimitives{};
 		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 }));
@@ -270,7 +270,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
