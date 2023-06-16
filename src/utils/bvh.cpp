@@ -50,12 +50,14 @@ namespace nugiEngine {
     };
   }
 
-  Aabb ObjectBoundBox::boundingBox() {
-    auto min = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
-    auto max = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
+  ObjectBoundBox::ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {
+    this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
+    this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
+  }
 
+  Aabb ObjectBoundBox::boundingBox() {
     auto curTransf = glm::mat4{ 1.0f };
-    auto originScalePosition = glm::vec3((max - min) / 2.0f + min);
+    auto originScalePosition = glm::vec3((this->originalMax - this->originalMin) / 2.0f + this->originalMin);
 
     curTransf = glm::translate(curTransf, this->transformation->translation);
     
@@ -74,9 +76,9 @@ namespace nugiEngine {
     for (int i = 0; i < 2; i++) {
       for (int j = 0; j < 2; j++) {
         for (int k = 0; k < 2; k++) {
-          auto x = i * max.x + (1 - i) * min.x;
-          auto y = j * max.y + (1 - j) * min.y;
-          auto z = k * max.z + (1 - k) * min.z;
+          auto x = i * this->originalMax.x + (1 - i) * this->originalMin.x;
+          auto y = j * this->originalMax.y + (1 - j) * this->originalMin.y;
+          auto z = k * this->originalMax.z + (1 - k) * this->originalMin.z;
 
           auto newTransf = curTransf * glm::vec4(x, y, z, 1.0f);
 
@@ -91,9 +93,6 @@ namespace nugiEngine {
       glm::vec3(newMax) + eps
     };
   }
-
-  glm::vec3 ObjectBoundBox::getOriginalMin() { return glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2)); }
-  glm::vec3 ObjectBoundBox::getOriginalMax() { return glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2)); }
 
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;

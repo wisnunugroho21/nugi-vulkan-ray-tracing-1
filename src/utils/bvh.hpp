@@ -68,10 +68,13 @@ namespace nugiEngine {
     std::shared_ptr<TransformComponent> transformation;
     std::vector<std::shared_ptr<Primitive>> primitives{};
 
-    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {}
+    glm::vec3 originalMin{};
+    glm::vec3 originalMax{};
 
-    glm::vec3 getOriginalMin();
-    glm::vec3 getOriginalMax();
+    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t);
+
+    glm::vec3 getOriginalMin() const { return this->originalMin; }
+    glm::vec3 getOriginalMax() const { return this->originalMax; }
     
     Aabb boundingBox();
 
