@@ -9,13 +9,11 @@
 
 namespace nugiEngine {
 	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations) : engineDevice{device} {
-		auto transformationData = this->createTransformationData(transformations);
-		this->createBuffers(transformationData);
+		this->createBuffers(transformations);
 	}
 
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformations) : engineDevice{device} {
-		auto transformationData = this->createTransformationData(this->convertToMatrix(transformations));
-		this->createBuffers(transformationData);
+	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
+		this->createBuffers(this->convertToMatrix(transformationComponents));
 	}
 
 	std::vector<std::shared_ptr<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {
@@ -27,36 +25,29 @@ namespace nugiEngine {
 		return newTransforms;
 	}
 
-	TransformationData EngineTransformationModel::createTransformationData(std::vector<std::shared_ptr<Transformation>> transformations) {
-		TransformationData transformationData{};
-		for (int i = 0; i < transformations.size(); i++) {
-			transformationData.transformations[i] = *transformations[i];
-		}
+	void EngineTransformationModel::createBuffers(std::vector<std::shared_ptr<Transformation>> transformations) {
+		auto transformationBufferSize = sizeof(Transformation) * transformations.size();
 
-		return transformationData;
-	}
-
-	void EngineTransformationModel::createBuffers(TransformationData &data) {
 		EngineBuffer transformationStagingBuffer {
 			this->engineDevice,
-			sizeof(TransformationData),
+			static_cast<VkDeviceSize>(transformationBufferSize),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
 
 		transformationStagingBuffer.map();
-		transformationStagingBuffer.writeToBuffer(&data);
+		transformationStagingBuffer.writeToBuffer(transformations.data());
 
 		this->transformationBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(TransformationData),
+			static_cast<VkDeviceSize>(transformationBufferSize),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), sizeof(TransformationData));
+		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(transformationBufferSize));
 	} 
 } // namespace nugiEngine
 

@@ -15,26 +15,21 @@
 #include <memory>
 
 namespace nugiEngine {
-  struct TransformationData {
-    Transformation transformations[100];
-  };
-
 	class EngineTransformationModel {
-	public:
-		EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations);
-		EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformations);
+		public:
+			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations);
+			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents);
 
-		EngineTransformationModel(const EngineTransformationModel&) = delete;
-		EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
+			EngineTransformationModel(const EngineTransformationModel&) = delete;
+			EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
 
-    VkDescriptorBufferInfo getTransformationInfo() { return this->transformationBuffer->descriptorInfo();  }
-		
-	private:
-		EngineDevice &engineDevice;
-    std::shared_ptr<EngineBuffer> transformationBuffer;
+			VkDescriptorBufferInfo getTransformationInfo() { return this->transformationBuffer->descriptorInfo();  }
+			
+		private:
+			EngineDevice &engineDevice;
+			std::shared_ptr<EngineBuffer> transformationBuffer;
 
-    std::vector<std::shared_ptr<Transformation>> convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations);
-		TransformationData createTransformationData(std::vector<std::shared_ptr<Transformation>> transformations);
-    void createBuffers(TransformationData &data);
+			std::vector<std::shared_ptr<Transformation>> convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations);
+			void createBuffers(std::vector<std::shared_ptr<Transformation>> transformations);
 	};
 } // namespace nugiEngine

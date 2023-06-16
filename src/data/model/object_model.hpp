@@ -15,23 +15,19 @@
 #include <memory>
 
 namespace nugiEngine {
-  struct ObjectData {
-    Object objects[100];
-  };
-
 	class EngineObjectModel {
-	public:
-		EngineObjectModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
+    public:
+      EngineObjectModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
 
-    VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
-    VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
+      VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
+      VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-	private:
-		EngineDevice &engineDevice;
-		
-    std::shared_ptr<EngineBuffer> objectBuffer;
-    std::shared_ptr<EngineBuffer> bvhBuffer;
+    private:
+      EngineDevice &engineDevice;
+      
+      std::shared_ptr<EngineBuffer> objectBuffer;
+      std::shared_ptr<EngineBuffer> bvhBuffer;
 
-    void createBuffers(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
+      void createBuffers(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BvhNode>> bvhNodes);
 	};
 } // namespace nugiEngine

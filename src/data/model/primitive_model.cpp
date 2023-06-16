@@ -30,59 +30,53 @@ namespace nugiEngine {
 	}
 
 	void EnginePrimitiveModel::createBuffers() {
-		PrimitiveData data{};
-		for (int i = 0; i < this->primitives.size(); i++) {
-			data.primitives[i] = *this->primitives[i];
-		}
-
-		BvhData bvh{};
-		for (int i = 0; i < this->bvhNodes.size(); i++) {
-			bvh.bvhNodes[i] = *this->bvhNodes[i];
-		}
+		auto primitiveBufferSize = sizeof(Primitive) * this->primitives.size();
 
 		EngineBuffer primitiveStagingBuffer {
 			this->engineDevice,
-			sizeof(PrimitiveData),
+			static_cast<VkDeviceSize>(primitiveBufferSize),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
 
 		primitiveStagingBuffer.map();
-		primitiveStagingBuffer.writeToBuffer(&data);
+		primitiveStagingBuffer.writeToBuffer(this->primitives.data());
 
 		this->primitiveBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(PrimitiveData),
+			static_cast<VkDeviceSize>(primitiveBufferSize),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->primitiveBuffer->copyBuffer(primitiveStagingBuffer.getBuffer(), sizeof(PrimitiveData));
+		this->primitiveBuffer->copyBuffer(primitiveStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(primitiveBufferSize));
 
 		// -------------------------------------------------
 
+		auto bvhBufferSize = sizeof(BvhNode) * this->bvhNodes.size();
+
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
-			sizeof(BvhData),
+			static_cast<VkDeviceSize>(bvhBufferSize),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(&bvh);
+		bvhStagingBuffer.writeToBuffer(this->bvhNodes.data());
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(BvhData),
+			static_cast<VkDeviceSize>(bvhBufferSize),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
 
 	std::vector<std::shared_ptr<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath) {
