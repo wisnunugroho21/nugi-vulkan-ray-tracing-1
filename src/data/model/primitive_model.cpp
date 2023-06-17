@@ -8,6 +8,11 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
+	EnginePrimitiveModel::EnginePrimitiveModel(EngineDevice &device) : engineDevice{device} {
+		this->primitives = std::make_shared<std::vector<Primitive>>();
+		this->bvhNodes = std::make_shared<std::vector<BvhNode>>();
+	}
+
 	void EnginePrimitiveModel::addPrimitive(std::shared_ptr<std::vector<Primitive>> curPrimitives) {
 		auto curBvhNodes = this->createBvhData(curPrimitives);
 

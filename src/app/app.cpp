@@ -102,12 +102,12 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
 
-		std::shared_ptr<std::vector<Object>> objects;
-		std::shared_ptr<std::vector<Material>> materials;
-		std::shared_ptr<std::vector<Light>> lights;
+		auto objects = std::make_shared<std::vector<Object>>();
+		auto materials = std::make_shared<std::vector<Material>>();
+		auto lights = std::make_shared<std::vector<Light>>();
 
-		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		std::vector<std::shared_ptr<TransformComponent>> transforms;
+		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
+		std::vector<std::shared_ptr<TransformComponent>> transforms{};
 
 		// ----------------------------------------------------------------------------
 
@@ -178,7 +178,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		std::shared_ptr<std::vector<Primitive>> topWallPrimitives{};
@@ -199,7 +199,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		std::shared_ptr<std::vector<Primitive>> frontWallPrimitives{};
@@ -219,7 +219,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		std::shared_ptr<std::vector<Primitive>> firstBoxesPrimitives{};
@@ -249,7 +249,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(-18.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		std::shared_ptr<std::vector<Primitive>> secondBoxesPrimitives{};

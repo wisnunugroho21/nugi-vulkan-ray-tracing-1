@@ -17,7 +17,7 @@
 namespace nugiEngine {
 	class EnginePrimitiveModel {
     public:
-      EnginePrimitiveModel(EngineDevice &device) : engineDevice{device} {}
+      EnginePrimitiveModel(EngineDevice &device);
 
       VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
