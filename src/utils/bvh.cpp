@@ -24,33 +24,33 @@ namespace nugiEngine {
 
   Aabb TriangleBoundBox::boundingBox() {
     return Aabb{ 
-      glm::min(glm::min(this->triangles->point0, this->triangles->point1), this->triangles->point2) - eps,
-      glm::max(glm::max(this->triangles->point0, this->triangles->point1), this->triangles->point2) + eps
+      glm::min(glm::min(this->triangle.point0, this->triangle.point1), this->triangle.point2) - eps,
+      glm::max(glm::max(this->triangle.point0, this->triangle.point1), this->triangle.point2) + eps
     };
   }
 
   Aabb SphereBoundBox::boundingBox() {
     return Aabb { 
-      this->spheres->center - this->spheres->radius - eps,
-      this->spheres->center + this->spheres->radius + eps
+      this->sphere.center - this->sphere.radius - eps,
+      this->sphere.center + this->sphere.radius + eps
     };
   }
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) - eps,
-      glm::max(glm::max(this->primitives->triangle.point0, this->primitives->triangle.point1), this->primitives->triangle.point2) + eps
+      glm::min(glm::min(this->primitive.triangle.point0, this->primitive.triangle.point1), this->primitive.triangle.point2) - eps,
+      glm::max(glm::max(this->primitive.triangle.point0, this->primitive.triangle.point1), this->primitive.triangle.point2) + eps
     };
   }
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) - eps,
-      glm::max(glm::max(this->lights->triangle.point0, this->lights->triangle.point1), this->lights->triangle.point2) + eps
+      glm::min(glm::min(this->light.triangle.point0, this->light.triangle.point1), this->light.triangle.point2) - eps,
+      glm::max(glm::max(this->light.triangle.point0, this->light.triangle.point1), this->light.triangle.point2) + eps
     };
   }
 
-  ObjectBoundBox::ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), objects{o}, primitives{p}, transformation{t} {
+  ObjectBoundBox::ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
     this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
     this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
   }
@@ -96,10 +96,10 @@ namespace nugiEngine {
 
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
-    for (auto &&primitive : this->primitives) {
-      if (primitive->triangle.point0[index] > max) max = primitive->triangle.point0[index];
-      if (primitive->triangle.point1[index] > max) max = primitive->triangle.point1[index];
-      if (primitive->triangle.point2[index] > max) max = primitive->triangle.point2[index];
+    for (auto &&primitive : *this->primitives) {
+      if (primitive.triangle.point0[index] > max) max = primitive.triangle.point0[index];
+      if (primitive.triangle.point1[index] > max) max = primitive.triangle.point1[index];
+      if (primitive.triangle.point2[index] > max) max = primitive.triangle.point2[index];
     }
 
     return max;
@@ -107,10 +107,10 @@ namespace nugiEngine {
 
   float ObjectBoundBox::findMin(uint32_t index) {
     float min = FLT_MAX;
-    for (auto &&primitive : this->primitives) {
-      if (primitive->triangle.point0[index] < min) min = primitive->triangle.point0[index];
-      if (primitive->triangle.point1[index] < min) min = primitive->triangle.point1[index];
-      if (primitive->triangle.point2[index] < min) min = primitive->triangle.point2[index];
+    for (auto &&primitive : *this->primitives) {
+      if (primitive.triangle.point0[index] < min) min = primitive.triangle.point0[index];
+      if (primitive.triangle.point1[index] < min) min = primitive.triangle.point1[index];
+      if (primitive.triangle.point2[index] < min) min = primitive.triangle.point2[index];
     }
 
     return min;
@@ -212,7 +212,7 @@ namespace nugiEngine {
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<std::shared_ptr<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes) {
+  std::shared_ptr<std::vector<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes) {
     int nodeCounter = 0;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
@@ -289,11 +289,10 @@ namespace nugiEngine {
     }
 
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
-    std::vector<std::shared_ptr<BvhNode>> output;
+    std::shared_ptr<std::vector<BvhNode>> output;
 
     for (int i = 0; i < intermediate.size(); i++) {
-      auto node = std::make_shared<BvhNode>(intermediate[i].getGpuModel());
-      output.emplace_back(node);
+      output->emplace_back(intermediate[i].getGpuModel());
     }
 
     return output;

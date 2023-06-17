@@ -17,8 +17,8 @@
 namespace nugiEngine {
 	class EngineTransformationModel {
 		public:
-			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations);
-			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents);
+			EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations);
+			EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<TransformComponent>> transformationComponents);
 
 			EngineTransformationModel(const EngineTransformationModel&) = delete;
 			EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
@@ -29,7 +29,7 @@ namespace nugiEngine {
 			EngineDevice &engineDevice;
 			std::shared_ptr<EngineBuffer> transformationBuffer;
 
-			std::vector<std::shared_ptr<Transformation>> convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations);
-			void createBuffers(std::vector<std::shared_ptr<Transformation>> transformations);
+			std::shared_ptr<std::vector<Transformation>> convertToMatrix(std::shared_ptr<std::vector<TransformComponent>> transformations);
+			void createBuffers(std::shared_ptr<std::vector<Transformation>> transformations);
 	};
 } // namespace nugiEngine

@@ -8,17 +8,17 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineLightModel::EngineLightModel(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights) : engineDevice{device} {
+	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (int i = 0; i < lights.size(); i++) {
-			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, lights[i] }));
+		for (int i = 0; i < lights->size(); i++) {
+			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, (*lights)[i] }));
 		}
 
 		this->createBuffers(lights, createBvh(boundBoxes));
 	}
 
-	void EngineLightModel::createBuffers(std::vector<std::shared_ptr<Light>> lights, std::vector<std::shared_ptr<BvhNode>> bvhNodes) {
-		auto lightBufferSize = sizeof(Light) * lights.size();
+	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+		auto lightBufferSize = sizeof(Light) * lights->size();
 		
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,
@@ -29,7 +29,7 @@ namespace nugiEngine {
 		};
 
 		lightStagingBuffer.map();
-		lightStagingBuffer.writeToBuffer(lights.data());
+		lightStagingBuffer.writeToBuffer(lights->data());
 
 		this->lightBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
@@ -43,7 +43,7 @@ namespace nugiEngine {
 
 		// -------------------------------------------------
 
-		auto bvhBufferSize = sizeof(BvhNode) * bvhNodes.size();
+		auto bvhBufferSize = sizeof(BvhNode) * bvhNodes->size();
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
@@ -54,7 +54,7 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
+		bvhStagingBuffer.writeToBuffer(bvhNodes->data());
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,

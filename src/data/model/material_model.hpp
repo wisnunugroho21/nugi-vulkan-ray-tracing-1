@@ -16,7 +16,7 @@
 namespace nugiEngine {
 	class EngineMaterialModel {
 		public:
-			EngineMaterialModel(EngineDevice &device, std::vector<std::shared_ptr<Material>> materials);
+			EngineMaterialModel(EngineDevice &device, std::shared_ptr<std::vector<Material>> materials);
 
 			EngineMaterialModel(const EngineMaterialModel&) = delete;
 			EngineMaterialModel& operator = (const EngineMaterialModel&) = delete;
@@ -27,6 +27,6 @@ namespace nugiEngine {
 			EngineDevice &engineDevice;
 			std::shared_ptr<EngineBuffer> materialBuffer;
 
-			void createBuffers(std::vector<std::shared_ptr<Material>> materials);
+			void createBuffers(std::shared_ptr<std::vector<Material>> materials);
 	};
 } // namespace nugiEngine

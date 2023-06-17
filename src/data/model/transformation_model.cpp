@@ -8,25 +8,25 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<Transformation>> transformations) : engineDevice{device} {
+	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations) : engineDevice{device} {
 		this->createBuffers(transformations);
 	}
 
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
+	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<TransformComponent>> transformationComponents) : engineDevice{device} {
 		this->createBuffers(this->convertToMatrix(transformationComponents));
 	}
 
-	std::vector<std::shared_ptr<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {
-		std::vector<std::shared_ptr<Transformation>> newTransforms{};
-		for (auto &&transform : transformations) {
-			newTransforms.emplace_back(std::make_shared<Transformation>(Transformation{ transform->getPointMatrix(), transform->getPointInverseMatrix(), transform->getDirInverseMatrix(), transform->getNormalMatrix() }));
+	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::shared_ptr<std::vector<TransformComponent>> transformations) {
+		std::shared_ptr<std::vector<Transformation>> newTransforms{};
+		for (auto &&transform : *transformations) {
+			newTransforms->emplace_back(Transformation{ transform.getPointMatrix(), transform.getPointInverseMatrix(), transform.getDirInverseMatrix(), transform.getNormalMatrix() });
 		}
 
 		return newTransforms;
 	}
 
-	void EngineTransformationModel::createBuffers(std::vector<std::shared_ptr<Transformation>> transformations) {
-		auto transformationBufferSize = sizeof(Transformation) * transformations.size();
+	void EngineTransformationModel::createBuffers(std::shared_ptr<std::vector<Transformation>> transformations) {
+		auto transformationBufferSize = sizeof(Transformation) * transformations->size();
 
 		EngineBuffer transformationStagingBuffer {
 			this->engineDevice,
@@ -37,7 +37,7 @@ namespace nugiEngine {
 		};
 
 		transformationStagingBuffer.map();
-		transformationStagingBuffer.writeToBuffer(transformations.data());
+		transformationStagingBuffer.writeToBuffer(transformations->data());
 
 		this->transformationBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,

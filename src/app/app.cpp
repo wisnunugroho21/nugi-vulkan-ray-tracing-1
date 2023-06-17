@@ -102,12 +102,12 @@ namespace nugiEngine {
 	void EngineApp::loadObjects() {
 		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
 
-		std::vector<std::shared_ptr<Object>> objects{};
-    std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
+		std::shared_ptr<std::vector<Object>> objects;
+		std::shared_ptr<std::vector<Material>> materials;
+		std::shared_ptr<std::vector<Light>> lights;
 
-		std::vector<std::shared_ptr<Material>> materials{};
-		std::vector<std::shared_ptr<TransformComponent>> transforms{};
-		std::vector<std::shared_ptr<Light>> lights{};
+		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
+		std::vector<std::shared_ptr<TransformComponent>> transforms;
 
 		// ----------------------------------------------------------------------------
 
@@ -115,16 +115,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		int transformIndex = static_cast<int>(transforms.size() - 1);
 		
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		int objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		int objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> rightWallPrimitives;
-		rightWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1 }));
-		rightWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 }));
+		std::shared_ptr<std::vector<Primitive>> rightWallPrimitives;
+		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1 });
+		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 });
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
 		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -136,16 +136,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<int>(objects->size() - 1);
 		
-		std::vector<std::shared_ptr<Primitive>> leftWallPrimitives{};
-		leftWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 2}));
-		leftWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 }));
+		std::shared_ptr<std::vector<Primitive>> leftWallPrimitives{};
+		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 2});
+		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 });
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -157,16 +157,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> bottomWallPrimitives{};
-		bottomWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, 0 }));
-		bottomWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 }));
+		std::shared_ptr<std::vector<Primitive>> bottomWallPrimitives{};
+		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, 0 });
+		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 });
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -178,16 +178,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> topWallPrimitives{};
-		topWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
-		topWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 }));
+		std::shared_ptr<std::vector<Primitive>> topWallPrimitives{};
+		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 });
+		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 });
 
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], topWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -199,16 +199,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> frontWallPrimitives{};
-		frontWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 }));
-		frontWallPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 }));
+		std::shared_ptr<std::vector<Primitive>> frontWallPrimitives{};
+		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 });
+		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 });
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -219,26 +219,26 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> firstBoxesPrimitives{};
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 }));
-		firstBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 }));
+		std::shared_ptr<std::vector<Primitive>> firstBoxesPrimitives{};
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 });
 
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], firstBoxesPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], firstBoxesPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -249,26 +249,26 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(-18.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
-		objects.emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
-		objectIndex = static_cast<int>(objects.size() - 1);
+		objects->emplace_back(std::make_shared<Object>(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex }));
+		objectIndex = static_cast<int>(objects->size() - 1);
 
-		std::vector<std::shared_ptr<Primitive>> secondBoxesPrimitives{};
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 }));
-		secondBoxesPrimitives.emplace_back(std::make_shared<Primitive>(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 }));
+		std::shared_ptr<std::vector<Primitive>> secondBoxesPrimitives{};
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 });
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), objects[objectIndex], secondBoxesPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], secondBoxesPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -276,15 +276,15 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f }));
-		materials.emplace_back(std::make_shared<Material>(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f }));
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f });
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f });
 
 		// ----------------------------------------------------------------------------
 
-		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
-		lights.emplace_back(std::make_shared<Light>(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} ));
+		lights->emplace_back(Light{ Triangle{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} );
+		lights->emplace_back(Light{ Triangle{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f} }, glm::vec3(100.0f, 100.0f, 100.0f)} );
 
 		// ----------------------------------------------------------------------------
 

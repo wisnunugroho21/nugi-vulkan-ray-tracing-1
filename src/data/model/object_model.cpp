@@ -7,12 +7,12 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
-	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
+	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
 		this->createBuffers(objects, createBvh(boundBoxes));
 	}
 
-	void EngineObjectModel::createBuffers(std::vector<std::shared_ptr<Object>> objects, std::vector<std::shared_ptr<BvhNode>> bvhNodes) {
-		auto objectBufferSize = sizeof(Object) * objects.size();
+	void EngineObjectModel::createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+		auto objectBufferSize = sizeof(Object) * objects->size();
 
 		EngineBuffer objectStagingBuffer {
 			this->engineDevice,
@@ -23,7 +23,7 @@ namespace nugiEngine {
 		};
 
 		objectStagingBuffer.map();
-		objectStagingBuffer.writeToBuffer(objects.data());
+		objectStagingBuffer.writeToBuffer(objects->data());
 
 		this->objectBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
@@ -37,7 +37,7 @@ namespace nugiEngine {
 
 		// -------------------------------------------------
 
-		auto bvhBufferSize = sizeof(BvhNode) * bvhNodes.size();
+		auto bvhBufferSize = sizeof(BvhNode) * bvhNodes->size();
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
@@ -48,7 +48,7 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
+		bvhStagingBuffer.writeToBuffer(bvhNodes->data());
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,

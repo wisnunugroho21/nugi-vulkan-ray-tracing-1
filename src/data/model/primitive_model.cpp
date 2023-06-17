@@ -8,29 +8,29 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
-	void EnginePrimitiveModel::addPrimitive(std::vector<std::shared_ptr<Primitive>> curPrimitives) {
+	void EnginePrimitiveModel::addPrimitive(std::shared_ptr<std::vector<Primitive>> curPrimitives) {
 		auto curBvhNodes = this->createBvhData(curPrimitives);
 
-		for (int i = 0; i < curBvhNodes.size(); i++) {
-			this->bvhNodes.emplace_back(curBvhNodes[i]);
+		for (int i = 0; i < curBvhNodes->size(); i++) {
+			this->bvhNodes->emplace_back((*curBvhNodes)[i]);
 		}
 
-		for (int i = 0; i < curPrimitives.size(); i++) {
-			this->primitives.emplace_back(curPrimitives[i]);
+		for (int i = 0; i < curPrimitives->size(); i++) {
+			this->primitives->emplace_back((*curPrimitives)[i]);
 		}
 	}
 
-	std::vector<std::shared_ptr<BvhNode>> EnginePrimitiveModel::createBvhData(std::vector<std::shared_ptr<Primitive>> primitives) {
+	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives) {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (int i = 0; i < primitives.size(); i++) {
-			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i, primitives[i] }));
+		for (int i = 0; i < primitives->size(); i++) {
+			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i, (*primitives)[i] }));
 		}
 
 		return createBvh(boundBoxes);
 	}
 
 	void EnginePrimitiveModel::createBuffers() {
-		auto primitiveBufferSize = sizeof(Primitive) * this->primitives.size();
+		auto primitiveBufferSize = sizeof(Primitive) * this->primitives->size();
 
 		EngineBuffer primitiveStagingBuffer {
 			this->engineDevice,
@@ -41,7 +41,7 @@ namespace nugiEngine {
 		};
 
 		primitiveStagingBuffer.map();
-		primitiveStagingBuffer.writeToBuffer(this->primitives.data());
+		primitiveStagingBuffer.writeToBuffer(this->primitives->data());
 
 		this->primitiveBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
@@ -55,7 +55,7 @@ namespace nugiEngine {
 
 		// -------------------------------------------------
 
-		auto bvhBufferSize = sizeof(BvhNode) * this->bvhNodes.size();
+		auto bvhBufferSize = sizeof(BvhNode) * this->bvhNodes->size();
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
@@ -66,7 +66,7 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(this->bvhNodes.data());
+		bvhStagingBuffer.writeToBuffer(this->bvhNodes->data());
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
@@ -79,7 +79,7 @@ namespace nugiEngine {
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
 
-	std::vector<std::shared_ptr<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath) {
+	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -89,7 +89,7 @@ namespace nugiEngine {
 			throw std::runtime_error(warn + err);
 		}
 
-		std::vector<std::shared_ptr<Primitive>> primitives{};
+		std::shared_ptr<std::vector<Primitive>> primitives{};
 
 		for (const auto &shape: shapes) {
 			uint32_t numTriangle = shape.mesh.indices.size() / 3;
@@ -117,10 +117,9 @@ namespace nugiEngine {
 					attrib.vertices[3 * vertexIndex2 + 2]
 				};
 
-				primitives.emplace_back(std::make_shared<Object>( Primitive{ Triangle{point1, point2, point3}, 1 } ));
+				primitives->emplace_back(Primitive{ Triangle{point1, point2, point3}, 1 });
 			}
 		}
-
 
 		return primitives;
 	} 
