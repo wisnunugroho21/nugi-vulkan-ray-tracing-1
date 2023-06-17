@@ -12,14 +12,14 @@ namespace nugiEngine {
 		this->createBuffers(transformations);
 	}
 
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<TransformComponent>> transformationComponents) : engineDevice{device} {
+	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
 		this->createBuffers(this->convertToMatrix(transformationComponents));
 	}
 
-	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::shared_ptr<std::vector<TransformComponent>> transformations) {
+	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {
 		std::shared_ptr<std::vector<Transformation>> newTransforms{};
-		for (auto &&transform : *transformations) {
-			newTransforms->emplace_back(Transformation{ transform.getPointMatrix(), transform.getPointInverseMatrix(), transform.getDirInverseMatrix(), transform.getNormalMatrix() });
+		for (auto &&transform : transformations) {
+			newTransforms->emplace_back(Transformation{ transform->getPointMatrix(), transform->getPointInverseMatrix(), transform->getDirInverseMatrix(), transform->getNormalMatrix() });
 		}
 
 		return newTransforms;
