@@ -84,7 +84,7 @@ namespace nugiEngine {
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
 
-	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath) {
+	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, int materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -97,7 +97,7 @@ namespace nugiEngine {
 		std::shared_ptr<std::vector<Primitive>> primitives{};
 
 		for (const auto &shape: shapes) {
-			uint32_t numTriangle = shape.mesh.indices.size() / 3;
+			uint32_t numTriangle = static_cast<uint32_t>(shape.mesh.indices.size()) / 3;
 
 			for (uint32_t i = 0; i < numTriangle; i++) {
 				int vertexIndex0 = shape.mesh.indices[3 * i + 0].vertex_index;
@@ -122,7 +122,7 @@ namespace nugiEngine {
 					attrib.vertices[3 * vertexIndex2 + 2]
 				};
 
-				primitives->emplace_back(Primitive{ Triangle{point1, point2, point3}, 1 });
+				primitives->emplace_back(Primitive{ Triangle{point1, point2, point3}, materialIndex });
 			}
 		}
 

@@ -204,7 +204,7 @@ namespace nugiEngine {
       float probLeft = leftLength / length;
       float probRight = (length - leftLength) / length;
 
-      costArr[i] = 0.5 + probLeft * totalLeft * 1 + probRight * totalRight * 1;
+      costArr[i] = 0.5f + probLeft * totalLeft * 1.0f + probRight * totalRight * 1.0f;
     }
 
     return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
@@ -260,7 +260,7 @@ namespace nugiEngine {
         }
 
         if (leftNode.objects.size() == 0 || rightNode.objects.size() == 0) {
-					mid = std::ceil(objectSpan / 2);
+					mid = static_cast<int>(std::ceil(objectSpan / 2));
 
 					leftNode.objects.clear();
 					rightNode.objects.clear();
