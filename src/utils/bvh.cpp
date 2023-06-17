@@ -289,7 +289,7 @@ namespace nugiEngine {
     }
 
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
-    std::shared_ptr<std::vector<BvhNode>> output;
+    auto output = std::make_shared<std::vector<BvhNode>>();
 
     for (int i = 0; i < intermediate.size(); i++) {
       output->emplace_back(intermediate[i].getGpuModel());
