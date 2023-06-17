@@ -47,7 +47,7 @@ namespace nugiEngine {
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
-			sizeof(BvhData),
+			static_cast<VkDeviceSize>(bvhBufferSize),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
@@ -58,13 +58,13 @@ namespace nugiEngine {
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			sizeof(BvhData),
+			static_cast<VkDeviceSize>(bvhBufferSize),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), sizeof(BvhData));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
     
 } // namespace nugiEngine
