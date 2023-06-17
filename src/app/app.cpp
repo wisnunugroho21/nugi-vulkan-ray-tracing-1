@@ -364,7 +364,7 @@ namespace nugiEngine {
 			width, height);
 
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, this->renderer->getSwapChain()->imageCount());
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
 		VkDescriptorBufferInfo buffersInfo[8] { 
 			this->objectModel->getObjectInfo(), 

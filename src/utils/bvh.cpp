@@ -192,7 +192,7 @@ namespace nugiEngine {
 
       for (auto &&item : node.objects) {
         Aabb curBox = item->boundingBox();
-        float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
+        float pos = (curBox.max[axis] - curBox.min[axis]) / 2.0f + curBox.min[axis];
 
         if (pos < posBarrier) {
           totalLeft++;
@@ -207,7 +207,7 @@ namespace nugiEngine {
       costArr[i] = 0.5f + probLeft * totalLeft * 1.0f + probRight * totalRight * 1.0f;
     }
 
-    return std::distance(costArr, std::min_element(costArr, costArr + splitNumber));
+    return static_cast<int>(std::distance(costArr, std::min_element(costArr, costArr + splitNumber)));
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
