@@ -22,13 +22,13 @@ namespace nugiEngine {
       VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-      int getPrimitiveSize() const { return this->primitives->size(); }
-      int getBvhSize() const { return this->bvhNodes->size(); }
+      int getPrimitiveSize() const { return static_cast<int>(this->primitives->size()); }
+      int getBvhSize() const { return static_cast<int>(this->bvhNodes->size()); }
 
       void addPrimitive(std::shared_ptr<std::vector<Primitive>> primitives);
       void createBuffers();
 
-      static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath);
+      static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, int materialIndex);
       
     private:
       EngineDevice &engineDevice;
