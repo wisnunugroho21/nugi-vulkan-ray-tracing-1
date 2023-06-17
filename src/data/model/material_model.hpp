@@ -14,25 +14,19 @@
 #include <memory>
 
 namespace nugiEngine {
-  struct MaterialData {
-    Material materials[100];
-  };
-
 	class EngineMaterialModel {
-	public:
-		EngineMaterialModel(EngineDevice &device, std::vector<std::shared_ptr<Material>> materials);
-		~EngineMaterialModel();
+		public:
+			EngineMaterialModel(EngineDevice &device, std::shared_ptr<std::vector<Material>> materials);
 
-		EngineMaterialModel(const EngineMaterialModel&) = delete;
-		EngineMaterialModel& operator = (const EngineMaterialModel&) = delete;
+			EngineMaterialModel(const EngineMaterialModel&) = delete;
+			EngineMaterialModel& operator = (const EngineMaterialModel&) = delete;
 
-    VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo();  }
-		
-	private:
-		EngineDevice &engineDevice;
-    std::shared_ptr<EngineBuffer> materialBuffer;
+			VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo();  }
+			
+		private:
+			EngineDevice &engineDevice;
+			std::shared_ptr<EngineBuffer> materialBuffer;
 
-    MaterialData createMaterialData(std::vector<std::shared_ptr<Material>> materials);
-    void createBuffers(MaterialData &data);
+			void createBuffers(std::shared_ptr<std::vector<Material>> materials);
 	};
 } // namespace nugiEngine

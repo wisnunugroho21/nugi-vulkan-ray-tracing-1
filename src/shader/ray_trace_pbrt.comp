@@ -19,35 +19,35 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
-  Object objects[100];
+  Object objects[];
 };
 
 layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
-  BvhNode objectBvhNodes[100];
+  BvhNode objectBvhNodes[];
 };
 
 layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
-  Primitive primitives[100];
+  Primitive primitives[];
 };
 
 layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
-  BvhNode primitiveBvhNodes[100];
+  BvhNode primitiveBvhNodes[];
 };
 
 layout(set = 0, binding = 6) buffer readonly LightSsbo {
-  Light lights[100];
+  Light lights[];
 };
 
 layout(set = 0, binding = 7) buffer readonly LightBvhSsbo {
-  BvhNode lightBvhNodes[100];
+  BvhNode lightBvhNodes[];
 };
 
 layout(set = 0, binding = 8) buffer readonly MaterialSsbo {
-  Material materials[100];
+  Material materials[];
 };
 
 layout(set = 0, binding = 9) buffer readonly TransformationSsbo {
-  Transformation transformations[100];
+  Transformation transformations[];
 };
 
 layout(push_constant) uniform Push {

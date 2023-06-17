@@ -40,38 +40,38 @@ namespace nugiEngine {
   };
 
   struct TriangleBoundBox : BoundBox {
-    std::shared_ptr<Triangle> triangles;
+    Triangle &triangle;
 
-    TriangleBoundBox(int i, std::shared_ptr<Triangle> t) : BoundBox(i), triangles{t} {}
+    TriangleBoundBox(int i, Triangle &t) : BoundBox(i), triangle{t} {}
 
     Aabb boundingBox();
   };
 
   struct SphereBoundBox : BoundBox {
-    std::shared_ptr<Sphere> spheres;
+    Sphere &sphere;
 
-    SphereBoundBox(int i, std::shared_ptr<Sphere> s) : BoundBox(i), spheres{s} {}
+    SphereBoundBox(int i, Sphere &s) : BoundBox(i), sphere{s} {}
 
     Aabb boundingBox();
   };
 
   struct PrimitiveBoundBox : BoundBox {
-    std::shared_ptr<Primitive> primitives;
+    Primitive &primitive;
 
-    PrimitiveBoundBox(int i, std::shared_ptr<Primitive> p) : BoundBox(i), primitives{p} {}
+    PrimitiveBoundBox(int i, Primitive &p) : BoundBox(i), primitive{p} {}
 
     Aabb boundingBox();
   };
 
   struct ObjectBoundBox : BoundBox {
-    std::shared_ptr<Object> objects;
+    Object &object;
     std::shared_ptr<TransformComponent> transformation;
-    std::vector<std::shared_ptr<Primitive>> primitives{};
+    std::shared_ptr<std::vector<Primitive>> primitives;
 
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(int i, std::shared_ptr<Object> o, std::vector<std::shared_ptr<Primitive>> p, std::shared_ptr<TransformComponent> t);
+    ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
@@ -84,9 +84,9 @@ namespace nugiEngine {
   };
 
   struct LightBoundBox : BoundBox {
-    std::shared_ptr<Light> lights;
+    Light &light;
 
-    LightBoundBox(int i, std::shared_ptr<Light> l) : BoundBox(i), lights{l} {}
+    LightBoundBox(int i, Light &l) : BoundBox(i), light{l} {}
 
     Aabb boundingBox();
   };
@@ -113,6 +113,6 @@ namespace nugiEngine {
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::vector<std::shared_ptr<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes);
+  std::shared_ptr<std::vector<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes);
 
 }// namespace nugiEngine 

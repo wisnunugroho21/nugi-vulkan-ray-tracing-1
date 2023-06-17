@@ -15,27 +15,19 @@
 #include <memory>
 
 namespace nugiEngine {
-  struct LightData {
-    Light lights[100];
-  };
-
 	class EngineLightModel {
-	public:
-		EngineLightModel(EngineDevice &device, std::vector<std::shared_ptr<Light>> lights);
-		~EngineLightModel();
+    public:
+      EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights);
 
-    VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
-    VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
-		
-	private:
-		EngineDevice &engineDevice;
-		
-    std::shared_ptr<EngineBuffer> lightBuffer;
-    std::shared_ptr<EngineBuffer> bvhBuffer;
-    
-    LightData createLightData(std::vector<std::shared_ptr<Light>> lights);
-    BvhData createBvhData(std::vector<std::shared_ptr<Light>> lights);
+      VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
+      VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
+      
+    private:
+      EngineDevice &engineDevice;
+      
+      std::shared_ptr<EngineBuffer> lightBuffer;
+      std::shared_ptr<EngineBuffer> bvhBuffer;
 
-    void createBuffers(LightData &data, BvhData &bvh);
+      void createBuffers(std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes);
 	};
 } // namespace nugiEngine

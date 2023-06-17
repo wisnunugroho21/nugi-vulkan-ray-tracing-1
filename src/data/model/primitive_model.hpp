@@ -15,34 +15,30 @@
 #include <memory>
 
 namespace nugiEngine {
-  struct PrimitiveData {
-    Primitive primitives[100];
-  };
-
 	class EnginePrimitiveModel {
-	public:
-		EnginePrimitiveModel(EngineDevice &device) : engineDevice{device} {}
+    public:
+      EnginePrimitiveModel(EngineDevice &device);
 
-    VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
-    VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
+      VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
+      VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-    int getPrimitiveSize() const { return this->primitives.size(); }
-    int getBvhSize() const { return this->bvhNodes.size(); }
+      int getPrimitiveSize() const { return this->primitives->size(); }
+      int getBvhSize() const { return this->bvhNodes->size(); }
 
-    void addPrimitive(std::vector<std::shared_ptr<Primitive>> primitives);
-    void createBuffers();
+      void addPrimitive(std::shared_ptr<std::vector<Primitive>> primitives);
+      void createBuffers();
 
-    static std::vector<std::shared_ptr<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath);
-		
-	private:
-		EngineDevice &engineDevice;
+      static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath);
+      
+    private:
+      EngineDevice &engineDevice;
 
-    std::vector<std::shared_ptr<Primitive>> primitives{};
-    std::vector<std::shared_ptr<BvhNode>> bvhNodes{};
-		
-    std::shared_ptr<EngineBuffer> primitiveBuffer;
-    std::shared_ptr<EngineBuffer> bvhBuffer;
-    
-    std::vector<std::shared_ptr<BvhNode>> createBvhData(std::vector<std::shared_ptr<Primitive>> primitives);
+      std::shared_ptr<std::vector<Primitive>> primitives{};
+      std::shared_ptr<std::vector<BvhNode>> bvhNodes{};
+      
+      std::shared_ptr<EngineBuffer> primitiveBuffer;
+      std::shared_ptr<EngineBuffer> bvhBuffer;
+      
+      std::shared_ptr<std::vector<BvhNode>> createBvhData(std::shared_ptr<std::vector<Primitive>> primitives);
 	};
 } // namespace nugiEngine
