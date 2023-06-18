@@ -1,3 +1,10 @@
+vec2 getTotalTextureCoordinate(TextureCoordinate textCoord, vec2 uv) {
+  float u = uv.x * textCoord.texel0.x + uv.y * textCoord.texel0.y + (1.0 - uv.x - uv.y) * textCoord.texel0.z;
+  float v = uv.x * textCoord.texel1.x + uv.y * textCoord.texel1.y + (1.0 - uv.x - uv.y) * textCoord.texel1.z;
+
+  return vec2(u, v);
+}
+
 // ------------- GGX -------------
 
 vec3 randomGGX(float roughness, uint index1, uint index2, uint additionalRandomSeed) {

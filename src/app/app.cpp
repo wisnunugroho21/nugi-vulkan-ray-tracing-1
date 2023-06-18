@@ -119,8 +119,8 @@ namespace nugiEngine {
 		int objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 1 });
-		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, 1 });
+		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 1 });
+		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 0.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 1 });
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 
@@ -140,8 +140,8 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, 2});
-		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 2 });
+		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 2});
+		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 2 });
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		
@@ -161,8 +161,8 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, 0 });
-		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, 0 });
+		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 0.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		
@@ -182,8 +182,8 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 });
-		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, 0 });
+		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 0.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
 
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
@@ -203,8 +203,8 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, 0 });
-		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, 0 });
+		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 0.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
@@ -223,18 +223,18 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto firstBoxesPrimitives = std::make_shared<std::vector<Primitive>>();
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, 0 });
-		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f} } , TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{430.0f, 0.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{265.0f, 0.0f, 295.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{430.0f, 330.0f, 460.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		firstBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{265.0f, 330.0f, 295.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
 
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives);
 
@@ -253,18 +253,18 @@ namespace nugiEngine {
 		objectIndex = static_cast<int>(objects->size() - 1);
 
 		auto secondBoxesPrimitives = std::make_shared<std::vector<Primitive>>();
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, 0 });
-		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 230.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f} },TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{295.0f, 0.0f, 230.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{130.0f, 0.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{295.0f, 165.0f, 230.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
+		secondBoxesPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{130, 165.0f, 230.0f}, glm::vec3{130.0f, 165.0f, 65.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives);
 		
@@ -276,10 +276,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f });
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f });
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, -1 });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, -1 });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, -1 });
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, -1 });
 
 		// ----------------------------------------------------------------------------
 

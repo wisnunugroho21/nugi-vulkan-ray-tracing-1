@@ -103,6 +103,10 @@ namespace nugiEngine {
 				int vertexIndex0 = shape.mesh.indices[3 * i + 0].vertex_index;
 				int vertexIndex1 = shape.mesh.indices[3 * i + 1].vertex_index;
 				int vertexIndex2 = shape.mesh.indices[3 * i + 2].vertex_index;
+
+				int textCoordIndex0 = shape.mesh.indices[3 * i + 0].texcoord_index;
+				int textCoordIndex1 = shape.mesh.indices[3 * i + 1].texcoord_index;
+				int textCoordIndex2 = shape.mesh.indices[3 * i + 2].texcoord_index;
 				
 				glm::vec3 point1 = {
 					attrib.vertices[3 * vertexIndex0 + 0],
@@ -122,7 +126,19 @@ namespace nugiEngine {
 					attrib.vertices[3 * vertexIndex2 + 2]
 				};
 
-				primitives->emplace_back(Primitive{ Triangle{point1, point2, point3}, materialIndex });
+				glm::vec3 texel0 = {
+					attrib.texcoords[2 * textCoordIndex0 + 0],
+					attrib.texcoords[2 * textCoordIndex1 + 0],
+					attrib.texcoords[2 * textCoordIndex2 + 0]
+				};
+
+				glm::vec3 texel1 = {
+					attrib.texcoords[2 * textCoordIndex0 + 1],
+					attrib.texcoords[2 * textCoordIndex1 + 1],
+					attrib.texcoords[2 * textCoordIndex2 + 1]
+				};
+
+				primitives->emplace_back(Primitive{ Triangle{point1, point2, point3}, TextureCoordinate{texel0, texel1}, materialIndex });
 			}
 		}
 

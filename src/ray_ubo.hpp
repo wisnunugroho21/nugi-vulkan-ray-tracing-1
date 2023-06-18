@@ -7,18 +7,24 @@
 
 namespace nugiEngine {
   struct Triangle {
-    alignas(16) glm::vec3 point0;
-    alignas(16) glm::vec3 point1;
-    alignas(16) glm::vec3 point2;
+    alignas(16) glm::vec3 point0{};
+    alignas(16) glm::vec3 point1{};
+    alignas(16) glm::vec3 point2{};
   };
 
   struct Sphere {
-    alignas(16) glm::vec3 center;
+    alignas(16) glm::vec3 center{};
     float radius;
+  };
+
+  struct TextureCoordinate {
+    alignas(16) glm::vec3 texel0{};
+    alignas(16) glm::vec3 texel1{};
   };
 
   struct Primitive {
     alignas(16) Triangle triangle{};
+    alignas(16) TextureCoordinate textCoord{};
     int materialIndex;
   };
 
@@ -43,6 +49,7 @@ namespace nugiEngine {
     float metallicness;
     float roughness;
     float fresnelReflect;
+    int textureIndex;
   };
 
   struct Transformation {
