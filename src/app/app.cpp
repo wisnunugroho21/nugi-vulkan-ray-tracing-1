@@ -216,13 +216,13 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f)}));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(300.0f, 200.0f, 200.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<int>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<int>(objects->size() - 1);
 
-		auto flatVasePrimitives = this->primitiveModel->createPrimitivesFromFile(this->device, "", 3);
+		auto flatVasePrimitives = this->primitiveModel->createPrimitivesFromFile(this->device, "models/viking_room.obj", 3);
 		this->primitiveModel->addPrimitive(flatVasePrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
@@ -253,7 +253,7 @@ namespace nugiEngine {
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
 
-		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, ""));
+		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 	}
 
 	void EngineApp::loadQuadModels() {

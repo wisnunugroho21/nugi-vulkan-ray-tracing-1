@@ -1,6 +1,6 @@
 vec2 getTotalTextureCoordinate(TextureCoordinate textCoord, vec2 uv) {
-  float u = uv.x * textCoord.texel0.x + uv.y * textCoord.texel0.y + (1.0 - uv.x - uv.y) * textCoord.texel0.z;
-  float v = uv.x * textCoord.texel1.x + uv.y * textCoord.texel1.y + (1.0 - uv.x - uv.y) * textCoord.texel1.z;
+  float u = (1.0 - uv.x - uv.y) * textCoord.texel0.x + uv.x * textCoord.texel0.y + uv.y * textCoord.texel0.z;
+  float u = (1.0 - uv.x - uv.y) * textCoord.texel1.x + uv.x * textCoord.texel1.y + uv.y * textCoord.texel1.z;
 
   return vec2(u, v);
 }

@@ -94,7 +94,7 @@ namespace nugiEngine {
 			throw std::runtime_error(warn + err);
 		}
 
-		std::shared_ptr<std::vector<Primitive>> primitives{};
+		auto primitives = std::make_shared<std::vector<Primitive>>();
 
 		for (const auto &shape: shapes) {
 			uint32_t numTriangle = static_cast<uint32_t>(shape.mesh.indices.size()) / 3;
