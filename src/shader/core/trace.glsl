@@ -18,6 +18,13 @@ vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   return dot(r_direction, outwardNormal) < 0.0 ? outwardNormal : -1.0 * outwardNormal;
 }
 
+vec2 getTotalTextureCoordinate(TextureCoordinate textCoord, vec2 uv) {
+  float u = (1.0 - uv.x - uv.y) * textCoord.texel0.x + uv.x * textCoord.texel0.y + uv.y * textCoord.texel0.z;
+  float v = (1.0 - uv.x - uv.y) * textCoord.texel1.x + uv.x * textCoord.texel1.y + uv.y * textCoord.texel1.z;
+
+  return vec2(u, v);
+}
+
 // ------------- Sphere -------------
 
 HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformIndex) {
@@ -204,6 +211,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
       if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex + firstPrimitiveIndex;
+        hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].textCoord, hit.uv);
       }
     }
 
@@ -214,6 +222,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, int firstBvhIndex, int 
       if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex + firstPrimitiveIndex;
+        hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].textCoord, hit.uv);
       }
     }
 

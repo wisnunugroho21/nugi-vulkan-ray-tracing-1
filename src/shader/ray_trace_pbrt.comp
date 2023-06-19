@@ -224,8 +224,7 @@ void main() {
 
     vec3 materialColor = vec3(0.0);
     if (materials[materialIndex].textureIndex >= 0) {
-      vec2 totalTextCoord = getTotalTextureCoordinate(primitives[hit.hitIndex].textCoord, hit.uv);
-      materialColor = texture(textureSampler[materials[materialIndex].textureIndex], totalTextCoord).xyz;
+      materialColor = texture(textureSampler[materials[materialIndex].textureIndex], hit.uv).xyz;
     } else {
       materialColor = materials[materialIndex].baseColor;
     }
