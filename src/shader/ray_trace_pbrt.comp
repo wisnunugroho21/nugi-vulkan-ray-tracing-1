@@ -124,7 +124,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materia
   int lightIndex = randomInt(0, 1, 0, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1000000.0);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -164,7 +164,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 mat
   int lightIndex = randomInt(0, 1, 0, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1000000.0);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -204,7 +204,7 @@ void main() {
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
-  for(uint i = 0; i < 3; i++) {
+  for(uint i = 0; i < 50 i++) {
     HitRecord hit = hitObjectBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
       totalRadiance = totalRadiance + totalIndirect * ubo.background;
