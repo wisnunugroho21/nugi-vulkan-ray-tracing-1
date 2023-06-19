@@ -2,7 +2,7 @@
 
 vec3 randomGGX(float roughness, uint additionalRandomSeed) {
   float r1 = randomFloat(additionalRandomSeed);
-  float r2 = randomFloat(additionalRandomSeed);
+  float r2 = randomFloat(additionalRandomSeed + 1);
 
   float a = roughness * roughness;
   float phi = 2 * 3.14159265359 * r2;
@@ -38,7 +38,7 @@ float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float r
 
 vec3 randomCosineDirection(uint additionalRandomSeed) {
   float r1 = randomFloat(additionalRandomSeed);
-  float r2 = randomFloat(additionalRandomSeed);
+  float r2 = randomFloat(additionalRandomSeed + 1);
 
   float phi = 2 * 3.14159265359 * r1;
   float cosTheta = sqrt(r2);
