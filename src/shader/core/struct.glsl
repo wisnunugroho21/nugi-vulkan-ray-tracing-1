@@ -13,8 +13,14 @@ struct Triangle {
   vec3 point2;
 };
 
+struct TextureCoordinate {
+  vec3 texel0;
+  vec3 texel1;
+};
+
 struct Primitive {
   Triangle triangle;
+  TextureCoordinate textCoord;
   int materialIndex;
 };
 
@@ -44,6 +50,7 @@ struct Material {
 	float metallicness;
   float roughness;
   float fresnelReflect;
+  int textureIndex;
 };
 
 struct Transformation {

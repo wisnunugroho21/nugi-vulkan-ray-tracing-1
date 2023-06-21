@@ -8,9 +8,11 @@
 #include "core/struct.glsl"
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
 
-layout(set = 0, binding = 1) uniform readonly GlobalUbo {
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
+layout(set = 0, binding = 1) uniform sampler2D textureSampler[1];
+
+layout(set = 0, binding = 2) uniform readonly GlobalUbo {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
@@ -18,35 +20,35 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 background;
 } ubo;
 
-layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+layout(set = 0, binding = 3) buffer readonly ObjectSsbo {
   Object objects[];
 };
 
-layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
+layout(set = 0, binding = 4) buffer readonly ObjectBvhSsbo {
   BvhNode objectBvhNodes[];
 };
 
-layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
+layout(set = 0, binding = 5) buffer readonly PrimitiveSsbo {
   Primitive primitives[];
 };
 
-layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
+layout(set = 0, binding = 6) buffer readonly PrimitiveBvhSsbo {
   BvhNode primitiveBvhNodes[];
 };
 
-layout(set = 0, binding = 6) buffer readonly LightSsbo {
+layout(set = 0, binding = 7) buffer readonly LightSsbo {
   Light lights[];
 };
 
-layout(set = 0, binding = 7) buffer readonly LightBvhSsbo {
+layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
   BvhNode lightBvhNodes[];
 };
 
-layout(set = 0, binding = 8) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 9) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
   Transformation transformations[];
 };
 
@@ -65,7 +67,7 @@ uvec2 imgSize = uvec2(imageSize(targetImage));
 
 // ------------- Material -------------
 
-ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
+ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
@@ -85,16 +87,16 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, uint addit
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
 
   scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-  scat.radiance = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL);
+  scat.radiance = partialIntegrand(materialColor, brdf, NoL);
   
   return scat;
 }
 
-ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
+ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
-  int triangleRand = randomInt(0, 2, 0, additionalRandomSeed);
+  int triangleRand = randomInt(0, 2, additionalRandomSeed);
 
   if (triangleRand < 2) {
     scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
@@ -106,12 +108,12 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, uint a
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
-  scat.radiance = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL); 
+  scat.radiance = partialIntegrand(materialColor, brdf, NoL); 
   
   return scat;
 }
 
-ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
+ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -119,7 +121,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
   scat.pdf = 0.0;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, 0, additionalRandomSeed);
+  int lightIndex = randomInt(0, 1, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
@@ -145,13 +147,13 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, uint additio
     float area = areaTriangle(lights[lightIndex].triangle);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
-    scat.radiance = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
 }
 
-ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint additionalRandomSeed) {
+ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -159,7 +161,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
   scat.pdf = 0.0;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, 0, additionalRandomSeed);
+  int lightIndex = randomInt(0, 1, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
@@ -176,7 +178,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(materials[materialIndex].baseColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -187,11 +189,10 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, uint add
 void main() {
   uvec2 imgPosition = gl_GlobalInvocationID.xy;
 
-  float noiseX = randomFloat(1, 0) * 2.0 - 1.0;
-  float noiseY = randomFloat(2, 0) * 2.0 - 1.0;
+  float noiseX = randomFloat(0) * 2.0 - 1.0;
+  float noiseY = randomFloat(1) * 2.0 - 1.0;
 
-  vec2 noiseUV = vec2(noiseX, noiseY);
-  vec2 uv = (imgPosition + noiseUV) / imgSize;
+  vec2 uv = (imgPosition + vec2(noiseX, noiseY)) / imgSize;
 
   vec3 totalRadiance = vec3(0.0);
   vec3 totalIndirect = vec3(1.0);
@@ -203,7 +204,7 @@ void main() {
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
-  for(uint i = 0; i < 50 i++) {
+  for(uint i = 0; i < 50; i++) {
     HitRecord hit = hitObjectBvh(curRay, 0.001, 1000000.0);
     if (!hit.isHit) {
       totalRadiance = totalRadiance + totalIndirect * ubo.background;
@@ -221,12 +222,19 @@ void main() {
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
     int materialIndex = primitives[hit.hitIndex].materialIndex;
 
-    if (materials[materialIndex].metallicness >= randomFloat(0, i)) {
-      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, i);
-      directShadeResult = directGgxShade(curRay, hit, materialIndex, i);
+    vec3 materialColor = vec3(0.0);
+    if (materials[materialIndex].textureIndex >= 0) {
+      materialColor = texture(textureSampler[materials[materialIndex].textureIndex], hit.uv).xyz;
     } else {
-      indirectShadeResult = indirectLambertShade(curRay, hit, materialIndex, i);
-      directShadeResult = directLambertShade(curRay, hit, materialIndex, i);
+      materialColor = materials[materialIndex].baseColor;
+    }
+
+    if (materials[materialIndex].metallicness >= randomFloat(i)) {
+      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, materialColor, i);
+      directShadeResult = directGgxShade(curRay, hit, materialIndex, materialColor, i);
+    } else {
+      indirectShadeResult = indirectLambertShade(curRay, hit, materialIndex, materialColor, i);
+      directShadeResult = directLambertShade(curRay, hit, materialIndex, materialColor, i);
     }
 
     float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
