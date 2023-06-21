@@ -213,7 +213,9 @@ void main() {
 
     HitRecord hittedLight = hitLightBvh(curRay, 0.001, hit.t);
     if (hittedLight.isHit) {
-      if (i > 0) totalIndirect = totalIndirect * Gfactor(curRay, hittedLight, hittedLight.hitIndex);
+      if (i > 0) {
+        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight);
+      }
 
       totalRadiance = totalRadiance + totalIndirect * lights[hittedLight.hitIndex].color;
       break;
