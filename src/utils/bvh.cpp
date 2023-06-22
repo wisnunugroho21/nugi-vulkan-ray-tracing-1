@@ -124,14 +124,14 @@ namespace nugiEngine {
     node.maximum = box.max;      
 
     if (leaf) {
-      node.leftObjIndex = objects[0]->index;
+      node.leftObjIndex = objects[0]->index + 1;
 
       if (objects.size() > 1) {
-        node.rightObjIndex = objects[1]->index;
+        node.rightObjIndex = objects[1]->index + 1;
       }
     } else {
-      node.leftNode = leftNodeIndex;
-      node.rightNode = rightNodeIndex;
+      node.leftNode = leftNodeIndex + 1;
+      node.rightNode = rightNodeIndex + 1;
     }
 
     return node;

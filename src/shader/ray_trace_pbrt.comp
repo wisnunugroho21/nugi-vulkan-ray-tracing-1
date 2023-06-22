@@ -67,7 +67,7 @@ uvec2 imgSize = uvec2(imageSize(targetImage));
 
 // ------------- Material -------------
 
-ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
+ShadeRecord indirectGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
@@ -92,11 +92,11 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 mater
   return scat;
 }
 
-ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
+ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
-  int triangleRand = randomInt(0, 2, additionalRandomSeed);
+  uint triangleRand = randomInt(0, 2, additionalRandomSeed);
 
   if (triangleRand < 2) {
     scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
@@ -113,7 +113,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 m
   return scat;
 }
 
-ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
+ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -121,7 +121,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materia
   scat.pdf = 0.0;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, additionalRandomSeed);
+  uint lightIndex = randomInt(0, 1, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
@@ -153,7 +153,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, int materialIndex, vec3 materia
   return scat;
 }
 
-ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 materialColor, uint additionalRandomSeed) {
+ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -161,7 +161,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, int materialIndex, vec3 mat
   scat.pdf = 0.0;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, additionalRandomSeed);
+  uint lightIndex = randomInt(0, 1, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001, 1.0);
@@ -222,11 +222,11 @@ void main() {
     }
 
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
-    int materialIndex = primitives[hit.hitIndex].materialIndex;
+    uint materialIndex = primitives[hit.hitIndex].materialIndex;
 
     vec3 materialColor = vec3(0.0);
-    if (materials[materialIndex].textureIndex >= 0) {
-      materialColor = texture(textureSampler[materials[materialIndex].textureIndex], hit.uv).xyz;
+    if (materials[materialIndex].textureIndex > 0) {
+      materialColor = texture(textureSampler[materials[materialIndex - 1].textureIndex], hit.uv).xyz;
     } else {
       materialColor = materials[materialIndex].baseColor;
     }

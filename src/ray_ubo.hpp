@@ -25,20 +25,20 @@ namespace nugiEngine {
   struct Primitive {
     alignas(16) Triangle triangle{};
     alignas(16) TextureCoordinate textCoord{};
-    int materialIndex;
+    uint32_t materialIndex;
   };
 
   struct Object {
-    int firstBvhIndex;
-    int firstPrimitiveIndex;
-    int transformIndex;
+    uint32_t firstBvhIndex;
+    uint32_t firstPrimitiveIndex;
+    uint32_t transformIndex;
   };
 
   struct BvhNode {
-    int leftNode = -1;
-    int rightNode = -1;
-    int leftObjIndex = -1;
-    int rightObjIndex = -1;
+    uint32_t leftNode = -1;
+    uint32_t rightNode = -1;
+    uint32_t leftObjIndex = -1;
+    uint32_t rightObjIndex = -1;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;
@@ -49,7 +49,7 @@ namespace nugiEngine {
     float metallicness;
     float roughness;
     float fresnelReflect;
-    int textureIndex;
+    uint32_t textureIndex;
   };
 
   struct Transformation {

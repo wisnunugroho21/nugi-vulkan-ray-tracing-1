@@ -21,13 +21,13 @@ struct TextureCoordinate {
 struct Primitive {
   Triangle triangle;
   TextureCoordinate textCoord;
-  int materialIndex;
+  uint materialIndex;
 };
 
 struct Object {
-  int firstBvhIndex;
-  int firstPrimitiveIndex;
-  int transformIndex;
+  uint firstBvhIndex;
+  uint firstPrimitiveIndex;
+  uint transformIndex;
 };
 
 struct Light {
@@ -36,10 +36,10 @@ struct Light {
 };
 
 struct BvhNode {
-  int leftNode;
-  int rightNode;
-  int leftObjIndex;
-  int rightObjIndex;
+  uint leftNode;
+  uint rightNode;
+  uint leftObjIndex;
+  uint rightObjIndex;
 
   vec3 maximum;
   vec3 minimum;
@@ -50,7 +50,7 @@ struct Material {
 	float metallicness;
   float roughness;
   float fresnelReflect;
-  int textureIndex;
+  uint textureIndex;
 };
 
 struct Transformation {
@@ -72,14 +72,9 @@ struct FaceNormal {
   vec3 normal;
 };
 
-struct MaterialHitRecord {
-  int materialType;
-  int materialIndex;
-};
-
 struct HitRecord {
   bool isHit;
-  int hitIndex;
+  uint hitIndex;
 
   float t;
   vec3 point;
