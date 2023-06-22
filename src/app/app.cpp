@@ -119,7 +119,7 @@ namespace nugiEngine {
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 		
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		int objectIndex = static_cast<int>(objects->size() - 1);
+		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		rightWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 1 });
@@ -128,7 +128,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -140,7 +140,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<int>(objects->size() - 1);
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		leftWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 2});
@@ -149,7 +149,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -161,7 +161,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<int>(objects->size() - 1);
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		bottomWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{555.0f, 0.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
@@ -170,7 +170,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -182,7 +182,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<int>(objects->size() - 1);
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		topWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
@@ -191,7 +191,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -203,7 +203,7 @@ namespace nugiEngine {
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<int>(objects->size() - 1);
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		frontWallPrimitives->emplace_back(Primitive{ Triangle{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{555.0f, 555.0f, 555.0f} }, TextureCoordinate{ glm::vec3{0.0f}, glm::vec3{0.0f}}, 0 });
@@ -212,7 +212,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -223,13 +223,13 @@ namespace nugiEngine {
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<int>(objects->size() - 1);
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto flatVasePrimitives = this->primitiveModel->createPrimitivesFromFile(this->device, "models/viking_room.obj", 3);
 		this->primitiveModel->addPrimitive(flatVasePrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();

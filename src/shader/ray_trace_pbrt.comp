@@ -226,7 +226,7 @@ void main() {
 
     vec3 materialColor = vec3(0.0);
     if (materials[materialIndex].textureIndex > 0) {
-      materialColor = texture(textureSampler[materials[materialIndex - 1].textureIndex], hit.uv).xyz;
+      materialColor = texture(textureSampler[materials[materialIndex].textureIndex - 1], hit.uv).xyz;
     } else {
       materialColor = materials[materialIndex].baseColor;
     }

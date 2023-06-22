@@ -344,7 +344,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = lightIndex;
+        hit.hitIndex = lightIndex - 1;
       }
     }
 
@@ -354,7 +354,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = lightIndex;
+        hit.hitIndex = lightIndex - 1;
       }
     }
 
