@@ -185,7 +185,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
   hit.t = tMax;
 
   uint stack[30];
-  uint stackIndex = 0;
+  int stackIndex = 0;
 
   stack[0] = 1;
   stackIndex++;  
@@ -248,7 +248,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   uint stack[30];
-  uint stackIndex = 0;
+  int stackIndex = 0;
 
   stack[0] = 1;
   stackIndex++;
@@ -322,7 +322,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   uint stack[30];
-  uint stackIndex = 0;
+  int stackIndex = 0;
 
   stack[0] = 1;
   stackIndex++;

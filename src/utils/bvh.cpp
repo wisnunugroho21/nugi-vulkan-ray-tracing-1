@@ -1,12 +1,12 @@
 #include "bvh.hpp"
 
 namespace nugiEngine {
-  int Aabb::longestAxis() {
+  uint32_t Aabb::longestAxis() {
     float x = abs(max[0] - min[0]);
     float y = abs(max[1] - min[1]);
     float z = abs(max[2] - min[2]);
 
-    int longest = 0;
+    uint32_t longest = 0;
     if (y > x && y > z) {
       longest = 1;
     }
@@ -18,7 +18,7 @@ namespace nugiEngine {
     return longest;
   }
 
-  int Aabb::randomAxis() {
+  uint32_t Aabb::randomAxis() {
     return rand() % 3;
   }
 
@@ -50,7 +50,7 @@ namespace nugiEngine {
     };
   }
 
-  ObjectBoundBox::ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
+  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
     this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
     this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
   }
@@ -117,21 +117,21 @@ namespace nugiEngine {
   }
 
   BvhNode BvhItemBuild::getGpuModel() {
-    bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
+    bool leaf = leftNodeIndex == 0 && rightNodeIndex == 0;
 
     BvhNode node{};
     node.minimum = box.min;
     node.maximum = box.max;      
 
     if (leaf) {
-      node.leftObjIndex = objects[0]->index + 1;
+      node.leftObjIndex = objects[0]->index;
 
       if (objects.size() > 1) {
-        node.rightObjIndex = objects[1]->index + 1;
+        node.rightObjIndex = objects[1]->index;
       }
     } else {
-      node.leftNode = leftNodeIndex + 1;
-      node.rightNode = rightNodeIndex + 1;
+      node.leftNode = leftNodeIndex;
+      node.rightNode = rightNodeIndex;
     }
 
     return node;
@@ -181,10 +181,10 @@ namespace nugiEngine {
     return boxCompare(a, b, 2);
   }
 
-  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length) {
+  uint32_t findPrimitiveSplitIndex(BvhItemBuild node, uint32_t axis, float length) {
     float costArr[splitNumber]{};
 
-    for (int i = 0; i < splitNumber; i++) {
+    for (uint32_t i = 0; i < splitNumber; i++) {
       int totalLeft = 0, totalRight = 0;
 
       float leftLength = length * (i + 1) / (splitNumber + 1);
@@ -230,7 +230,7 @@ namespace nugiEngine {
 
       currentNode.box = objectListBoundingBox(currentNode.objects);
 
-      int axis = currentNode.box.longestAxis();
+      auto axis = currentNode.box.longestAxis();
       auto comparator = (axis == 0) ? boxXCompare
                       : (axis == 1) ? boxYCompare
                       : boxZCompare;
@@ -242,8 +242,8 @@ namespace nugiEngine {
         intermediate.push_back(currentNode);
         continue;
       } else {
-        float length = currentNode.box.max[axis] - currentNode.box.min[axis];
-        int mid = findPrimitiveSplitIndex(currentNode, axis, length); //  std::ceil(objectSpan / 2);
+        auto length = currentNode.box.max[axis] - currentNode.box.min[axis];
+        auto mid = findPrimitiveSplitIndex(currentNode, axis, length); //  std::ceil(objectSpan / 2);
 
         float posBarrier = length * (mid + 1) / (splitNumber + 1) + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;
@@ -260,16 +260,16 @@ namespace nugiEngine {
         }
 
         if (leftNode.objects.size() == 0 || rightNode.objects.size() == 0) {
-					mid = static_cast<int>(std::ceil(objectSpan / 2));
+					mid = static_cast<uint32_t>(std::ceil(objectSpan / 2));
 
 					leftNode.objects.clear();
 					rightNode.objects.clear();
 
-					for (int i = 0; i < mid; i++) {
+					for (uint32_t i = 0; i < mid; i++) {
 						leftNode.objects.push_back(currentNode.objects[i]);
 					}
 
-					for (int i = mid; i < objectSpan; i++) {
+					for (uint32_t i = mid; i < objectSpan; i++) {
 						rightNode.objects.push_back(currentNode.objects[i]);
 					}
         }        

@@ -16,15 +16,15 @@
 
 namespace nugiEngine {
   const glm::vec3 eps(0.0001f);
-  const int splitNumber = 11;
+  const uint32_t splitNumber = 11;
 
   // Axis-aligned bounding box.
   struct Aabb {
     glm::vec3 min = glm::vec3{FLT_MAX};
     glm::vec3 max = glm::vec3{FLT_MIN};
 
-    int longestAxis();
-    int randomAxis();
+    uint32_t longestAxis();
+    uint32_t randomAxis();
   };
 
   // Utility structure to keep track of the initial triangle index in the triangles array while sorting.
@@ -42,7 +42,7 @@ namespace nugiEngine {
   struct TriangleBoundBox : BoundBox {
     Triangle &triangle;
 
-    TriangleBoundBox(int i, Triangle &t) : BoundBox(i), triangle{t} {}
+    TriangleBoundBox(uint32_t i, Triangle &t) : BoundBox(i), triangle{t} {}
 
     Aabb boundingBox();
   };
@@ -50,7 +50,7 @@ namespace nugiEngine {
   struct SphereBoundBox : BoundBox {
     Sphere &sphere;
 
-    SphereBoundBox(int i, Sphere &s) : BoundBox(i), sphere{s} {}
+    SphereBoundBox(uint32_t i, Sphere &s) : BoundBox(i), sphere{s} {}
 
     Aabb boundingBox();
   };
@@ -58,7 +58,7 @@ namespace nugiEngine {
   struct PrimitiveBoundBox : BoundBox {
     Primitive &primitive;
 
-    PrimitiveBoundBox(int i, Primitive &p) : BoundBox(i), primitive{p} {}
+    PrimitiveBoundBox(uint32_t i, Primitive &p) : BoundBox(i), primitive{p} {}
 
     Aabb boundingBox();
   };
@@ -71,7 +71,7 @@ namespace nugiEngine {
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
+    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
@@ -86,7 +86,7 @@ namespace nugiEngine {
   struct LightBoundBox : BoundBox {
     Light &light;
 
-    LightBoundBox(int i, Light &l) : BoundBox(i), light{l} {}
+    LightBoundBox(uint32_t i, Light &l) : BoundBox(i), light{l} {}
 
     Aabb boundingBox();
   };
@@ -94,9 +94,9 @@ namespace nugiEngine {
   // Intermediate BvhNode structure needed for constructing Bvh.
   struct BvhItemBuild {
     Aabb box;
-    int index = -1; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
-    int leftNodeIndex = -1;
-    int rightNodeIndex = -1;
+    uint32_t index = 0; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
+    uint32_t leftNodeIndex = 0;
+    uint32_t rightNodeIndex = 0;
     std::vector<std::shared_ptr<BoundBox>> objects;
 
     BvhNode getGpuModel();
@@ -105,11 +105,11 @@ namespace nugiEngine {
   bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b);
   Aabb surroundingBox(Aabb box0, Aabb box1);
   Aabb objectListBoundingBox(std::vector<std::shared_ptr<BoundBox>> &objects);
-  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis);
+  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, uint32_t axis);
   bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length);
+  uint32_t findPrimitiveSplitIndex(BvhItemBuild node, uint32_t axis, float length);
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
