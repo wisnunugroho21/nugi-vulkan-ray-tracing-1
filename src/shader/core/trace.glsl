@@ -226,13 +226,13 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
     }
 
     uint bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
     bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
@@ -280,13 +280,13 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
     }
 
     uint bvhNode = objectBvhNodes[currentNode - 1u].leftNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
     bvhNode = objectBvhNodes[currentNode - 1u].rightNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
@@ -354,13 +354,13 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
     }
 
     uint bvhNode = lightBvhNodes[currentNode - 1u].leftNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
     bvhNode = lightBvhNodes[currentNode - 1u].rightNode;
-    if (bvhNode >= 1) {
+    if (bvhNode >= 1u) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
