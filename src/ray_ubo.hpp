@@ -29,16 +29,16 @@ namespace nugiEngine {
   };
 
   struct Object {
-    int firstBvhIndex;
-    int firstPrimitiveIndex;
+    uint32_t firstBvhIndex;
+    uint32_t firstPrimitiveIndex;
     int transformIndex;
   };
 
   struct BvhNode {
-    int leftNode = -1;
-    int rightNode = -1;
-    int leftObjIndex = -1;
-    int rightObjIndex = -1;
+    uint32_t leftNode = 0;
+    uint32_t rightNode = 0;
+    uint32_t leftObjIndex = 0;
+    uint32_t rightObjIndex = 0;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;

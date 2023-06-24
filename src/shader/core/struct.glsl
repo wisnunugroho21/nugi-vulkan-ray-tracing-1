@@ -25,8 +25,8 @@ struct Primitive {
 };
 
 struct Object {
-  int firstBvhIndex;
-  int firstPrimitiveIndex;
+  uint firstBvhIndex;
+  uint firstPrimitiveIndex;
   int transformIndex;
 };
 
@@ -36,10 +36,10 @@ struct Light {
 };
 
 struct BvhNode {
-  int leftNode;
-  int rightNode;
-  int leftObjIndex;
-  int rightObjIndex;
+  uint leftNode;
+  uint rightNode;
+  uint leftObjIndex;
+  uint rightObjIndex;
 
   vec3 maximum;
   vec3 minimum;
@@ -79,7 +79,7 @@ struct MaterialHitRecord {
 
 struct HitRecord {
   bool isHit;
-  int hitIndex;
+  uint hitIndex;
 
   float t;
   vec3 point;

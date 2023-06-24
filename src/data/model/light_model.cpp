@@ -11,7 +11,7 @@ namespace nugiEngine {
 	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 		for (int i = 0; i < lights->size(); i++) {
-			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i, (*lights)[i] }));
+			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*lights)[i] }));
 		}
 
 		this->createBuffers(lights, createBvh(boundBoxes));

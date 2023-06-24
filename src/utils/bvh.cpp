@@ -1,12 +1,12 @@
 #include "bvh.hpp"
 
 namespace nugiEngine {
-  int Aabb::longestAxis() {
+  uint32_t Aabb::longestAxis() {
     float x = abs(max[0] - min[0]);
     float y = abs(max[1] - min[1]);
     float z = abs(max[2] - min[2]);
 
-    int longest = 0;
+    uint32_t longest = 0;
     if (y > x && y > z) {
       longest = 1;
     }
@@ -18,7 +18,7 @@ namespace nugiEngine {
     return longest;
   }
 
-  int Aabb::randomAxis() {
+  uint32_t Aabb::randomAxis() {
     return rand() % 3;
   }
 
@@ -117,7 +117,7 @@ namespace nugiEngine {
   }
 
   BvhNode BvhItemBuild::getGpuModel() {
-    bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
+    bool leaf = leftNodeIndex == 0 && rightNodeIndex == 0;
 
     BvhNode node{};
     node.minimum = box.min;

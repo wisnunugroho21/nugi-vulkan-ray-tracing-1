@@ -28,7 +28,7 @@ namespace nugiEngine {
 	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives) {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 		for (int i = 0; i < primitives->size(); i++) {
-			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i, (*primitives)[i] }));
+			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i + 1, (*primitives)[i] }));
 		}
 
 		return createBvh(boundBoxes);

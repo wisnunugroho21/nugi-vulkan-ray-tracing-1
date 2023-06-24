@@ -127,7 +127,7 @@ namespace nugiEngine {
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
 		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -148,7 +148,7 @@ namespace nugiEngine {
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -169,7 +169,7 @@ namespace nugiEngine {
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -190,7 +190,7 @@ namespace nugiEngine {
 
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -211,7 +211,7 @@ namespace nugiEngine {
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -228,7 +228,7 @@ namespace nugiEngine {
 		auto flatVasePrimitives = this->primitiveModel->createPrimitivesFromFile(this->device, "models/viking_room.obj", 3);
 		this->primitiveModel->addPrimitive(flatVasePrimitives);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size()), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<int>(boundBoxes.size() + 1), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
 		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
