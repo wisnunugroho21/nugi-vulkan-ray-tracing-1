@@ -185,10 +185,9 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
   hit.t = tMax;
 
   uint stack[30];
-  int stackIndex = 0;
-
   stack[0] = 1;
-  stackIndex++;  
+
+  int stackIndex = 1;  
 
   r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0)).xyz;
   r.direction = mat3(transformations[transformIndex].dirInverseMatrix) * r.direction;
@@ -196,43 +195,43 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
     uint currentNode = stack[stackIndex];
-    if (currentNode < 1) {
+    if (currentNode == 0u) {
       continue;
     }
 
-    if (!intersectAABB(r, primitiveBvhNodes[currentNode + firstBvhIndex - 1].minimum, primitiveBvhNodes[currentNode + firstBvhIndex - 1].maximum)) {
+    if (!intersectAABB(r, primitiveBvhNodes[currentNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[currentNode - 1u + firstBvhIndex].maximum)) {
       continue;
     }
 
-    uint primIndex = primitiveBvhNodes[currentNode + firstBvhIndex - 1].leftObjIndex;
-    if (primIndex >= 1) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex - 1].triangle, r, tMin, hit.t, transformIndex);
+    uint primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftObjIndex;
+    if (primIndex >= 1u) {
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].triangle, r, tMin, hit.t, transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = primIndex + firstPrimitiveIndex - 1;
+        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
         hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].textCoord, hit.uv);
       }
     }
 
-    primIndex = primitiveBvhNodes[currentNode + firstBvhIndex - 1].rightObjIndex;    
-    if (primIndex >= 1) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex + firstPrimitiveIndex - 1].triangle, r, tMin, hit.t, transformIndex);
+    primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightObjIndex;    
+    if (primIndex >= 1u) {
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].triangle, r, tMin, hit.t, transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = primIndex + firstPrimitiveIndex - 1;
+        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
         hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].textCoord, hit.uv);
       }
     }
 
-    uint bvhNode = primitiveBvhNodes[currentNode + firstBvhIndex - 1].leftNode;
+    uint bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    bvhNode = primitiveBvhNodes[currentNode + firstBvhIndex - 1].rightNode;
+    bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
@@ -248,47 +247,45 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   uint stack[30];
-  int stackIndex = 0;
-
   stack[0] = 1;
-  stackIndex++;
 
+  int stackIndex = 1;
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
     uint currentNode = stack[stackIndex];
-    if (currentNode < 1) {
+    if (currentNode == 0u) {
       continue;
     }
 
-    if (!intersectAABB(r, objectBvhNodes[currentNode - 1].minimum, objectBvhNodes[currentNode - 1].maximum)) {
+    if (!intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum)) {
       continue;
     }
 
-    uint objIndex = objectBvhNodes[currentNode - 1].leftObjIndex;
-    if (objIndex >= 1) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1].firstBvhIndex, objects[objIndex - 1].firstPrimitiveIndex, objects[objIndex - 1].transformIndex);
+    uint objIndex = objectBvhNodes[currentNode - 1u].leftObjIndex;
+    if (objIndex >= 1u) {
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
       }
     }
 
-    objIndex = objectBvhNodes[currentNode - 1].rightObjIndex;
-    if (objIndex >= 1) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1].firstBvhIndex, objects[objIndex - 1].firstPrimitiveIndex, objects[objIndex - 1].transformIndex);
+    objIndex = objectBvhNodes[currentNode - 1u].rightObjIndex;
+    if (objIndex >= 1u) {
+      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
       }
     }
 
-    uint bvhNode = objectBvhNodes[currentNode - 1].leftNode;
+    uint bvhNode = objectBvhNodes[currentNode - 1u].leftNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    bvhNode = objectBvhNodes[currentNode - 1].rightNode;
+    bvhNode = objectBvhNodes[currentNode - 1u].rightNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
@@ -322,49 +319,47 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   hit.t = tMax;
 
   uint stack[30];
-  int stackIndex = 0;
-
   stack[0] = 1;
-  stackIndex++;
 
+  int stackIndex = 1;
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
     uint currentNode = stack[stackIndex];
-    if (currentNode < 1) {
+    if (currentNode == 0u) {
       continue;
     }
 
-    if (!intersectAABB(r, lightBvhNodes[currentNode - 1].minimum, lightBvhNodes[currentNode - 1].maximum)) {
+    if (!intersectAABB(r, lightBvhNodes[currentNode - 1u].minimum, lightBvhNodes[currentNode - 1u].maximum)) {
       continue;
     }
 
-    uint lightIndex = lightBvhNodes[currentNode - 1].leftObjIndex;
-    if (lightIndex >= 1) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1].triangle, r, tMin, hit.t);
+    uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
+    if (lightIndex >= 1u) {
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = lightIndex - 1;
+        hit.hitIndex = lightIndex - 1u;
       }
     }
 
-    lightIndex = lightBvhNodes[currentNode - 1].rightObjIndex;    
-    if (lightIndex >= 1) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1].triangle, r, tMin, hit.t);
+    lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
+    if (lightIndex >= 1u) {
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u].triangle, r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
-        hit.hitIndex = lightIndex - 1;
+        hit.hitIndex = lightIndex - 1u;
       }
     }
 
-    uint bvhNode = lightBvhNodes[currentNode - 1].leftNode;
+    uint bvhNode = lightBvhNodes[currentNode - 1u].leftNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;
     }
 
-    bvhNode = lightBvhNodes[currentNode - 1].rightNode;
+    bvhNode = lightBvhNodes[currentNode - 1u].rightNode;
     if (bvhNode >= 1) {
       stack[stackIndex] = bvhNode;
       stackIndex++;

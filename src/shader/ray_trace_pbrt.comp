@@ -224,7 +224,7 @@ void main() {
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
     int materialIndex = primitives[hit.hitIndex].materialIndex;
 
-    vec3 materialColor = vec3(0.0);
+    vec3 materialColor = vec3(1.0);
     if (materials[materialIndex].textureIndex >= 0) {
       materialColor = texture(textureSampler[materials[materialIndex].textureIndex], hit.uv).xyz;
     } else {

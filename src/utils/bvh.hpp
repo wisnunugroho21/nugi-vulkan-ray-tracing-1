@@ -71,7 +71,7 @@ namespace nugiEngine {
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
+    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
