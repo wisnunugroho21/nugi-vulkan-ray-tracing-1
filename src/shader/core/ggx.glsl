@@ -1,23 +1,23 @@
 // ------------- GGX Function -------------
 
 float fresnelSchlick(float VoH, float F0) {
-  return F0 + (1.0 - F0) * pow(1.0 - VoH, 5.0);
+  return F0 + (1.0f - F0) * pow(1.0f - VoH, 5.0f);
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = max(roughness, 0.05);
+  float r = max(roughness, 0.05f);
   
   float alpha = r * r;
   float alpha2 = alpha * alpha;
   
-  float b = (NoH * NoH * (alpha2 - 1.0) + 1.0);
+  float b = (NoH * NoH * (alpha2 - 1.0f) + 1.0f);
   return alpha2 / (pi * b * b);
 }
 float G1_GGX_Schlick(float cosine, float roughness) {
   float r = 0.5 + 0.5 * roughness; // Disney remapping
-  float k = (r * r) / 2.0;
+  float k = (r * r) / 2.0f;
 
-  float denom = cosine * (1.0 - k) + k;
+  float denom = cosine * (1.0f - k) + k;
   return cosine / denom;
 }
 

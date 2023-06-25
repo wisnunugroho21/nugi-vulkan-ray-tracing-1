@@ -27,8 +27,8 @@ namespace nugiEngine {
 
 	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives) {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (int i = 0; i < primitives->size(); i++) {
-			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i, (*primitives)[i] }));
+		for (uint32_t i = 0; i < primitives->size(); i++) {
+			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i + 1, (*primitives)[i] }));
 		}
 
 		return createBvh(boundBoxes);
@@ -84,7 +84,7 @@ namespace nugiEngine {
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
 
-	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, int materialIndex) {
+	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
