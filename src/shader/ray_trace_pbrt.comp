@@ -228,7 +228,7 @@ void main() {
     if (materials[materialIndex].textureIndex == 0u) {
       materialColor = materials[materialIndex].baseColor;
     } else {
-      materialColor = texture(textureSampler[materials[materialIndex].textureIndex], hit.uv).xyz;
+      materialColor = texture(textureSampler[materials[materialIndex].textureIndex - 1u], hit.uv).xyz;
     }
 
     if (materials[materialIndex].metallicness >= randomFloat(i)) {
