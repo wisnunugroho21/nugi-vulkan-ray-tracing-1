@@ -21,13 +21,13 @@ struct TextureCoordinate {
 struct Primitive {
   Triangle triangle;
   TextureCoordinate textCoord;
-  int materialIndex;
+  uint materialIndex;
 };
 
 struct Object {
   uint firstBvhIndex;
   uint firstPrimitiveIndex;
-  int transformIndex;
+  uint transformIndex;
 };
 
 struct Light {
@@ -50,7 +50,7 @@ struct Material {
 	float metallicness;
   float roughness;
   float fresnelReflect;
-  int textureIndex;
+  uint textureIndex;
 };
 
 struct Transformation {

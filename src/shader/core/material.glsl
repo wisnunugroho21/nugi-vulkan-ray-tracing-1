@@ -7,7 +7,7 @@ vec3 randomGGX(float roughness, uint additionalRandomSeed) {
   float a = roughness * roughness;
   float phi = 2 * 3.14159265359 * r2;
 
-  float cosTheta = sqrt((1.0 - r1) / ((a * a - 1.0) * r1 + 1.0));
+  float cosTheta = sqrt((1.0f - r1) / ((a * a - 1.0f) * r1 + 1.0f));
   float sinTheta = sqrt(1 - cosTheta * cosTheta);
 
   float x = cos(phi) * sinTheta;
@@ -60,5 +60,5 @@ float lambertPdfValue(float NoL) {
 }
 
 float lambertBrdfValue() {
-  return 1.0 / pi;
+  return 1.0f / pi;
 }

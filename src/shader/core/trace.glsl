@@ -5,7 +5,7 @@ vec3 rayAt(Ray r, float t) {
 }
 
 vec3[3] buildOnb(vec3 normal) {
-  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0f, 1.0f, 0.0f) : vec3(1.0f, 0.0f, 0.0f);
 
   vec3 z = normalize(normal);
   vec3 y = normalize(cross(z, a));
@@ -15,19 +15,19 @@ vec3[3] buildOnb(vec3 normal) {
 }
 
 vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
-  return dot(r_direction, outwardNormal) < 0.0 ? outwardNormal : -1.0 * outwardNormal;
+  return dot(r_direction, outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
 }
 
 vec2 getTotalTextureCoordinate(TextureCoordinate textCoord, vec2 uv) {
-  float u = (1.0 - uv.x - uv.y) * textCoord.texel0.x + uv.x * textCoord.texel0.y + uv.y * textCoord.texel0.z;
-  float v = (1.0 - uv.x - uv.y) * textCoord.texel1.x + uv.x * textCoord.texel1.y + uv.y * textCoord.texel1.z;
+  float u = (1.0f - uv.x - uv.y) * textCoord.texel0.x + uv.x * textCoord.texel0.y + uv.y * textCoord.texel0.z;
+  float v = (1.0f - uv.x - uv.y) * textCoord.texel1.x + uv.x * textCoord.texel1.y + uv.y * textCoord.texel1.z;
 
   return vec2(u, v);
 }
 
 // ------------- Sphere -------------
 
-HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformIndex) {
+HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, uint transformIndex) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -39,7 +39,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   float discriminant = half_b * half_b - a * c;
 
-  if (discriminant < 0.0) {
+  if (discriminant < 0.0f) {
     return hit;
   }
 
@@ -56,7 +56,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
   hit.isHit = true;
   hit.t = root;
-  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, root), 1.0)).xyz; 
+  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, root), 1.0f)).xyz; 
 
   vec3 outwardNormal = (hit.point - sphere.center) / sphere.radius;
   hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
@@ -66,7 +66,7 @@ HitRecord hitSphere(Sphere sphere, Ray r, float tMin, float tMax, int transformI
 
 // ------------- Triangle -------------
 
-HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transformIndex) {
+HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, uint transformIndex) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -79,17 +79,17 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
     return hit;
   }
     
-  float invDet = 1.0 / det;
+  float invDet = 1.0f / det;
 
   vec3 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
-  if (u < 0.0 || u > 1.0) {
+  if (u < 0.0f || u > 1.0f) {
     return hit;
   }
 
   vec3 qvec = cross(tvec, v0v1);
   float v = dot(r.direction, qvec) * invDet;
-  if (v < 0.0 || u + v > 1.0) {
+  if (v < 0.0f || u + v > 1.0f) {
     return hit;
   }
   
@@ -105,7 +105,7 @@ HitRecord hitTriangle(Triangle tri, Ray r, float tMin, float tMax, int transform
 
   hit.isHit = true;
   hit.t = t;
-  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0)).xyz;
+  hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
   hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
@@ -127,17 +127,17 @@ HitRecord hitLight(Triangle tri, Ray r, float tMin, float tMax) {
     return hit;
   }
     
-  float invDet = 1.0 / det;
+  float invDet = 1.0f / det;
 
   vec3 tvec = r.origin - tri.point0;
   float u = dot(tvec, pvec) * invDet;
-  if (u < 0.0 || u > 1.0) {
+  if (u < 0.0f || u > 1.0f) {
     return hit;
   }
 
   vec3 qvec = cross(tvec, v0v1);
   float v = dot(r.direction, qvec) * invDet;
-  if (v < 0.0 || u + v > 1.0) {
+  if (v < 0.0f || u + v > 1.0f) {
     return hit;
   }
   
@@ -179,7 +179,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   return tNear < tFar;
 }
 
-HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex, int transformIndex) {
+HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -189,7 +189,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
 
   int stackIndex = 1;  
 
-  r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0)).xyz;
+  r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0f)).xyz;
   r.direction = mat3(transformations[transformIndex].dirInverseMatrix) * r.direction;
 
   while(stackIndex > 0 && stackIndex <= 30) {

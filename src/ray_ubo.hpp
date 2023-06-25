@@ -25,13 +25,13 @@ namespace nugiEngine {
   struct Primitive {
     alignas(16) Triangle triangle{};
     alignas(16) TextureCoordinate textCoord{};
-    int materialIndex;
+    uint32_t materialIndex;
   };
 
   struct Object {
     uint32_t firstBvhIndex = 0;
     uint32_t firstPrimitiveIndex = 0;
-    int transformIndex;
+    uint32_t transformIndex;
   };
 
   struct BvhNode {
@@ -49,7 +49,7 @@ namespace nugiEngine {
     float metallicness;
     float roughness;
     float fresnelReflect;
-    int textureIndex;
+    uint32_t textureIndex;
   };
 
   struct Transformation {
