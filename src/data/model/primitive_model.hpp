@@ -28,7 +28,7 @@ namespace nugiEngine {
       void addPrimitive(std::shared_ptr<std::vector<Primitive>> primitives);
       void createBuffers();
 
-      static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, int materialIndex);
+      static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex);
       
     private:
       EngineDevice &engineDevice;
