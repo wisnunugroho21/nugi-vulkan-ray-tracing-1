@@ -31,8 +31,6 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
-			srand(this->randomSeed);
-
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -42,13 +40,13 @@ namespace nugiEngine {
 				auto commandBuffer = this->renderer->beginCommand();
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
 
-				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), rand());
+				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
 				this->rayTraceImage->transferFrame(commandBuffer, frameIndex);
 				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, rand());
+				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
 				this->rayTraceImage->finishFrame(commandBuffer, frameIndex);
