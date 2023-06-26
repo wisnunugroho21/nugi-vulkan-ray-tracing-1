@@ -72,11 +72,6 @@ struct FaceNormal {
   vec3 normal;
 };
 
-struct MaterialHitRecord {
-  int materialType;
-  int materialIndex;
-};
-
 struct HitRecord {
   bool isHit;
   uint hitIndex;
