@@ -39,7 +39,7 @@ int randomInt(float min, float max, uint additionalRandomSeed) {
 }
 
 uint randomUint(uint min, uint max, uint additionalRandomSeed) {
-  return min + (max - min) * randomUint(additionalRandomSeed);
+  return uint(randomFloatAt(min, max + 1, additionalRandomSeed));
 }
 
 vec3 randomVecThree(uint additionalRandomSeed) {
