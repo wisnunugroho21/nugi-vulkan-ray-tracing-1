@@ -18,6 +18,7 @@ layout(set = 0, binding = 2) uniform readonly GlobalUbo {
   vec3 vertical;
   vec3 lowerLeftCorner;
   vec3 background;
+  uint numLights;
 } ubo;
 
 layout(set = 0, binding = 3) buffer readonly ObjectSsbo {
@@ -96,7 +97,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
-  int triangleRand = randomInt(0, 2, additionalRandomSeed);
+  uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
 
   if (triangleRand < 2) {
     scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
@@ -121,7 +122,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materi
   scat.pdf = 0.0f;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, additionalRandomSeed);
+  uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
@@ -161,7 +162,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 ma
   scat.pdf = 0.0f;
 
   shadowRay.origin = hit.point;
-  int lightIndex = randomInt(0, 1, additionalRandomSeed);
+  uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);

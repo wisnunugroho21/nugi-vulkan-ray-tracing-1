@@ -126,7 +126,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(rightWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
-		int boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -147,7 +147,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(leftWallPrimitives);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -168,7 +168,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(bottomWallPrimitives);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -189,7 +189,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(topWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -210,7 +210,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(frontWallPrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -227,7 +227,7 @@ namespace nugiEngine {
 		this->primitiveModel->addPrimitive(flatVasePrimitives);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<int>(boundBoxes.size() - 1);
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
 		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
@@ -255,6 +255,7 @@ namespace nugiEngine {
 		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+		this->numLights = lights->size();
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -306,6 +307,7 @@ namespace nugiEngine {
 		ubo.vertical = glm::vec3(viewportHeight * v);
 		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
 		ubo.background = glm::vec3(0.0f);
+		ubo.numLights = this->numLights;
 
 		return ubo;
 	}

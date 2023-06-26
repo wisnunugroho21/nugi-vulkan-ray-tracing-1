@@ -71,7 +71,9 @@ namespace nugiEngine {
 			std::vector<std::unique_ptr<EngineTexture>> textures{};
 
 			uint32_t randomSeed = 0;
+			uint32_t numLights = 0;
 			bool isRendering = true;
+
 			RayTraceUbo globalUbo;
 	};
 }
