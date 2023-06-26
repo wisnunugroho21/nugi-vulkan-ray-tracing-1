@@ -14,7 +14,7 @@ layout(push_constant) uniform Push {
 
 void main() {
   vec4 accColor = imageLoad(accumulateImage, ivec2(gl_FragCoord.xy));
-  vec4 totalColor = (clamp(imageLoad(inputImage, ivec2(gl_FragCoord.xy)), 0.0, 1.0) + accColor * push.randomSeed) / (push.randomSeed + 1.0);
+  vec4 totalColor = (clamp(imageLoad(inputImage, ivec2(gl_FragCoord.xy)), 0.0f, 1.0f) + accColor * push.randomSeed) / (push.randomSeed + 1.0f);
 
   imageStore(accumulateImage, ivec2(gl_FragCoord.xy), totalColor);
   outColor = totalColor; //imageLoad(inputImage, ivec2(gl_FragCoord.xy));

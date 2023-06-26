@@ -1,12 +1,12 @@
 #include "bvh.hpp"
 
 namespace nugiEngine {
-  int Aabb::longestAxis() {
+  uint32_t Aabb::longestAxis() {
     float x = abs(max[0] - min[0]);
     float y = abs(max[1] - min[1]);
     float z = abs(max[2] - min[2]);
 
-    int longest = 0;
+    uint32_t longest = 0;
     if (y > x && y > z) {
       longest = 1;
     }
@@ -18,7 +18,7 @@ namespace nugiEngine {
     return longest;
   }
 
-  int Aabb::randomAxis() {
+  uint32_t Aabb::randomAxis() {
     return rand() % 3;
   }
 
@@ -50,7 +50,7 @@ namespace nugiEngine {
     };
   }
 
-  ObjectBoundBox::ObjectBoundBox(int i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
+  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
     this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
     this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
   }
@@ -117,7 +117,7 @@ namespace nugiEngine {
   }
 
   BvhNode BvhItemBuild::getGpuModel() {
-    bool leaf = leftNodeIndex == -1 && rightNodeIndex == -1;
+    bool leaf = leftNodeIndex == 0 && rightNodeIndex == 0;
 
     BvhNode node{};
     node.minimum = box.min;
@@ -213,7 +213,7 @@ namespace nugiEngine {
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
   std::shared_ptr<std::vector<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes) {
-    int nodeCounter = 0;
+    uint32_t nodeCounter = 1;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
 
