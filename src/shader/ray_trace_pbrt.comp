@@ -37,19 +37,23 @@ layout(set = 0, binding = 6) buffer readonly PrimitiveBvhSsbo {
   BvhNode primitiveBvhNodes[];
 };
 
-layout(set = 0, binding = 7) buffer readonly LightSsbo {
+layout(set = 0, binding = 7) buffer readonly VertexSsbo {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 8) buffer readonly LightSsbo {
   Light lights[];
 };
 
-layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
+layout(set = 0, binding = 9) buffer readonly LightBvhSsbo {
   BvhNode lightBvhNodes[];
 };
 
-layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 10) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 11) buffer readonly TransformationSsbo {
   Transformation transformations[];
 };
 
@@ -100,7 +104,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 
   uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
 
   if (triangleRand < 2) {
-    scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].triangle, hit.point, additionalRandomSeed);
+    scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].indices, hit.point, additionalRandomSeed);
   } else {
     scat.nextRay.direction = lambertGenerateRandom(buildOnb(hit.normal), additionalRandomSeed);
   }
@@ -124,12 +128,12 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materi
   shadowRay.origin = hit.point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
+  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
     float NloL = max(dot(hittedLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
     float NoL = max(dot(hit.normal, unitLightDirection), 0.001f);    
@@ -145,7 +149,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materi
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaTriangle(lights[lightIndex].triangle);
+    float area = areaTriangle(lights[lightIndex].indices);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
     scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
@@ -164,18 +168,18 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 ma
   shadowRay.origin = hit.point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].triangle, hit.point, additionalRandomSeed);
+  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].triangle, unitLightDirection);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
     float NloL = max(dot(hittedLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
     float NoL = max(dot(hit.normal, unitLightDirection), 0.001f);    
 
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaTriangle(lights[lightIndex].triangle);
+    float area = areaTriangle(lights[lightIndex].indices);
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);

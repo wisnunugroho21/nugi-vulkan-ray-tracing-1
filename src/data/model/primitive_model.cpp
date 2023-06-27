@@ -84,7 +84,7 @@ namespace nugiEngine {
 		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
 	}
 
-	std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
+	/* std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -143,6 +143,6 @@ namespace nugiEngine {
 		}
 
 		return primitives;
-	} 
+	} */ 
 } // namespace nugiEngine
 
