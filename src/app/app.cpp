@@ -291,22 +291,28 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadQuadModels() {
-		std::vector<Vertex> vertices{};
+		VertexModelData modelData{};
 
-		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0), glm::vec3(0.0), glm::vec2(0.0f) };
+		std::vector<Vertex> vertices;
+
+		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
 		vertices.emplace_back(vertex1);
 
-		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0), glm::vec3(0.0), glm::vec2(0.0f) };
+		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
 		vertices.emplace_back(vertex2);
 
-		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0), glm::vec3(0.0), glm::vec2(0.0f) };
+		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
 		vertices.emplace_back(vertex3);
 
-		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0), glm::vec3(0.0), glm::vec2(0.0f) };
+		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
 		vertices.emplace_back(vertex4);
 
-		std::vector<uint32_t> indices = { 0, 1, 2, 2, 3, 0 };
-		this->quadModels = std::make_shared<EngineVertexModel>(this->device, vertices, indices);
+		modelData.vertices = vertices;
+		modelData.indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
+		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
 	}
 
 	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
