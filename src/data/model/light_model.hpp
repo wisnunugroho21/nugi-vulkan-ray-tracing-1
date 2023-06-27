@@ -17,7 +17,7 @@
 namespace nugiEngine {
 	class EngineLightModel {
     public:
-      EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights);
+      EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
 
       VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }

@@ -2,25 +2,13 @@
 
 // ---------------------- buffer struct ----------------------
 
-struct Sphere {
-  vec3 center;
-  float radius;
-};
-
-struct Triangle {
-  vec3 point0;
-  vec3 point1;
-  vec3 point2;
-};
-
-struct TextureCoordinate {
-  vec3 texel0;
-  vec3 texel1;
+struct Vertex {
+  vec3 position;
+  vec2 texel;
 };
 
 struct Primitive {
-  Triangle triangle;
-  TextureCoordinate textCoord;
+  uvec3 indices;
   uint materialIndex;
 };
 
@@ -31,7 +19,7 @@ struct Object {
 };
 
 struct Light {
-  Triangle triangle;
+  uvec3 indices;
   vec3 color;
 };
 

@@ -6,25 +6,13 @@
 #include <glm/gtc/constants.hpp>
 
 namespace nugiEngine {
-  struct Triangle {
-    alignas(16) glm::vec3 point0{};
-    alignas(16) glm::vec3 point1{};
-    alignas(16) glm::vec3 point2{};
-  };
-
-  struct Sphere {
-    alignas(16) glm::vec3 center{};
-    float radius;
-  };
-
-  struct TextureCoordinate {
-    alignas(16) glm::vec3 texel0{};
-    alignas(16) glm::vec3 texel1{};
+  struct RayTraceVertex {
+    alignas(16) glm::vec3 position;
+    alignas(16) glm::vec2 texel;
   };
 
   struct Primitive {
-    alignas(16) Triangle triangle{};
-    alignas(16) TextureCoordinate textCoord{};
+    alignas(16) glm::uvec3 indices;
     uint32_t materialIndex;
   };
 
@@ -60,7 +48,7 @@ namespace nugiEngine {
   };
 
   struct Light {
-    Triangle triangle{};
+    alignas(16) glm::uvec3 indices;
     alignas(16) glm::vec3 color;
   };
 

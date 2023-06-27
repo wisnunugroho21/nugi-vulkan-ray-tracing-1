@@ -10,6 +10,7 @@
 #include "../data/model/light_model.hpp"
 #include "../data/model/material_model.hpp"
 #include "../data/model/transformation_model.hpp"
+#include "../data/model/vertex_ray_trace_model.hpp"
 #include "../data/buffer/global_uniform.hpp"
 #include "../data/descSet/ray_trace_desc_set.hpp"
 #include "../data/descSet/sampling_desc_set.hpp"
@@ -64,6 +65,7 @@ namespace nugiEngine {
 			std::unique_ptr<EngineMaterialModel> materialModel{};
 			std::unique_ptr<EngineTransformationModel> transformationModel{};
 			std::shared_ptr<EngineVertexModel> quadModels{};
+			std::shared_ptr<EngineRayTraceVertexModel> rayTraceVertexModels{};
 
 			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
