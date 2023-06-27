@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+
 #include "../ray_ubo.hpp"
 
 namespace nugiEngine {

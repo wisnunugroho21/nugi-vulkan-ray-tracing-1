@@ -108,10 +108,8 @@ namespace nugiEngine {
 			}
 		}
 
-		return {
-      primitives,
-      vertices
-    };
+		RayTraceVertexPrimitive result { primitives, vertices };
+		return result;
   }
 }
 
