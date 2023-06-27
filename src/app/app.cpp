@@ -152,8 +152,8 @@ namespace nugiEngine {
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 1u });
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 1u });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
