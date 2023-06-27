@@ -22,35 +22,21 @@ namespace nugiEngine {
     return rand() % 3;
   }
 
-  Aabb TriangleBoundBox::boundingBox() {
-    return Aabb{ 
-      glm::min(glm::min(this->triangle.point0, this->triangle.point1), this->triangle.point2) - eps,
-      glm::max(glm::max(this->triangle.point0, this->triangle.point1), this->triangle.point2) + eps
-    };
-  }
-
-  Aabb SphereBoundBox::boundingBox() {
-    return Aabb { 
-      this->sphere.center - this->sphere.radius - eps,
-      this->sphere.center + this->sphere.radius + eps
-    };
-  }
-
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->primitive.triangle.point0, this->primitive.triangle.point1), this->primitive.triangle.point2) - eps,
-      glm::max(glm::max(this->primitive.triangle.point0, this->primitive.triangle.point1), this->primitive.triangle.point2) + eps
+      glm::min(glm::min((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) - eps,
+      glm::max(glm::max((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) + eps
     };
   }
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->light.triangle.point0, this->light.triangle.point1), this->light.triangle.point2) - eps,
-      glm::max(glm::max(this->light.triangle.point0, this->light.triangle.point1), this->light.triangle.point2) + eps
+      glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - eps,
+      glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + eps
     };
   }
 
-  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t) : BoundBox(i), object{o}, primitives{p}, transformation{t} {
+  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), object{o}, primitives{p}, transformation{t}, vertices{v} {
     this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
     this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
   }
@@ -97,9 +83,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
     for (auto &&primitive : *this->primitives) {
-      if (primitive.triangle.point0[index] > max) max = primitive.triangle.point0[index];
-      if (primitive.triangle.point1[index] > max) max = primitive.triangle.point1[index];
-      if (primitive.triangle.point2[index] > max) max = primitive.triangle.point2[index];
+      if ((*this->vertices)[primitive.indices.x].position[index] > max) max = (*this->vertices)[primitive.indices.x].position[index];
+      if ((*this->vertices)[primitive.indices.y].position[index] > max) max = (*this->vertices)[primitive.indices.y].position[index];
+      if ((*this->vertices)[primitive.indices.z].position[index] > max) max = (*this->vertices)[primitive.indices.z].position[index];
     }
 
     return max;
@@ -108,9 +94,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMin(uint32_t index) {
     float min = FLT_MAX;
     for (auto &&primitive : *this->primitives) {
-      if (primitive.triangle.point0[index] < min) min = primitive.triangle.point0[index];
-      if (primitive.triangle.point1[index] < min) min = primitive.triangle.point1[index];
-      if (primitive.triangle.point2[index] < min) min = primitive.triangle.point2[index];
+      if ((*this->vertices)[primitive.indices.x].position[index] < min) min = (*this->vertices)[primitive.indices.x].position[index];
+      if ((*this->vertices)[primitive.indices.y].position[index] < min) min = (*this->vertices)[primitive.indices.y].position[index];
+      if ((*this->vertices)[primitive.indices.z].position[index] < min) min = (*this->vertices)[primitive.indices.z].position[index];
     }
 
     return min;

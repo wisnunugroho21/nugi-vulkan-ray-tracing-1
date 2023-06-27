@@ -13,8 +13,8 @@ namespace nugiEngine {
 		this->bvhNodes = std::make_shared<std::vector<BvhNode>>();
 	}
 
-	void EnginePrimitiveModel::addPrimitive(std::shared_ptr<std::vector<Primitive>> curPrimitives) {
-		auto curBvhNodes = this->createBvhData(curPrimitives);
+	void EnginePrimitiveModel::addPrimitive(std::shared_ptr<std::vector<Primitive>> curPrimitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices) {
+		auto curBvhNodes = this->createBvhData(curPrimitives, vertices);
 
 		for (int i = 0; i < curBvhNodes->size(); i++) {
 			this->bvhNodes->emplace_back((*curBvhNodes)[i]);
@@ -25,10 +25,10 @@ namespace nugiEngine {
 		}
 	}
 
-	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives) {
+	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices) {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 		for (uint32_t i = 0; i < primitives->size(); i++) {
-			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i + 1, (*primitives)[i] }));
+			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i + 1, (*primitives)[i], vertices }));
 		}
 
 		return createBvh(boundBoxes);

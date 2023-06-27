@@ -106,7 +106,7 @@ namespace nugiEngine {
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
 		auto lights = std::make_shared<std::vector<Light>>();
-		auto vertices = std::make_shared<std::vector<Vertex>>();
+		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		std::vector<std::shared_ptr<TransformComponent>> transforms{};
@@ -120,18 +120,18 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
 
-		this->primitiveModel->addPrimitive(rightWallPrimitives);
+		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex], vertices }));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -146,18 +146,18 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 1u });
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 1u });
 		
-		this->primitiveModel->addPrimitive(leftWallPrimitives);
+		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -172,18 +172,18 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(8u, 9u, 10u), 0u });
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(10u, 11u, 8u), 0u });
 		
-		this->primitiveModel->addPrimitive(bottomWallPrimitives);
+		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -198,18 +198,18 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u), 0u });
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(14u, 15u, 12u), 0u });
 
-		this->primitiveModel->addPrimitive(topWallPrimitives);
+		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -224,18 +224,18 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u), 0u });
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 19u, 16u), 0u });
 
-		this->primitiveModel->addPrimitive(frontWallPrimitives);
+		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex] }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -267,10 +267,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(Vertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(Vertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
 
 		lights->emplace_back(Light{ glm::uvec3(20u, 21u, 22u), glm::vec3(100.0f, 100.0f, 100.0f) });
 		lights->emplace_back(Light{ glm::uvec3(22u, 23u, 20u), glm::vec3(100.0f, 100.0f, 100.0f) });
@@ -279,7 +279,7 @@ namespace nugiEngine {
 
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights);
+		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights, vertices);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
 

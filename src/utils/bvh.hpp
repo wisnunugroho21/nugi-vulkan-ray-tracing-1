@@ -39,26 +39,11 @@ namespace nugiEngine {
     virtual glm::vec3 getOriginalMax() { return glm::vec3(0.0f); }
   };
 
-  struct TriangleBoundBox : BoundBox {
-    Triangle &triangle;
-
-    TriangleBoundBox(uint32_t i, Triangle &t) : BoundBox(i), triangle{t} {}
-
-    Aabb boundingBox();
-  };
-
-  struct SphereBoundBox : BoundBox {
-    Sphere &sphere;
-
-    SphereBoundBox(uint32_t i, Sphere &s) : BoundBox(i), sphere{s} {}
-
-    Aabb boundingBox();
-  };
-
   struct PrimitiveBoundBox : BoundBox {
     Primitive &primitive;
+    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
 
-    PrimitiveBoundBox(uint32_t i, Primitive &p) : BoundBox(i), primitive{p} {}
+    PrimitiveBoundBox(uint32_t i, Primitive &p, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), primitive{p}, vertices{v} {}
 
     Aabb boundingBox();
   };
@@ -67,11 +52,12 @@ namespace nugiEngine {
     Object &object;
     std::shared_ptr<TransformComponent> transformation;
     std::shared_ptr<std::vector<Primitive>> primitives;
+    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
 
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t);
+    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<RayTraceVertex>> v);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
@@ -85,8 +71,9 @@ namespace nugiEngine {
 
   struct LightBoundBox : BoundBox {
     Light &light;
+    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
 
-    LightBoundBox(int i, Light &l) : BoundBox(i), light{l} {}
+    LightBoundBox(int i, Light &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
 
     Aabb boundingBox();
   };
