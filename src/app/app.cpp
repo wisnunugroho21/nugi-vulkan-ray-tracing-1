@@ -3,6 +3,7 @@
 #include "../camera/camera.hpp"
 #include "../buffer/buffer.hpp"
 #include "../frame_info.hpp"
+#include "../utils/load_primitives.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
