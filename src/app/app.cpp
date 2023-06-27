@@ -360,11 +360,12 @@ namespace nugiEngine {
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
-		VkDescriptorBufferInfo buffersInfo[8] { 
+		VkDescriptorBufferInfo buffersInfo[9] { 
 			this->objectModel->getObjectInfo(), 
 			this->objectModel->getBvhInfo(),
 			this->primitiveModel->getPrimitiveInfo(), 
 			this->primitiveModel->getBvhInfo(),
+			this->rayTraceVertexModels->getVertexnfo(),
 			this->lightModel->getLightInfo(),
 			this->lightModel->getBvhInfo(),
 			this->materialModel->getMaterialInfo(),
