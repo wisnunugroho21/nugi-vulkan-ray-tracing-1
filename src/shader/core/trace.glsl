@@ -25,18 +25,18 @@ vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
   return vec2(u, v);
 }
 
-// ------------- Point PointLight -------------
+// ------------- Point Light -------------
 
 HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 lightDirection = light.position - r.origin;
-  if (dot(normalize(lightDirection), normalize(r.direction)) < 1.0) {
+  vec3 lightDirection = normalize(light.position - r.origin);
+  if (dot(lightDirection, normalize(r.direction)) < 1.0f) {
     return hit;
   }
 
-  float t = length(lightDirection / r.direction);
+  float t = lightDirection.x / r.direction.x; // Only works if dot(lightDir, rayDir) == 1, otherwise use => length(lightDirection / r.direction);
   if (t < tMin || t > tMax) {
     return hit;
   }
@@ -44,9 +44,7 @@ HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
   hit.isHit = true;
   hit.t = t;
   hit.point = light.position;
-
-  vec3 outwardNormal = normalize(light.position - r.origin);
-  hit.normal = setFaceNormal(r.direction, outwardNormal);
+  hit.normal = setFaceNormal(r.direction, lightDirection);
 
   return hit;
 }

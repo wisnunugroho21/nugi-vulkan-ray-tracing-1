@@ -248,12 +248,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
-
-		lights->emplace_back(PointLight{ glm::vec3(277.5f, 540.0f, 277.5f), 10.0f, glm::vec3(100.0f, 100.0f, 100.0f) });
+		lights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), 10.0f, glm::vec3(20.0f) });
 
 		// ----------------------------------------------------------------------------
 
