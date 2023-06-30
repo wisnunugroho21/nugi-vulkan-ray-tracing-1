@@ -71,9 +71,8 @@ namespace nugiEngine {
 
   struct LightBoundBox : BoundBox {
     PointLight &light;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
 
-    LightBoundBox(int i, PointLight &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
+    LightBoundBox(int i, PointLight &l) : BoundBox(i), light{l} {}
 
     Aabb boundingBox();
   };

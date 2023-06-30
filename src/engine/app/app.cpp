@@ -259,7 +259,7 @@ namespace nugiEngine {
 
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights, vertices);
+		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
 
