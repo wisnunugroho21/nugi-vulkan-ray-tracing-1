@@ -6,7 +6,7 @@ struct Vertex {
   vec4 position;
   vec4 textCoord;
   uint materialIndex; // Because of hybrid rendering, Material Index hold by Vertex
-  uint transformIndex; // Because of hybrid rendering, Transform Index hold by Vertex
+  uint transformIndex; // Because of hybrid rendering, Transform Index also hold by Vertex
 };
 
 struct Primitive {
@@ -17,7 +17,7 @@ struct Primitive {
 struct Object {
   uint firstBvhIndex;
   uint firstPrimitiveIndex;
-  // uint transformIndex; // Most ideal => Transform Index should be hold by Object.
+  uint transformIndex;
 };
 
 struct PointLight {

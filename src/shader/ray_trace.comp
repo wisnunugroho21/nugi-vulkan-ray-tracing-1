@@ -223,7 +223,7 @@ void main() {
     }
 
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
-    uint materialIndex = primitives[hit.hitIndex].materialIndex;
+    // uint materialIndex = primitives[hit.hitIndex].materialIndex;
 
     if (materialParams.x >= randomFloat(i)) {
       indirectShadeResult = indirectGgxShade(curRay, hit, materialParams, albedoColor, i);

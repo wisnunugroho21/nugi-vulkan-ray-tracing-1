@@ -13,7 +13,7 @@ namespace nugiEngine {
     glm::vec4 position{};
     glm::vec4 textCoord{};
     uint32_t materialIndex{}; // Because of hybrid rendering, Material Index hold by Vertex
-    uint32_t transformIndex{}; // Because of hybrid rendering, Transform Index hold by Vertex
+    uint32_t transformIndex{}; // Because of hybrid rendering, Transform Index also hold by Vertex
 
     static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
     static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
@@ -29,7 +29,7 @@ namespace nugiEngine {
   struct Object {
     uint32_t firstBvhIndex = 0;
     uint32_t firstPrimitiveIndex = 0;
-    // uint32_t transformIndex; // Most ideal => Transform Index should be hold by Object.
+    uint32_t transformIndex;
   };
 
   struct BvhNode {
