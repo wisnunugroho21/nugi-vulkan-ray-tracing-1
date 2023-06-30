@@ -6,5 +6,5 @@ layout(location = 2) in uint materialIndex;
 layout(location = 3) in uint transformIndex;
 
 void main() {
-    gl_Position = vec4(position, 1.0f);
+    gl_Position = position;
 }

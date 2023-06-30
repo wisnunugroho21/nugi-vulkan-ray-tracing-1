@@ -26,7 +26,7 @@ layout(set = 0, binding = 2) buffer readonly TransformationSsbo {
 };
 
 void main() {
-	gl_Position = ubo.projection * ubo.view * transformations[transformIndex].pointMatrix * vec4(position, 1.0);
+	gl_Position = ubo.projection * ubo.view * transformations[transformIndex].pointMatrix * position;
 
 	positionFrag = position;
 	textCoordFrag = textCoord;
