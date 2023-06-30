@@ -36,7 +36,7 @@ HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
     return hit;
   }
 
-  float t = lightDirection.x / r.direction.x; // Only works if dot(lightDir, rayDir) == 1, otherwise use => length(lightDirection / r.direction);
+  float t = (light.position - r.origin).x / r.direction.x; // Only works if dot(lightDir, rayDir) == 1, otherwise use => length(lightDirection / r.direction);
   if (t < tMin || t > tMax) {
     return hit;
   }
