@@ -31,8 +31,8 @@ namespace nugiEngine {
 
   Aabb LightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + eps
+      this->light.position - eps,
+      this->light.position + eps
     };
   }
 

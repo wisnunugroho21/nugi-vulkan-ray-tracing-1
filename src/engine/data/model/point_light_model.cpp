@@ -1,4 +1,4 @@
-#include "light_model.hpp"
+#include "point_light_model.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -8,17 +8,17 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<RayTraceVertex>> vertices) : engineDevice{device} {
+	EnginePointLightModel::EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> lights) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 		for (int i = 0; i < lights->size(); i++) {
-			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*lights)[i], vertices }));
+			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*lights)[i] }));
 		}
 
 		this->createBuffers(lights, createBvh(boundBoxes));
 	}
 
-	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
-		auto lightBufferSize = sizeof(Light) * lights->size();
+	void EnginePointLightModel::createBuffers(std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+		auto lightBufferSize = sizeof(PointLight) * lights->size();
 		
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,
