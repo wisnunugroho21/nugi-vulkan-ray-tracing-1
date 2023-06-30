@@ -47,8 +47,9 @@ namespace nugiEngine {
     glm::mat4 normalInverseMatrix{1.0f};
   };
 
-  struct Light {
-    alignas(16) glm::uvec3 indices;
+  struct PointLight {
+    alignas(16) glm::vec3 position;
+    alignas(4) float radius;
     alignas(16) glm::vec3 color;
   };
 

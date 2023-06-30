@@ -18,8 +18,9 @@ struct Object {
   uint transformIndex;
 };
 
-struct Light {
-  uvec3 indices;
+struct PointLight {
+  vec3 position;
+  float radius;
   vec3 color;
 };
 
