@@ -25,6 +25,30 @@ vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
   return vec2(u, v);
 }
 
+// ------------- Point Light -------------
+
+HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+
+  vec3 lightDirection = normalize(light.position - r.origin);
+  if (dot(lightDirection, normalize(r.direction)) < 1.0f) {
+    return hit;
+  }
+
+  float t = (light.position - r.origin).x / r.direction.x; // Only works if dot(lightDir, rayDir) == 1, otherwise use => length(lightDirection / r.direction);
+  if (t < tMin || t > tMax) {
+    return hit;
+  }
+
+  hit.isHit = true;
+  hit.t = t;
+  hit.point = light.position;
+  hit.normal = setFaceNormal(r.direction, lightDirection);
+
+  return hit;
+}
+
 // ------------- Triangle -------------
 
 HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint transformIndex) {
@@ -71,54 +95,6 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
-
-  return hit;
-}
-
-HitRecord hitLight(uvec3 triIndices, Ray r, float tMin, float tMax) {
-  HitRecord hit;
-  hit.isHit = false;
-
-  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
-  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
-  vec3 pvec = cross(r.direction, v0v2);
-  float det = dot(v0v1, pvec);
-  
-  if (abs(det) < KEPSILON) {
-    return hit;
-  }
-    
-  float invDet = 1.0f / det;
-
-  vec3 tvec = r.origin - vertices[triIndices.x].position;
-  float u = dot(tvec, pvec) * invDet;
-  if (u < 0.0f || u > 1.0f) {
-    return hit;
-  }
-
-  vec3 qvec = cross(tvec, v0v1);
-  float v = dot(r.direction, qvec) * invDet;
-  if (v < 0.0f || u + v > 1.0f) {
-    return hit;
-  }
-  
-  float t = dot(v0v2, qvec) * invDet;
-
-  if (t <= KEPSILON) {
-    return hit;
-  }
-
-  if (t < tMin || t > tMax) {
-    return hit;
-  }
-
-  hit.isHit = true;
-  hit.t = t;
-  hit.point = rayAt(r, t);
-  hit.uv = vec2(u, v);
-
-  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-  hit.normal = setFaceNormal(r.direction, outwardNormal);
 
   return hit;
 }
@@ -256,8 +232,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
   return hit;
 }
 
-// ------------- Light -------------
-
+// ------------- PointLight -------------
 HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
@@ -280,7 +255,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, tMin, hit.t);
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -290,7 +265,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, tMin, hit.t);
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
