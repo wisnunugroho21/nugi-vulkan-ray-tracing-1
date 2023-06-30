@@ -1,4 +1,4 @@
-#include "global_uniform.hpp"
+#include "ray_trace_uniform.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,11 +10,11 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineGlobalUniform::EngineGlobalUniform(EngineDevice& device) : appDevice{device} {
+	EngineRayTraceUniform::EngineRayTraceUniform(EngineDevice& device) : appDevice{device} {
 		this->createUniformBuffer();
 	}
 
-	std::vector<VkDescriptorBufferInfo> EngineGlobalUniform::getBuffersInfo() const {
+	std::vector<VkDescriptorBufferInfo> EngineRayTraceUniform::getBuffersInfo() const {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->uniformBuffers.size(); i++) {
@@ -24,7 +24,7 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineGlobalUniform::createUniformBuffer() {
+	void EngineRayTraceUniform::createUniformBuffer() {
 		this->uniformBuffers.clear();
 
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -41,7 +41,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineGlobalUniform::writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo) {
+	void EngineRayTraceUniform::writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo) {
 		this->uniformBuffers[frameIndex]->writeToBuffer(&ubo);
 		this->uniformBuffers[frameIndex]->flush();
 	}

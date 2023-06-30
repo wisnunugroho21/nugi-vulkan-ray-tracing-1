@@ -1,4 +1,4 @@
-#include "sampling_ray_raster_render_system.hpp"
+#include "sampling_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,18 +10,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineSamplingRayRasterRenderSystem::EngineSamplingRayRasterRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, VkRenderPass renderPass)
+	EngineSamplingRenderSystem::EngineSamplingRenderSystem(EngineDevice& device, EngineRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayouts)
 		: appDevice{device}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline(renderPass);
 	}
 
-	EngineSamplingRayRasterRenderSystem::~EngineSamplingRayRasterRenderSystem() {
+	EngineSamplingRenderSystem::~EngineSamplingRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void EngineSamplingRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
@@ -39,15 +39,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void EngineSamplingRenderSystem::createPipeline(EngineRenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
-			.setDefault("shader/ray_trace_sampling.vert.spv", "shader/ray_trace_sampling.frag.spv")
+		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, renderPass, this->pipelineLayout)
+			.setDefault("shader/sampling.vert.spv", "shader/sampling.frag.spv")
 			.build();
 	}
 
-	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed) {
+	void EngineSamplingRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

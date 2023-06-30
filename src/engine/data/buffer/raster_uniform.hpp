@@ -5,19 +5,19 @@
 #include "../../../vulkan/pipeline/compute_pipeline.hpp"
 #include "../../../vulkan/buffer/buffer.hpp"
 #include "../../../vulkan/descriptor/descriptor.hpp"
-#include "../../ray_ubo.hpp"
+#include "../../general_struct.hpp"
 
 #include <memory>
 #include <vector>
 
 namespace nugiEngine {
-	class EngineGlobalUniform {
+	class EngineRasterUniform {
 		public:
-			EngineGlobalUniform(EngineDevice& device);
+			EngineRasterUniform(EngineDevice& device);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo() const;
 
-			void writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo);
+			void writeGlobalData(uint32_t frameIndex, RasterUbo ubo);
 
 		private:
       EngineDevice& appDevice;

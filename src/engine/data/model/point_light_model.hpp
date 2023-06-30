@@ -4,7 +4,7 @@
 #include "../../../vulkan/buffer/buffer.hpp"
 #include "../../../vulkan/command/command_buffer.hpp"
 #include "../../utils/bvh/bvh.hpp"
-#include "../../ray_ubo.hpp"
+#include "../../general_struct.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

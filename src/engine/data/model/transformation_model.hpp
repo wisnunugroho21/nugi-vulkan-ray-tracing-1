@@ -3,7 +3,7 @@
 #include "../../../vulkan/device/device.hpp"
 #include "../../../vulkan/buffer/buffer.hpp"
 #include "../../../vulkan/command/command_buffer.hpp"
-#include "../../ray_ubo.hpp"
+#include "../../general_struct.hpp"
 #include "../../utils/transform/transform.hpp"
 
 #define GLM_FORCE_RADIANS

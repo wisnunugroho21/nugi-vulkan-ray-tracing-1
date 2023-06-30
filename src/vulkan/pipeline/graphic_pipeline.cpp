@@ -5,9 +5,10 @@
 #include <stdexcept>
 
 namespace nugiEngine {
-	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, VkPipelineLayout pipelineLayout, VkRenderPass renderPass) : appDevice{appDevice} {
+	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, EngineRenderPass renderPass, VkPipelineLayout pipelineLayout) : appDevice{appDevice} {
 		this->configInfo.pipelineLayout = pipelineLayout;
-		this->configInfo.renderPass = renderPass;
+		this->configInfo.renderPass = renderPass.getRenderPass();
+		this->configInfo.colorBlendInfo = renderPass.getColorBlendInfos();
 	}
 
 	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDefault(const std::string& vertFilePath, const std::string& fragFilePath) {
@@ -36,26 +37,6 @@ namespace nugiEngine {
 		this->configInfo.multisampleInfo.pSampleMask = nullptr;             // Optional
 		this->configInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE;  // Optional
 		this->configInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;       // Optional
-		
-		this->configInfo.colorBlendAttachment.colorWriteMask =
-			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		this->configInfo.colorBlendAttachment.blendEnable = VK_FALSE;
-		this->configInfo.colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-		this->configInfo.colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-		this->configInfo.colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-		this->configInfo.colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-		this->configInfo.colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-		this->configInfo.colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
-		
-		this->configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		this->configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
-		this->configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
-		this->configInfo.colorBlendInfo.attachmentCount = 1;
-		this->configInfo.colorBlendInfo.pAttachments = &this->configInfo.colorBlendAttachment;
-		this->configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
-		this->configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
-		this->configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
-		this->configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
 		
 		this->configInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 		this->configInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
@@ -138,11 +119,6 @@ namespace nugiEngine {
 
 	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setMultisampleInfo(VkPipelineMultisampleStateCreateInfo multisampleInfo) {
 		this->configInfo.multisampleInfo = multisampleInfo;
-		return *this;
-	}
-
-	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment) {
-		this->configInfo.colorBlendAttachment = colorBlendAttachment;
 		return *this;
 	}
 

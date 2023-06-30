@@ -10,16 +10,16 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineVertexModel::EngineVertexModel(EngineDevice &device, const VertexModelData &datas) : engineDevice{device} {
-		this->createVertexBuffers(datas.vertices);
-		this->createIndexBuffer(datas.indices);
+	EngineVertexModel::EngineVertexModel(EngineDevice &device, std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<std::vector<uint32_t>> indices) : engineDevice{device} {
+		this->createVertexBuffers(vertices);
+		this->createIndexBuffer(indices);
 	}
 
-	void EngineVertexModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
-		this->vertextCount = static_cast<uint32_t>(vertices.size());
+	void EngineVertexModel::createVertexBuffers(std::shared_ptr<std::vector<Vertex>> vertices) {
+		this->vertextCount = static_cast<uint32_t>(vertices->size());
 		assert(vertextCount >= 3 && "Vertex count must be at least 3");
 
-		uint32_t vertexSize = sizeof(vertices[0]);
+		uint32_t vertexSize = static_cast<uint32_t>(sizeof(Vertex));
 		VkDeviceSize bufferSize = vertexSize * vertextCount;
 
 		EngineBuffer stagingBuffer {
@@ -31,7 +31,7 @@ namespace nugiEngine {
 		};
 
 		stagingBuffer.map();
-		stagingBuffer.writeToBuffer((void *) vertices.data());
+		stagingBuffer.writeToBuffer((void *) vertices->data());
 
 		this->vertexBuffer = std::make_unique<EngineBuffer>(
 			this->engineDevice,
@@ -44,15 +44,15 @@ namespace nugiEngine {
 		this->vertexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
 	}
 
-	void EngineVertexModel::createIndexBuffer(const std::vector<uint32_t> &indices) { 
-		this->indexCount = static_cast<uint32_t>(indices.size());
+	void EngineVertexModel::createIndexBuffer(std::shared_ptr<std::vector<uint32_t>> indices) { 
+		this->indexCount = static_cast<uint32_t>(indices->size());
 		this->hasIndexBuffer = this->indexCount > 0;
 
 		if (!this->hasIndexBuffer) {
 			return;
 		}
 
-		uint32_t indexSize = sizeof(indices[0]);
+		uint32_t indexSize = static_cast<uint32_t>(sizeof(uint32_t));
 		VkDeviceSize bufferSize = indexSize * this->indexCount;
 
 		EngineBuffer stagingBuffer {
@@ -64,7 +64,7 @@ namespace nugiEngine {
 		};
 
 		stagingBuffer.map();
-		stagingBuffer.writeToBuffer((void *) indices.data());
+		stagingBuffer.writeToBuffer((void *) indices->data());
 
 		this->indexBuffer = std::make_unique<EngineBuffer>(
 			this->engineDevice,
@@ -94,37 +94,5 @@ namespace nugiEngine {
 			vkCmdDraw(commandBuffer->getCommandBuffer(), this->vertextCount, 1, 0, 0);
 		}
 	}
-
-	std::vector<VkVertexInputBindingDescription> Vertex::getVertexBindingDescriptions() {
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-		bindingDescriptions[0].binding = 0;
-		bindingDescriptions[0].stride = sizeof(Vertex);
-		bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-		return bindingDescriptions;
-	}
-
-	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(4);
-		attributeDescription[0].binding = 0;
-		attributeDescription[0].location = 0;
-		attributeDescription[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[0].offset = offsetof(Vertex, position);
-
-		attributeDescription[1].binding = 0;
-		attributeDescription[1].location = 1;
-		attributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[1].offset = offsetof(Vertex, color);
-
-		attributeDescription[2].binding = 0;
-		attributeDescription[2].location = 2;
-		attributeDescription[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-		attributeDescription[2].offset = offsetof(Vertex, normal);
-
-		attributeDescription[3].binding = 0;
-		attributeDescription[3].location = 3;
-		attributeDescription[3].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescription[3].offset = offsetof(Vertex, uv);
-		return attributeDescription;
-	} 
 } // namespace nugiEngine
 

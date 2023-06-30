@@ -1,25 +1,35 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <vector>
 
 namespace nugiEngine {
-  struct RayTraceVertex {
-    alignas(16) glm::vec3 position;
-    alignas(16) glm::vec2 texel;
+  struct Vertex {
+    glm::vec4 position{};
+    glm::vec4 textCoord{};
+    uint32_t materialIndex{}; // Because of hybrid rendering, Material Index hold by Vertex
+    uint32_t transformIndex{}; // Because of hybrid rendering, Transform Index hold by Vertex
+
+    static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
+    static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
+
+    bool operator == (const Vertex &other) const;
   };
 
   struct Primitive {
     alignas(16) glm::uvec3 indices;
-    uint32_t materialIndex;
+    // uint32_t materialIndex; // Most ideal => Material Index should be hold by Primitive.
   };
 
   struct Object {
     uint32_t firstBvhIndex = 0;
     uint32_t firstPrimitiveIndex = 0;
-    uint32_t transformIndex;
+    // uint32_t transformIndex; // Most ideal => Transform Index should be hold by Object.
   };
 
   struct BvhNode {
@@ -55,11 +65,13 @@ namespace nugiEngine {
 
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
-    alignas(16) glm::vec3 horizontal;
-    alignas(16) glm::vec3 vertical;
-    alignas(16) glm::vec3 lowerLeftCorner;
     alignas(16) glm::vec3 background;
     uint32_t numLights = 0;
+  };
+
+  struct RasterUbo {
+    glm::mat4 projection{1.0f};
+	  glm::mat4 view{1.0f};
   };
 
   struct RayTracePushConstant {

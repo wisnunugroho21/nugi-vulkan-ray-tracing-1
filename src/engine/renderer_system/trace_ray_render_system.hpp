@@ -7,7 +7,7 @@
 #include "../../vulkan/descriptor/descriptor.hpp"
 #include "../../vulkan/swap_chain/swap_chain.hpp"
 #include "../utils/camera/camera.hpp"
-#include "../ray_ubo.hpp"
+#include "../general_struct.hpp"
 
 #include <memory>
 #include <vector>

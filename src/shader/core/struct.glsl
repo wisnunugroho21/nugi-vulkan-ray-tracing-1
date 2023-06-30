@@ -3,19 +3,21 @@
 // ---------------------- buffer struct ----------------------
 
 struct Vertex {
-  vec3 position;
-  vec2 texel;
+  vec4 position;
+  vec4 textCoord;
+  uint materialIndex; // Because of hybrid rendering, Material Index hold by Vertex
+  uint transformIndex; // Because of hybrid rendering, Transform Index hold by Vertex
 };
 
 struct Primitive {
   uvec3 indices;
-  uint materialIndex;
+  // uint materialIndex; // Most ideal => Material Index should be hold by Primitive.
 };
 
 struct Object {
   uint firstBvhIndex;
   uint firstPrimitiveIndex;
-  uint transformIndex;
+  // uint transformIndex; // Most ideal => Transform Index should be hold by Object.
 };
 
 struct PointLight {
