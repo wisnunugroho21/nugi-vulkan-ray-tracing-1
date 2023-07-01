@@ -143,6 +143,24 @@ namespace nugiEngine {
     positionColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     positionColorBlendAttachment.blendEnable = VK_FALSE;
 
+    VkAttachmentDescription textCoordAttachment{};
+    textCoordAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    textCoordAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    textCoordAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    textCoordAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    textCoordAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    textCoordAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    textCoordAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    textCoordAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference textCoordAttachmentRef = {};
+    textCoordAttachmentRef.attachment = 1;
+    textCoordAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkPipelineColorBlendAttachmentState textCoordColorBlendAttachment{};
+    textCoordColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    textCoordColorBlendAttachment.blendEnable = VK_FALSE;
+
     VkAttachmentDescription albedoColorAttachment{};
     albedoColorAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     albedoColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -154,7 +172,7 @@ namespace nugiEngine {
     albedoColorAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference albedoColorAttachmentRef = {};
-    albedoColorAttachmentRef.attachment = 1;
+    albedoColorAttachmentRef.attachment = 2;
     albedoColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkPipelineColorBlendAttachmentState albedoColorColorBlendAttachment{};
@@ -172,7 +190,7 @@ namespace nugiEngine {
     materialAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference materialAttachmentRef = {};
-    materialAttachmentRef.attachment = 2;
+    materialAttachmentRef.attachment = 3;
     materialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkPipelineColorBlendAttachmentState materialColorBlendAttachment{};
@@ -192,7 +210,7 @@ namespace nugiEngine {
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 3;
+    depthAttachmentRef.attachment = 4;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass = {};
@@ -219,10 +237,12 @@ namespace nugiEngine {
 
     EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
       .addAttachments(positionAttachment)
+      .addAttachments(textCoordAttachment)
 			.addAttachments(albedoColorAttachment)
       .addAttachments(materialAttachment)
 			.addAttachments(depthAttachment)
       .addColorBlendAttachments(positionColorBlendAttachment)
+      .addColorBlendAttachments(textCoordColorBlendAttachment)
       .addColorBlendAttachments(albedoColorColorBlendAttachment)
       .addColorBlendAttachments(materialColorBlendAttachment)
 			.addSubpass(subpass)

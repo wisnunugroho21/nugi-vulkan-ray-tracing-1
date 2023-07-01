@@ -36,11 +36,11 @@ namespace nugiEngine {
 
 				auto commandBuffer = this->renderer->beginCommand();
 
-				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->forwardPassRender->render(commandBuffer, this->forwardPassDescSet->getDescriptorSets(imageIndex), this->vertexModels);
+				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, frameIndex);
+				this->forwardPassRender->render(commandBuffer, this->forwardPassDescSet->getDescriptorSets(frameIndex), this->vertexModels);
 				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
 
-				this->forwardPassSubRenderer->transferFrame(commandBuffer, imageIndex);
+				this->forwardPassSubRenderer->transferFrame(commandBuffer, frameIndex);
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
 
 				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), this->randomSeed);
