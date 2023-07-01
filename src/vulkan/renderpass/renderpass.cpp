@@ -44,31 +44,18 @@ namespace nugiEngine {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(this->dependencies.size());
     renderPassInfo.pDependencies = this->dependencies.data();
 
-    if (this->colorBlendAttachments.size() == 0) {
-      for (int i = 0; i < this->attachments.size(); i++) {
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
-
-        this->colorBlendAttachments.push_back(colorBlendAttachment);
-      }
-    }
-
     return std::make_shared<EngineRenderPass>(this->appDevice, this->viewImages, renderPassInfo, this->width, this->height, this->colorBlendAttachments);
   }
 
   EngineRenderPass::EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, 
-    int width, int height, std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments) : appDevice{appDevice} 
+    int width, int height, std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments) : appDevice{appDevice}, colorBlendAttachments{colorBlendAttachments} 
   {
     this->createRenderPass(renderPassInfo);
     this->createFramebuffers(viewImages, width, height);
-    this->createColorBlendInfos(colorBlendAttachments);
+
+    if (this->colorBlendAttachments.size() == 0) {
+      this->createColorBlendAttachments(static_cast<uint32_t>(viewImages.size()));
+    }
   }
 
   EngineRenderPass::~EngineRenderPass() {
@@ -109,15 +96,19 @@ namespace nugiEngine {
     }
   }
 
-  void EngineRenderPass::createColorBlendInfos(std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments) {
-		this->colorBlendInfos.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		this->colorBlendInfos.logicOpEnable = VK_FALSE;
-		this->colorBlendInfos.attachmentCount = static_cast<uint32_t>(colorBlendAttachments.size());
-		this->colorBlendInfos.pAttachments = colorBlendAttachments.data();
-    this->colorBlendInfos.logicOp = VK_LOGIC_OP_COPY;  // Optional
-		this->colorBlendInfos.blendConstants[0] = 0.0f;  // Optional
-		this->colorBlendInfos.blendConstants[1] = 0.0f;  // Optional
-		this->colorBlendInfos.blendConstants[2] = 0.0f;  // Optional
-		this->colorBlendInfos.blendConstants[3] = 0.0f;  // Optional
+  void EngineRenderPass::createColorBlendAttachments(uint32_t attachmentSize) {
+    for (uint32_t i = 0; i < attachmentSize; i++) {
+      VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+      colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+      colorBlendAttachment.blendEnable = VK_FALSE;
+      colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+      colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+      colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
+      colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
+      colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
+      colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
+
+      this->colorBlendAttachments.push_back(colorBlendAttachment);
+    }
   }
 } // namespace nugiEngine

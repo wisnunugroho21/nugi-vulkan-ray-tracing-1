@@ -8,7 +8,7 @@ namespace nugiEngine {
 	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, std::shared_ptr<EngineRenderPass> renderPass, VkPipelineLayout pipelineLayout) : appDevice{appDevice} {
 		this->configInfo.pipelineLayout = pipelineLayout;
 		this->configInfo.renderPass = renderPass->getRenderPass();
-		this->configInfo.colorBlendInfo = renderPass->getColorBlendInfos();
+		this->configInfo.colorBlendAttachments = renderPass->getColorBlendAttachments();
 	}
 
 	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDefault(const std::string& vertFilePath, const std::string& fragFilePath) {
@@ -17,6 +17,16 @@ namespace nugiEngine {
 		this->configInfo.inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		this->configInfo.inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		this->configInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
+
+		this->configInfo.colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+		this->configInfo.colorBlendInfo.logicOpEnable = VK_FALSE;
+		this->configInfo.colorBlendInfo.attachmentCount = static_cast<uint32_t>(this->configInfo.colorBlendAttachments.size());
+		this->configInfo.colorBlendInfo.pAttachments = this->configInfo.colorBlendAttachments.data();
+    this->configInfo.colorBlendInfo.logicOp = VK_LOGIC_OP_COPY;  // Optional
+		this->configInfo.colorBlendInfo.blendConstants[0] = 0.0f;  // Optional
+		this->configInfo.colorBlendInfo.blendConstants[1] = 0.0f;  // Optional
+		this->configInfo.colorBlendInfo.blendConstants[2] = 0.0f;  // Optional
+		this->configInfo.colorBlendInfo.blendConstants[3] = 0.0f;  // Optional
 		
 		this->configInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		this->configInfo.rasterizationInfo.depthClampEnable = VK_FALSE;

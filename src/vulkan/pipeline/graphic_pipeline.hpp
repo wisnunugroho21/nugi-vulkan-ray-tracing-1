@@ -23,6 +23,8 @@ namespace nugiEngine {
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo{};
 	};
 	

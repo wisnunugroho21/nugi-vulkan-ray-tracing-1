@@ -40,18 +40,18 @@ namespace nugiEngine {
 
       VkFramebuffer getFramebuffers(int index) const { return this->framebuffers[index]; }
       VkRenderPass getRenderPass() const { return this->renderPass; }
-      VkPipelineColorBlendStateCreateInfo getColorBlendInfos() const { return this->colorBlendInfos; }
+      std::vector<VkPipelineColorBlendAttachmentState> getColorBlendAttachments() const { return this->colorBlendAttachments; }
 
     private:
       EngineDevice &appDevice;
 
       std::vector<VkFramebuffer> framebuffers;
       VkRenderPass renderPass;
-      VkPipelineColorBlendStateCreateInfo colorBlendInfos{};
+      std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
 
       void createRenderPass(VkRenderPassCreateInfo renderPassInfo);
       void createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, int width, int height);
-      void createColorBlendInfos(std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments);
+      void createColorBlendAttachments(uint32_t attachmentSize);
   };
 } // namespace nugiEngin 
 
