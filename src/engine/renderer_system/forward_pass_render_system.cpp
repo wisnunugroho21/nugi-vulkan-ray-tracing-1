@@ -10,10 +10,10 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts)
+	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, std::shared_ptr<EngineDescriptorSetLayout> descriptorSetLayouts)
 		: appDevice{device}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayouts->getDescriptorSetLayout());
 		this->createPipeline(renderPass);
 	}
 

@@ -15,7 +15,7 @@
 namespace nugiEngine {
 	class EngineTraceRayRenderSystem {
 		public:
-			EngineTraceRayRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
+			EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorSetLayout> descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
 			~EngineTraceRayRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed = 1);

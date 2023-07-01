@@ -17,7 +17,7 @@
 namespace nugiEngine {
 	class EngineSamplingRenderSystem {
 		public:
-			EngineSamplingRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts);
+			EngineSamplingRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, std::shared_ptr<EngineDescriptorSetLayout> descriptorSetLayouts);
 			~EngineSamplingRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed = 1);

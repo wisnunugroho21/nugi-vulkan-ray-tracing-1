@@ -396,9 +396,6 @@ namespace nugiEngine {
 
 		this->updateCamera(width, height);
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
-
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
@@ -442,8 +439,8 @@ namespace nugiEngine {
 		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->rayTraceUniforms->getBuffersInfo(), 
 			this->rayTraceImage->getImagesInfo(), rayTracebuffersInfo, resourcesInfo);
 
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
-		this->forwardPassRender = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass(), this->forwardPassDescSet->getDescSetLayout()->getDescriptorSetLayout());
-		this->samplingRayRender = std::make_unique<EngineSamplingRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass(), this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout());
+		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout(), width, height, 1);
+		this->forwardPassRender = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass(), this->forwardPassDescSet->getDescSetLayout());
+		this->samplingRayRender = std::make_unique<EngineSamplingRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass(), this->samplingDescSet->getDescSetLayout());
 	}
 }
