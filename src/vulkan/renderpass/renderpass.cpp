@@ -54,7 +54,7 @@ namespace nugiEngine {
     this->createFramebuffers(viewImages, width, height);
 
     if (this->colorBlendAttachments.size() == 0) {
-      this->createColorBlendAttachments(static_cast<uint32_t>(viewImages.size()));
+      this->createColorBlendAttachments(static_cast<uint32_t>(viewImages[0].size()));
     }
   }
 
