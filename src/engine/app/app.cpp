@@ -133,6 +133,13 @@ namespace nugiEngine {
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
 
+		indices->emplace_back(0u);
+		indices->emplace_back(1u);
+		indices->emplace_back(2u);
+		indices->emplace_back(2u);
+		indices->emplace_back(3u);
+		indices->emplace_back(0u);
+
 		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex], vertices }));
@@ -158,6 +165,13 @@ namespace nugiEngine {
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u) });
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u) });
+
+		indices->emplace_back(4u);
+		indices->emplace_back(5u);
+		indices->emplace_back(6u);
+		indices->emplace_back(6u);
+		indices->emplace_back(7u);
+		indices->emplace_back(4u);
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
@@ -184,6 +198,13 @@ namespace nugiEngine {
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(8u, 9u, 10u) });
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(10u, 11u, 8u) });
+
+		indices->emplace_back(8u);
+		indices->emplace_back(9u);
+		indices->emplace_back(10u);
+		indices->emplace_back(10u);
+		indices->emplace_back(11u);
+		indices->emplace_back(8u);
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
@@ -211,6 +232,13 @@ namespace nugiEngine {
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u) });
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(14u, 15u, 12u) });
 
+		indices->emplace_back(12u);
+		indices->emplace_back(13u);
+		indices->emplace_back(14u);
+		indices->emplace_back(14u);
+		indices->emplace_back(15u);
+		indices->emplace_back(12u);
+
 		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex], vertices }));
@@ -236,6 +264,13 @@ namespace nugiEngine {
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u) });
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 19u, 16u) });
+
+		indices->emplace_back(16u);
+		indices->emplace_back(17u);
+		indices->emplace_back(18u);
+		indices->emplace_back(18u);
+		indices->emplace_back(19u);
+		indices->emplace_back(16u);
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
 
@@ -279,7 +314,7 @@ namespace nugiEngine {
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
 		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices);
+		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices);
 
 		this->rayTraceUniforms = std::make_unique<EngineRayTraceUniform>(this->device);
 		this->primitiveModel->createBuffers();
