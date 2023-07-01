@@ -139,6 +139,10 @@ namespace nugiEngine {
     positionAttachmentRef.attachment = 0;
     positionAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkPipelineColorBlendAttachmentState positionColorBlendAttachment{};
+    positionColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    positionColorBlendAttachment.blendEnable = VK_FALSE;
+
     VkAttachmentDescription albedoColorAttachment{};
     albedoColorAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     albedoColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -153,6 +157,10 @@ namespace nugiEngine {
     albedoColorAttachmentRef.attachment = 1;
     albedoColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkPipelineColorBlendAttachmentState albedoColorColorBlendAttachment{};
+    albedoColorColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    albedoColorColorBlendAttachment.blendEnable = VK_FALSE;
+
     VkAttachmentDescription materialAttachment{};
     materialAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     materialAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -166,6 +174,10 @@ namespace nugiEngine {
     VkAttachmentReference materialAttachmentRef = {};
     materialAttachmentRef.attachment = 2;
     materialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkPipelineColorBlendAttachmentState materialColorBlendAttachment{};
+    materialColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    materialColorBlendAttachment.blendEnable = VK_FALSE;
 
     std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef, albedoColorAttachmentRef, materialAttachmentRef };
 
@@ -210,6 +222,9 @@ namespace nugiEngine {
 			.addAttachments(albedoColorAttachment)
       .addAttachments(materialAttachment)
 			.addAttachments(depthAttachment)
+      .addColorBlendAttachments(positionColorBlendAttachment)
+      .addColorBlendAttachments(albedoColorColorBlendAttachment)
+      .addColorBlendAttachments(materialColorBlendAttachment)
 			.addSubpass(subpass)
 			.addDependency(colorDependency)
 			.addDependency(depthDependency);

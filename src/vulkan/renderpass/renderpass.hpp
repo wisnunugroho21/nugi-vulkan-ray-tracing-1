@@ -30,7 +30,6 @@ namespace nugiEngine {
           std::vector<VkAttachmentDescription> attachments;
           std::vector<VkSubpassDependency> dependencies;
           std::vector<std::vector<VkImageView>> viewImages;
-          
           std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
       };
 
@@ -51,7 +50,6 @@ namespace nugiEngine {
 
       void createRenderPass(VkRenderPassCreateInfo renderPassInfo);
       void createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, int width, int height);
-      void createColorBlendAttachments(uint32_t attachmentSize);
   };
 } // namespace nugiEngin 
 

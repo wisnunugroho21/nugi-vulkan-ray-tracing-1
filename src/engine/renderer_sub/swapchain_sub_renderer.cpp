@@ -77,6 +77,10 @@ namespace nugiEngine {
     colorAttachmentRef.attachment = 0;
     colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkPipelineColorBlendAttachmentState colorColorBlendAttachment{};
+    colorColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorColorBlendAttachment.blendEnable = VK_FALSE;
+
     VkAttachmentDescription colorResolveAttachment{};
     colorResolveAttachment.format = swapChainImageFormat;
     colorResolveAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -113,6 +117,7 @@ namespace nugiEngine {
 			.addAttachments(colorAttachment)
 			.addAttachments(depthAttachment)
 			.addAttachments(colorResolveAttachment)
+      .addColorBlendAttachments(colorColorBlendAttachment)
 			.addSubpass(subpass)
 			.addDependency(dependency);
 

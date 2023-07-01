@@ -52,10 +52,6 @@ namespace nugiEngine {
   {
     this->createRenderPass(renderPassInfo);
     this->createFramebuffers(viewImages, width, height);
-
-    if (this->colorBlendAttachments.size() == 0) {
-      this->createColorBlendAttachments(static_cast<uint32_t>(viewImages[0].size()));
-    }
   }
 
   EngineRenderPass::~EngineRenderPass() {
@@ -93,22 +89,6 @@ namespace nugiEngine {
       {
         throw std::runtime_error("failed to create framebuffer!");
       }
-    }
-  }
-
-  void EngineRenderPass::createColorBlendAttachments(uint32_t attachmentSize) {
-    for (uint32_t i = 0; i < attachmentSize; i++) {
-      VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-      colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-      colorBlendAttachment.blendEnable = VK_FALSE;
-      colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-      colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-      colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;              // Optional
-      colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;   // Optional
-      colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
-      colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
-
-      this->colorBlendAttachments.push_back(colorBlendAttachment);
     }
   }
 } // namespace nugiEngine
