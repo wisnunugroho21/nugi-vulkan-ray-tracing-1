@@ -315,8 +315,7 @@ namespace nugiEngine {
 		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices);
-
-		this->rayTraceUniforms = std::make_unique<EngineRayTraceUniform>(this->device);
+		
 		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
@@ -354,7 +353,7 @@ namespace nugiEngine {
 		float near = 0.1f;
 		float far = 2000.0f;
 
-		float theta = glm::radians(40.0f);
+		constexpr float theta = glm::radians(40.0f);
 		float tanHalfFovy = glm::tan(theta / 2.0f);
 		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
@@ -391,6 +390,9 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
+
+		this->rayTraceUniforms = std::make_unique<EngineRayTraceUniform>(this->device);
+		this->rasterUniform = std::make_unique<EngineRasterUniform>(this->device);
 
 		this->updateCamera(width, height);
 
