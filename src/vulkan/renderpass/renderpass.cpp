@@ -44,7 +44,7 @@ namespace nugiEngine {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(this->dependencies.size());
     renderPassInfo.pDependencies = this->dependencies.data();
 
-    if (this->colorBlendAttachments.empty()) {
+    if (this->colorBlendAttachments.size() == 0) {
       for (int i = 0; i < this->attachments.size(); i++) {
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -56,7 +56,7 @@ namespace nugiEngine {
         colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;  // Optional
         colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;              // Optional
 
-        this->colorBlendAttachments.emplace_back(colorBlendAttachment);
+        this->colorBlendAttachments.push_back(colorBlendAttachment);
       }
     }
 
