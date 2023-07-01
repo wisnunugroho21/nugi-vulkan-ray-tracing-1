@@ -404,10 +404,10 @@ namespace nugiEngine {
 			width, height);
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, 
-			static_cast<int>(this->renderer->getSwapChain()->imageCount()), width, height);
+			EngineDevice::MAX_FRAMES_IN_FLIGHT, width, height);
 
-		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
 		VkDescriptorBufferInfo rayTracebuffersInfo[8] { 
 			this->objectModel->getObjectInfo(), 

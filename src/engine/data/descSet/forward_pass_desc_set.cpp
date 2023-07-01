@@ -17,7 +17,7 @@ namespace nugiEngine {
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 				.build();
 		
-	this->descriptorSets.clear();
+		this->descriptorSets.clear();
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			VkDescriptorSet descSet{};
 
