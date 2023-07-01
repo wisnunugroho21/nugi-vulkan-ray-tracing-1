@@ -285,7 +285,7 @@ namespace nugiEngine {
 		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-		this->numLights = lights->size();
+		this->numLights = static_cast<uint32_t>(lights->size());
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -367,7 +367,7 @@ namespace nugiEngine {
 			width, height);
 
 		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, 
-			static_cast<int>(this->renderer->getSwapChain()->imageCount(), width, height));
+			static_cast<int>(this->renderer->getSwapChain()->imageCount()), width, height);
 
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
@@ -407,6 +407,6 @@ namespace nugiEngine {
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
 		this->forwardPassRender = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass(), this->forwardPassDescSet->getDescSetLayout());
-		this->samplingRayRender = std::make_unique<EngineSamplingRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass()->getRenderPass(), this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout());
+		this->samplingRayRender = std::make_unique<EngineSamplingRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass(), this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout());
 	}
 }

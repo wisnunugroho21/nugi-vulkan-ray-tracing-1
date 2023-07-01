@@ -17,14 +17,14 @@
 namespace nugiEngine {
 	class EngineSamplingRenderSystem {
 		public:
-			EngineSamplingRenderSystem(EngineDevice& device, EngineRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayouts);
+			EngineSamplingRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts);
 			~EngineSamplingRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed = 1);
 		
 		private:
 			void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts);
-			void createPipeline(EngineRenderPass renderPass);
+			void createPipeline(std::shared_ptr<EngineRenderPass> renderPass);
 
 			EngineDevice& appDevice;
 			

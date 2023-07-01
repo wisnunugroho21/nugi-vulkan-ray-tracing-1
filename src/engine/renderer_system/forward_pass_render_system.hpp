@@ -16,14 +16,14 @@
 namespace nugiEngine {
 	class EngineForwardPassRenderSystem {
 		public:
-			EngineForwardPassRenderSystem(EngineDevice& device, EngineRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayouts);
+			EngineForwardPassRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts);
 			~EngineForwardPassRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model);
 		
 		private:
 			void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts);
-			void createPipeline(EngineRenderPass renderPass);
+			void createPipeline(std::shared_ptr<EngineRenderPass> renderPass);
 
 			EngineDevice& appDevice;
 			

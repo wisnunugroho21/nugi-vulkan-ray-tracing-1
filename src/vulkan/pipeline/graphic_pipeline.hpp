@@ -30,7 +30,7 @@ namespace nugiEngine {
 		public:
 			class Builder {
 				public:
-					Builder(EngineDevice& appDevice, EngineRenderPass renderPass, VkPipelineLayout pipelineLayout);
+					Builder(EngineDevice& appDevice, std::shared_ptr<EngineRenderPass> renderPass, VkPipelineLayout pipelineLayout);
 
 					std::vector<VkDynamicState> getDynamicStates() const { return this->dynamicStates; }
 					std::vector<VkPipelineShaderStageCreateInfo> getShaderStagesInfo() const { return this->shaderStagesInfo; }

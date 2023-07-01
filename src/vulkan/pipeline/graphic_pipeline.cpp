@@ -5,10 +5,10 @@
 #include <stdexcept>
 
 namespace nugiEngine {
-	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, EngineRenderPass renderPass, VkPipelineLayout pipelineLayout) : appDevice{appDevice} {
+	EngineGraphicPipeline::Builder::Builder(EngineDevice& appDevice, std::shared_ptr<EngineRenderPass> renderPass, VkPipelineLayout pipelineLayout) : appDevice{appDevice} {
 		this->configInfo.pipelineLayout = pipelineLayout;
-		this->configInfo.renderPass = renderPass.getRenderPass();
-		this->configInfo.colorBlendInfo = renderPass.getColorBlendInfos();
+		this->configInfo.renderPass = renderPass->getRenderPass();
+		this->configInfo.colorBlendInfo = renderPass->getColorBlendInfos();
 	}
 
 	EngineGraphicPipeline::Builder EngineGraphicPipeline::Builder::setDefault(const std::string& vertFilePath, const std::string& fragFilePath) {

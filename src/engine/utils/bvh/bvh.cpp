@@ -24,8 +24,8 @@ namespace nugiEngine {
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) + eps
+      glm::min(glm::min((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) - glm::vec4(eps, 1.0f),
+      glm::max(glm::max((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) + glm::vec4(eps, 1.0f)
     };
   }
 

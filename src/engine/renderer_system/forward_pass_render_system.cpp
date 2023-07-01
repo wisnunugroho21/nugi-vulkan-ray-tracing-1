@@ -10,7 +10,7 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, EngineRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayouts)
+	EngineForwardPassRenderSystem::EngineForwardPassRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts)
 		: appDevice{device}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
@@ -34,7 +34,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineForwardPassRenderSystem::createPipeline(EngineRenderPass renderPass) {
+	void EngineForwardPassRenderSystem::createPipeline(std::shared_ptr<EngineRenderPass> renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};

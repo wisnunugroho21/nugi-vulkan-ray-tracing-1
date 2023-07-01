@@ -10,7 +10,7 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineSamplingRenderSystem::EngineSamplingRenderSystem(EngineDevice& device, EngineRenderPass renderPass, VkDescriptorSetLayout descriptorSetLayouts)
+	EngineSamplingRenderSystem::EngineSamplingRenderSystem(EngineDevice& device, std::shared_ptr<EngineRenderPass> renderPass, VkDescriptorSetLayout descriptorSetLayouts)
 		: appDevice{device}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
@@ -39,7 +39,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplingRenderSystem::createPipeline(EngineRenderPass renderPass) {
+	void EngineSamplingRenderSystem::createPipeline(std::shared_ptr<EngineRenderPass> renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, renderPass, this->pipelineLayout)
