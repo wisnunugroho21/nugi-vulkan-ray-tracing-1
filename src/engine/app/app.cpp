@@ -346,8 +346,8 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::updateCamera(uint32_t width, uint32_t height) {
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
+		glm::vec3 position = glm::vec3(278.0f, 278.0f, -800.0f);
+		glm::vec3 direction = glm::vec3(0.0f, 0.0f, 800.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 
 		float near = 0.1f;
@@ -357,11 +357,11 @@ namespace nugiEngine {
 		float tanHalfFovy = glm::tan(theta / 2.0f);
 		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
+		glm::vec3 w = glm::normalize(direction);
 		glm::vec3 u = glm::normalize(glm::cross(w, vup));
 		glm::vec3 v = glm::cross(w, u);
 
-		this->rayTraceUbo.origin = glm::vec3(lookFrom);
+		this->rayTraceUbo.origin = position;
 		this->rayTraceUbo.background = glm::vec3(0.0f);
 		this->rayTraceUbo.numLights = this->numLights;
 
@@ -375,9 +375,9 @@ namespace nugiEngine {
     this->rasterUbo.view[0][2] = w.x;
     this->rasterUbo.view[1][2] = w.y;
     this->rasterUbo.view[2][2] = w.z;
-    this->rasterUbo.view[3][0] = -glm::dot(u, rayTraceUbo.origin);
-    this->rasterUbo.view[3][1] = -glm::dot(v, rayTraceUbo.origin);
-    this->rasterUbo.view[3][2] = -glm::dot(w, rayTraceUbo.origin);
+    this->rasterUbo.view[3][0] = -glm::dot(u, position);
+    this->rasterUbo.view[3][1] = -glm::dot(v, position);
+    this->rasterUbo.view[3][2] = -glm::dot(w, position);
 
 		this->rasterUbo.projection = glm::mat4{0.0f};
 		this->rasterUbo.projection[0][0] = 1.f / (aspectRatio * tanHalfFovy);
