@@ -82,11 +82,55 @@ void main() {
   vec3 materialParams = imageLoad(materialResource, ivec2(imgPosition)).xyz;
   vec3 albedoColor = imageLoad(albedoColorResource, ivec2(imgPosition)).xyz;
 
-  ShadeRecord directShadeResult;
+  ShadeRecord indirectShadeResult, directShadeResult;
+
   if (materialParams.x >= randomFloat(0)) {
+    indirectShadeResult = indirectGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
     directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
   } else {
+    indirectShadeResult = indirectLambertShade(position, normal, albedoColor, 0);
     directShadeResult = directLambertShade(position, normal, albedoColor, 0);
+  }
+
+  float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+  Ray curRay = indirectShadeResult.nextRay;
+
+  vec3 totalRadiance = directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+  vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+
+  for(uint i = 0; i < 50; i++) {
+    HitRecord hit = hitObjectBvh(curRay, 0.01f, 1000000.0f);
+    if (!hit.isHit) {
+      totalRadiance = totalRadiance + totalIndirect * ubo.background;
+      break;
+    }
+
+    HitRecord hittedPointLight = hitLightBvh(curRay, 0.01f, hit.t);
+    if (hittedPointLight.isHit) {
+      if (i > 0u) {
+        totalIndirect = totalIndirect * Gfactor(curRay, hittedPointLight);
+      }
+
+      totalRadiance = totalRadiance + totalIndirect * lights[hittedPointLight.hitIndex].color;
+      break;
+    }
+
+    totalIndirect = totalIndirect / indirectShadeResult.pdf;
+    uint materialIndex = primitives[hit.hitIndex].materialIndex;
+
+    if (materials[materialIndex].metallicness >= randomFloat(i)) {
+      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, i);
+      directShadeResult = directGgxShade(curRay, hit, materialIndex, i);
+    } else {
+      indirectShadeResult = indirectLambertShade(hit, materialIndex, i);
+      directShadeResult = directLambertShade(hit, materialIndex, i);
+    }
+
+    totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+    curRay = indirectShadeResult.nextRay;
+
+    totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+    totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
   }
 
   imageStore(targetImage, ivec2(imgPosition), vec4(directShadeResult.radiance, directShadeResult.pdf));
