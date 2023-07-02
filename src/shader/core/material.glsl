@@ -1,5 +1,39 @@
 // ------------- GGX -------------
 
+vec3 randomGGX(float roughness, uint additionalRandomSeed) {
+  float r1 = randomFloat(additionalRandomSeed);
+  float r2 = randomFloat(additionalRandomSeed + 1);
+
+  float a = roughness * roughness;
+  float phi = 2 * 3.14159265359 * r2;
+
+  float cosTheta = sqrt((1.0f - r1) / ((a * a - 1.0f) * r1 + 1.0f));
+  float sinTheta = sqrt(1 - cosTheta * cosTheta);
+
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
+
+  return vec3(x, y, z);
+}
+
+vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
+  vec3 source = randomGGX(roughness, additionalRandomSeed);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
+float ggxPdfValue(float NoH, float NoL, float roughness) {
+  return D_GGX(NoH, roughness) * NoH / (4.0 * NoL);
+}
+
+float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {
+  float F = fresnelSchlick(VoH, f0);
+  float D = D_GGX(NoH, roughness);
+  float G = G_Smith(NoV, NoL, roughness);
+
+  return (F * D * G) / (4.0 * NoV * NoL);
+}
+
 ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 surfaceColor, float roughness, float fresnelReflect, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = point;
@@ -63,7 +97,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 surf
     float area = pointLightArea(lights[lightIndex]);
 
     scat.pdf = ggxPdfValue(NoH, NoL, roughness);
-    scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -73,41 +107,34 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, uint additi
   return directGgxShade(r.direction, hit.point, hit.normal, materials[materialIndex].baseColor, materials[materialIndex].roughness, materials[materialIndex].fresnelReflect, additionalRandomSeed);
 }
 
-vec3 randomGGX(float roughness, uint additionalRandomSeed) {
+// ------------- Lambert ------------- 
+
+vec3 randomCosineDirection(uint additionalRandomSeed) {
   float r1 = randomFloat(additionalRandomSeed);
   float r2 = randomFloat(additionalRandomSeed + 1);
 
-  float a = roughness * roughness;
-  float phi = 2 * 3.14159265359 * r2;
-
-  float cosTheta = sqrt((1.0f - r1) / ((a * a - 1.0f) * r1 + 1.0f));
-  float sinTheta = sqrt(1 - cosTheta * cosTheta);
-
-  float x = cos(phi) * sinTheta;
-  float y = sin(phi) * sinTheta;
-  float z = cosTheta;
+  float phi = 2 * 3.14159265359 * r1;
+  float cosTheta = sqrt(r2);
+  
+  float x = cos(phi) * cosTheta;
+  float y = sin(phi) * cosTheta;
+  float z = sqrt(1 - r2);
 
   return vec3(x, y, z);
 }
 
-vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
-  vec3 source = randomGGX(roughness, additionalRandomSeed);
+vec3 lambertGenerateRandom(vec3[3] globalOnb, uint additionalRandomSeed) {
+  vec3 source = randomCosineDirection(additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
-float ggxPdfValue(float NoH, float NoL, float roughness) {
-  return D_GGX(NoH, roughness) * NoH / (4.0 * NoL);
+float lambertPdfValue(float NoL) {
+  return NoL / pi;
 }
 
-float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {
-  float F = fresnelSchlick(VoH, f0);
-  float D = D_GGX(NoH, roughness);
-  float G = G_Smith(NoV, NoL, roughness);
-
-  return (F * D * G) / (4.0 * NoV * NoL);
+float lambertBrdfValue() {
+  return 1.0f / pi;
 }
-
-// ------------- Lambert ------------- 
 
 ShadeRecord indirectLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint additionalRandomSeed) {
   ShadeRecord scat;
@@ -165,33 +192,7 @@ ShadeRecord directLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint 
   return scat;
 }
 
-ShadeRecord indirectLambertShade(HitRecord hit, uint materialIndex, uint additionalRandomSeed) {
-  return indirectLambertShade(hit.point, hit.normal, materials[materialIndex].baseColor, additionalRandomSeed);
+ShadeRecord directLambertShade(HitRecord hit, uint materialIndex, uint additionalRandomSeed) {
+  return directLambertShade(hit.point, hit.normal, materials[materialIndex].baseColor, additionalRandomSeed);
 }
 
-vec3 randomCosineDirection(uint additionalRandomSeed) {
-  float r1 = randomFloat(additionalRandomSeed);
-  float r2 = randomFloat(additionalRandomSeed + 1);
-
-  float phi = 2 * 3.14159265359 * r1;
-  float cosTheta = sqrt(r2);
-  
-  float x = cos(phi) * cosTheta;
-  float y = sin(phi) * cosTheta;
-  float z = sqrt(1 - r2);
-
-  return vec3(x, y, z);
-}
-
-vec3 lambertGenerateRandom(vec3[3] globalOnb, uint additionalRandomSeed) {
-  vec3 source = randomCosineDirection(additionalRandomSeed);
-  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
-}
-
-float lambertPdfValue(float NoL) {
-  return NoL / pi;
-}
-
-float lambertBrdfValue() {
-  return 1.0f / pi;
-}

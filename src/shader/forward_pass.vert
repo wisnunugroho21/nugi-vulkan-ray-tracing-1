@@ -32,7 +32,7 @@ void main() {
 
 	positionFrag = position.xyz;
 	textCoordFrag = textCoord.xyz;
-	normalFrag = normalize(mat3(transformations[transformIndex].normalMatrix) * normal);
+	normalFrag = normalize(mat3(transformations[transformIndex].normalMatrix) * normal.xyz);
 	albedoColorFrag = materials[materialIndex].baseColor;
 	materialFrag = vec3(materials[materialIndex].metallicness, materials[materialIndex].roughness, materials[materialIndex].fresnelReflect);
 }

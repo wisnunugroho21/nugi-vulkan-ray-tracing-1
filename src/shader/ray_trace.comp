@@ -83,10 +83,10 @@ void main() {
   vec3 albedoColor = imageLoad(albedoColorResource, ivec2(imgPosition)).xyz;
 
   ShadeRecord directShadeResult;
-  if (materialParams.x >= randomFloat(i)) {
-    directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, i);
+  if (materialParams.x >= randomFloat(0)) {
+    directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
   } else {
-    directShadeResult = directLambertShade(position, normal, albedoColor, i);
+    directShadeResult = directLambertShade(position, normal, albedoColor, 0);
   }
 
   imageStore(targetImage, ivec2(imgPosition), vec4(directShadeResult.radiance, directShadeResult.pdf));
