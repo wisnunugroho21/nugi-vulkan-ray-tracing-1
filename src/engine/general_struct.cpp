@@ -15,7 +15,7 @@ namespace nugiEngine {
 	}
 
 	std::vector<VkVertexInputAttributeDescription> Vertex::getVertexAttributeDescriptions() {
-		std::vector<VkVertexInputAttributeDescription> attributeDescription(4);
+		std::vector<VkVertexInputAttributeDescription> attributeDescription(5);
 
 		attributeDescription[0].binding = 0;
 		attributeDescription[0].location = 0;
@@ -29,13 +29,18 @@ namespace nugiEngine {
 
 		attributeDescription[2].binding = 0;
 		attributeDescription[2].location = 2;
-		attributeDescription[2].format = VK_FORMAT_R32_UINT;
-		attributeDescription[2].offset = offsetof(Vertex, materialIndex);
+		attributeDescription[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+		attributeDescription[2].offset = offsetof(Vertex, normal);
 
 		attributeDescription[3].binding = 0;
 		attributeDescription[3].location = 3;
 		attributeDescription[3].format = VK_FORMAT_R32_UINT;
-		attributeDescription[3].offset = offsetof(Vertex, transformIndex);
+		attributeDescription[3].offset = offsetof(Vertex, materialIndex);
+
+		attributeDescription[4].binding = 0;
+		attributeDescription[4].location = 4;
+		attributeDescription[4].format = VK_FORMAT_R32_UINT;
+		attributeDescription[4].offset = offsetof(Vertex, transformIndex);
 		return attributeDescription;
 	}
 }
