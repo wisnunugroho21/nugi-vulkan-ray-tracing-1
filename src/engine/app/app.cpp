@@ -124,10 +124,10 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 1u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 1u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 1u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
@@ -157,10 +157,10 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 2u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 2u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 2u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u) });
@@ -190,10 +190,10 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(8u, 9u, 10u) });
@@ -223,10 +223,10 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u) });
@@ -256,10 +256,10 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
-		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u) });
@@ -326,16 +326,16 @@ namespace nugiEngine {
 		auto vertices = std::make_shared<std::vector<Vertex>>();
 		auto indices = std::make_shared<std::vector<uint32_t>>();
 
-		Vertex vertex1 { glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), 0u, 0u };
+		Vertex vertex1 { glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
 		vertices->emplace_back(vertex1);
 
-		Vertex vertex2 { glm::vec4(1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), 0u, 0u };
+		Vertex vertex2 { glm::vec4(1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
 		vertices->emplace_back(vertex2);
 
-		Vertex vertex3 { glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), 0u, 0u };
+		Vertex vertex3 { glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
 		vertices->emplace_back(vertex3);
 
-		Vertex vertex4 { glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), 0u, 0u };
+		Vertex vertex4 { glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
 		vertices->emplace_back(vertex4);
 
 		*indices = {
@@ -428,9 +428,10 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> resourcesInfo[4] = {
+		std::vector<VkDescriptorImageInfo> resourcesInfo[5] = {
 			this->forwardPassSubRenderer->getPositionInfoResources(),
 			this->forwardPassSubRenderer->getTextCoordInfoResources(),
+			this->forwardPassSubRenderer->getNormalInfoResources(),
 			this->forwardPassSubRenderer->getAlbedoColorInfoResources(),
 			this->forwardPassSubRenderer->getMaterialInfoResources()
 		};

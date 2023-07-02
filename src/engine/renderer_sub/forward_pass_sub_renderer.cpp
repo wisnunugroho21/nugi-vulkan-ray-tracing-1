@@ -9,6 +9,7 @@ namespace nugiEngine {
   {
     this->createPositionResources(imageCount);
     this->createTextCoordResources(imageCount);
+    this->createNormalResources(imageCount);
     this->createAlbedoColorResources(imageCount);
     this->createMaterialResources(imageCount);
     this->createDepthResources(imageCount);
@@ -29,6 +30,15 @@ namespace nugiEngine {
     std::vector<VkDescriptorImageInfo> descInfos{};
     for (auto &&textCoordInfo : this->textCoordResources) {
       descInfos.emplace_back(textCoordInfo->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL));
+    }
+
+    return descInfos;
+  }
+  
+  std::vector<VkDescriptorImageInfo> EngineForwardPassSubRenderer::getNormalInfoResources() {
+    std::vector<VkDescriptorImageInfo> descInfos{};
+    for (auto &&normalInfo : this->normalResources) {
+      descInfos.emplace_back(normalInfo->getDescriptorInfo(VK_IMAGE_LAYOUT_GENERAL));
     }
 
     return descInfos;
@@ -77,6 +87,20 @@ namespace nugiEngine {
       );
 
       this->textCoordResources.push_back(textCoordResource);
+    }
+  }
+
+  void EngineForwardPassSubRenderer::createNormalResources(int imageCount) {
+    this->normalResources.clear();
+
+    for (int i = 0; i < imageCount; i++) {
+      auto normalResource = std::make_shared<EngineImage>(
+        this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
+        VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+      );
+
+      this->normalResources.push_back(normalResource);
     }
   }
 
@@ -161,6 +185,24 @@ namespace nugiEngine {
     textCoordColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     textCoordColorBlendAttachment.blendEnable = VK_FALSE;
 
+    VkAttachmentDescription normalAttachment{};
+    normalAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    normalAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    normalAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    normalAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    normalAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    normalAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    normalAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    normalAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference normalAttachmentRef = {};
+    normalAttachmentRef.attachment = 2;
+    normalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkPipelineColorBlendAttachmentState normalColorBlendAttachment{};
+    normalColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    normalColorBlendAttachment.blendEnable = VK_FALSE;
+
     VkAttachmentDescription albedoColorAttachment{};
     albedoColorAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
     albedoColorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -172,7 +214,7 @@ namespace nugiEngine {
     albedoColorAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference albedoColorAttachmentRef = {};
-    albedoColorAttachmentRef.attachment = 2;
+    albedoColorAttachmentRef.attachment = 3;
     albedoColorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkPipelineColorBlendAttachmentState albedoColorColorBlendAttachment{};
@@ -190,14 +232,15 @@ namespace nugiEngine {
     materialAttachment.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     VkAttachmentReference materialAttachmentRef = {};
-    materialAttachmentRef.attachment = 3;
+    materialAttachmentRef.attachment = 4;
     materialAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     VkPipelineColorBlendAttachmentState materialColorBlendAttachment{};
     materialColorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     materialColorBlendAttachment.blendEnable = VK_FALSE;
 
-    std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef, textCoordAttachmentRef, albedoColorAttachmentRef, materialAttachmentRef };
+    std::vector<VkAttachmentReference> colorAttachmentRefs = { positionAttachmentRef, textCoordAttachmentRef, 
+      normalAttachmentRef, albedoColorAttachmentRef, materialAttachmentRef };
 
     VkAttachmentDescription depthAttachment{};
     depthAttachment.format = this->findDepthFormat();
@@ -210,7 +253,7 @@ namespace nugiEngine {
     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment = 4;
+    depthAttachmentRef.attachment = 5;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
     VkSubpassDescription subpass = {};
@@ -238,11 +281,13 @@ namespace nugiEngine {
     EngineRenderPass::Builder renderPassBuilder = EngineRenderPass::Builder(this->device, this->width, this->height)
       .addAttachments(positionAttachment)
       .addAttachments(textCoordAttachment)
+      .addAttachments(normalAttachment)
 			.addAttachments(albedoColorAttachment)
       .addAttachments(materialAttachment)
 			.addAttachments(depthAttachment)
       .addColorBlendAttachments(positionColorBlendAttachment)
       .addColorBlendAttachments(textCoordColorBlendAttachment)
+      .addColorBlendAttachments(normalColorBlendAttachment)
       .addColorBlendAttachments(albedoColorColorBlendAttachment)
       .addColorBlendAttachments(materialColorBlendAttachment)
 			.addSubpass(subpass)
@@ -253,6 +298,7 @@ namespace nugiEngine {
 			renderPassBuilder.addViewImages({
         this->positionResources[i]->getImageView(),
         this->textCoordResources[i]->getImageView(),
+        this->normalResources[i]->getImageView(),
         this->albedoColorResources[i]->getImageView(),
         this->materialResources[i]->getImageView(),
         this->depthImages[i]->getImageView(),
@@ -278,12 +324,13 @@ namespace nugiEngine {
 		renderBeginInfo.renderArea.offset = { 0, 0 };
 		renderBeginInfo.renderArea.extent = { static_cast<uint32_t>(this->width), static_cast<uint32_t>(this->height) };
 
-		std::array<VkClearValue, 5> clearValues{};
+		std::array<VkClearValue, 6> clearValues{};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
     clearValues[1].color = { 0.0f, 0.0f, 0.0f, 0.0f };
     clearValues[2].color = { 0.0f, 0.0f, 0.0f, 0.0f };
     clearValues[3].color = { 0.0f, 0.0f, 0.0f, 0.0f };
-		clearValues[4].depthStencil = { 1.0f, 0 };
+    clearValues[4].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+		clearValues[5].depthStencil = { 1.0f, 0 };
 
 		renderBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderBeginInfo.pClearValues = clearValues.data();
@@ -314,7 +361,13 @@ namespace nugiEngine {
       VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
       commandBuffer);
 
-    this->albedoColorResources[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, 
+    this->textCoordResources[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, 
+      VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
+      VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,
+      commandBuffer);
+
+    this->normalResources[imageIndex]->transitionImageLayout(VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL, 
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
       VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, 
       VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED,

@@ -4,13 +4,15 @@
 
 layout(location = 0) in vec4 position;
 layout(location = 1) in vec4 textCoord;
-layout(location = 2) in uint materialIndex;
-layout(location = 3) in uint transformIndex;
+layout(location = 2) in vec4 normal;
+layout(location = 3) in uint materialIndex;
+layout(location = 4) in uint transformIndex;
 
-layout(location = 0) out vec4 positionFrag;
-layout(location = 1) out vec4 textCoordFrag;
-layout(location = 2) out vec4 albedoColorFrag;
-layout(location = 3) out vec4 materialFrag;
+layout(location = 0) out vec3 positionFrag;
+layout(location = 1) out vec3 textCoordFrag;
+layout(location = 2) out vec3 normalFrag;
+layout(location = 3) out vec3 albedoColorFrag;
+layout(location = 4) out vec3 materialFrag;
 
 layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;
@@ -28,8 +30,9 @@ layout(set = 0, binding = 2) buffer readonly TransformationSsbo {
 void main() {
 	gl_Position = ubo.projection * ubo.view * transformations[transformIndex].pointMatrix * position;
 
-	positionFrag = position;
-	textCoordFrag = textCoord;
-	albedoColorFrag = vec4(materials[materialIndex].baseColor, 1.0f);
-	materialFrag = vec4(materials[materialIndex].metallicness, materials[materialIndex].roughness, materials[materialIndex].fresnelReflect, 1.0f);
+	positionFrag = position.xyz;
+	textCoordFrag = textCoord.xyz;
+	normalFrag = normalize(mat3(transformations[transformIndex].normalMatrix) * normal);
+	albedoColorFrag = materials[materialIndex].baseColor;
+	materialFrag = vec3(materials[materialIndex].metallicness, materials[materialIndex].roughness, materials[materialIndex].fresnelReflect);
 }

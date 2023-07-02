@@ -5,7 +5,8 @@
 struct Vertex {
   vec4 position;
   vec4 textCoord;
-  uint materialIndex; // Because of hybrid rendering, Material Index hold by Vertex
+  vec4 normal;
+  uint materialIndex; // Because of hybrid rendering, Material Index also hold by Vertex
   uint transformIndex; // Because of hybrid rendering, Transform Index also hold by Vertex
 };
 

@@ -15,6 +15,7 @@ namespace nugiEngine {
       
       std::vector<VkDescriptorImageInfo> getPositionInfoResources();
       std::vector<VkDescriptorImageInfo> getTextCoordInfoResources();
+      std::vector<VkDescriptorImageInfo> getNormalInfoResources();
       std::vector<VkDescriptorImageInfo> getAlbedoColorInfoResources();
       std::vector<VkDescriptorImageInfo> getMaterialInfoResources();
 
@@ -29,6 +30,7 @@ namespace nugiEngine {
 
       std::vector<std::shared_ptr<EngineImage>> positionResources;
       std::vector<std::shared_ptr<EngineImage>> textCoordResources;
+      std::vector<std::shared_ptr<EngineImage>> normalResources;
       std::vector<std::shared_ptr<EngineImage>> albedoColorResources;
       std::vector<std::shared_ptr<EngineImage>> materialResources;
       std::vector<std::shared_ptr<EngineImage>> depthImages;
@@ -39,6 +41,7 @@ namespace nugiEngine {
       
       void createPositionResources(int imageCount);
       void createTextCoordResources(int imageCount);
+      void createNormalResources(int imageCount);
       void createAlbedoColorResources(int imageCount);
       void createMaterialResources(int imageCount);
       void createDepthResources(int imageCount);

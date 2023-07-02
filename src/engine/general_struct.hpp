@@ -12,7 +12,8 @@ namespace nugiEngine {
   struct Vertex {
     glm::vec4 position{};
     glm::vec4 textCoord{};
-    uint32_t materialIndex{}; // Because of hybrid rendering, Material Index hold by Vertex
+    glm::vec4 normal{};
+    uint32_t materialIndex{}; // Because of hybrid rendering, Material Index also hold by Vertex
     uint32_t transformIndex{}; // Because of hybrid rendering, Transform Index also hold by Vertex
 
     static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
