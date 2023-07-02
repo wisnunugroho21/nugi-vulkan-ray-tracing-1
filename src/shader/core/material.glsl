@@ -74,7 +74,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 surf
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = pointLightGenerateRandom(lights[lightIndex], point);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.01f, 1.0f);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.1f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -172,7 +172,7 @@ ShadeRecord directLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint 
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = pointLightGenerateRandom(lights[lightIndex], point);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.01f, 1.0f);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.1f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
