@@ -406,7 +406,7 @@ namespace nugiEngine {
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
 
-		VkDescriptorBufferInfo rayTracebuffersInfo[8] { 
+		VkDescriptorBufferInfo rayTracebuffersInfo[9] { 
 			this->objectModel->getObjectInfo(), 
 			this->objectModel->getBvhInfo(),
 			this->primitiveModel->getPrimitiveInfo(), 
@@ -414,6 +414,7 @@ namespace nugiEngine {
 			this->vertexModels->getVertexInfo(),
 			this->lightModel->getLightInfo(),
 			this->lightModel->getBvhInfo(),
+			this->materialModel->getMaterialInfo(),
 			this->transformationModel->getTransformationInfo() 
 		};
 

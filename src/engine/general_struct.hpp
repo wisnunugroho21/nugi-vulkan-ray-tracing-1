@@ -23,7 +23,7 @@ namespace nugiEngine {
 
   struct Primitive {
     alignas(16) glm::uvec3 indices;
-    // uint32_t materialIndex; // Most ideal => Material Index should be hold by Primitive.
+    uint32_t materialIndex;
   };
 
   struct Object {

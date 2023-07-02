@@ -45,14 +45,18 @@ layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
   BvhNode lightBvhNodes[];
 };
 
-layout(set = 0, binding = 9) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+  Material materials[];
+};
+
+layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
   Transformation transformations[];
 };
 
-layout(set = 0, binding = 10, rgba32f) uniform readonly image2D positionResource;
-layout(set = 0, binding = 11, rgba32f) uniform readonly image2D textCoordResource;
-layout(set = 0, binding = 12, rgba32f) uniform readonly image2D albedoColorResource;
-layout(set = 0, binding = 13, rgba32f) uniform readonly image2D materialResource;
+layout(set = 0, binding = 11, rgba32f) uniform readonly image2D positionResource;
+layout(set = 0, binding = 12, rgba32f) uniform readonly image2D textCoordResource;
+layout(set = 0, binding = 13, rgba32f) uniform readonly image2D albedoColorResource;
+layout(set = 0, binding = 14, rgba32f) uniform readonly image2D materialResource;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -69,15 +73,15 @@ uvec2 imgSize = uvec2(imageSize(targetImage));
 
 // ------------- Material -------------
 
-ShadeRecord indirectGgxShade(Ray r, HitRecord hit, vec3 materialParams, vec3 albedoColor, uint additionalRandomSeed) {
+ShadeRecord indirectGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
   vec3 unitViewDirection = normalize(r.direction);
-  float f0 = 0.16 * (materialParams.z * materialParams.z);
+  float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect);
 
   vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, hit.normal));
-  scat.nextRay.direction = ggxGenerateRandom(globalOnb, materialParams.y, additionalRandomSeed);
+  scat.nextRay.direction = ggxGenerateRandom(globalOnb, materials[materialIndex].roughness, additionalRandomSeed);
 
   vec3 H = normalize(scat.nextRay.direction - r.direction); // half vector
 
@@ -86,15 +90,15 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, vec3 materialParams, vec3 alb
   float NoH = max(dot(hit.normal, H), 0.001f);
   float VoH = max(dot(unitViewDirection, H), 0.001f);
 
-  float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materialParams.y);
+  float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
 
-  scat.pdf = ggxPdfValue(NoH, NoL, materialParams.y);
-  scat.radiance = partialIntegrand(albedoColor, brdf, NoL);
+  scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
+  scat.radiance = partialIntegrand(materialColor, brdf, NoL);
   
   return scat;
 }
 
-ShadeRecord indirectLambertShade(Ray r, HitRecord hit, vec3 materialParams, vec3 albedoColor, uint additionalRandomSeed) {
+ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
 
@@ -110,12 +114,12 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, vec3 materialParams, vec3
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
-  scat.radiance = partialIntegrand(albedoColor, brdf, NoL); 
+  scat.radiance = partialIntegrand(materialColor, brdf, NoL); 
   
   return scat;
 }
 
-ShadeRecord directGgxShade(Ray r, HitRecord hit, vec3 materialParams, vec3 albedoColor, uint additionalRandomSeed) {
+ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -138,24 +142,24 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, vec3 materialParams, vec3 albed
     vec3 unitViewDirection = normalize(r.direction);
     vec3 H = normalize(shadowRay.direction - r.direction); // half vector
 
-    float f0 = 0.16 * (materialParams.z * materialParams.z);
+    float f0 = 0.16 * (materials[materialIndex].fresnelReflect * materials[materialIndex].fresnelReflect);
     
     float NoV = max(dot(hit.normal, -1.0f * unitViewDirection), 0.001f);
     float NoH = max(dot(hit.normal, H), 0.001f);
     float VoH = max(dot(unitViewDirection, H), 0.001f);
 
-    float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materialParams.y);
+    float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
     float area = pointLightArea(lights[lightIndex]);
 
-    scat.pdf = ggxPdfValue(NoH, NoL, materialParams.y);
-    scat.radiance = partialIntegrand(albedoColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
+    scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
 }
 
-ShadeRecord directLambertShade(Ray r, HitRecord hit, vec3 materialParams, vec3 albedoColor, uint additionalRandomSeed) {
+ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
@@ -180,7 +184,7 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, vec3 materialParams, vec3 a
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(albedoColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -192,8 +196,6 @@ void main() {
   uvec2 imgPosition = gl_GlobalInvocationID.xy;
 
   vec3 posWorld = imageLoad(positionResource, ivec2(imgPosition)).xyz;
-  vec3 materialParams = imageLoad(materialResource, ivec2(imgPosition)).xyz;
-  vec3 albedoColor = imageLoad(albedoColorResource, ivec2(imgPosition)).xyz;
 
   vec3 totalRadiance = vec3(0.0f);
   vec3 totalIndirect = vec3(1.0f);
@@ -223,14 +225,16 @@ void main() {
     }
 
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
-    // uint materialIndex = primitives[hit.hitIndex].materialIndex;
 
-    if (materialParams.x >= randomFloat(i)) {
-      indirectShadeResult = indirectGgxShade(curRay, hit, materialParams, albedoColor, i);
-      directShadeResult = directGgxShade(curRay, hit, materialParams, albedoColor, i);
+    uint materialIndex = primitives[hit.hitIndex].materialIndex;
+    vec3 materialColor = materials[materialIndex].baseColor;
+
+    if (materials[materialIndex].metallicness >= randomFloat(i)) {
+      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, materialColor, i);
+      directShadeResult = directGgxShade(curRay, hit, materialIndex, materialColor, i);
     } else {
-      indirectShadeResult = indirectLambertShade(curRay, hit, materialParams, albedoColor, i);
-      directShadeResult = directLambertShade(curRay, hit, materialParams, albedoColor, i);
+      indirectShadeResult = indirectLambertShade(curRay, hit, materialIndex, materialColor, i);
+      directShadeResult = directLambertShade(curRay, hit, materialIndex, materialColor, i);
     }
 
     float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;

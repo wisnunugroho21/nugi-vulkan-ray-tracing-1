@@ -11,7 +11,7 @@ struct Vertex {
 
 struct Primitive {
   uvec3 indices;
-  // uint materialIndex; // Most ideal => Material Index should be hold by Primitive.
+  uint materialIndex;
 };
 
 struct Object {

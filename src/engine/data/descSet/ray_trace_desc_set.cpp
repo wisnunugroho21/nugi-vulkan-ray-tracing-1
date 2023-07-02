@@ -2,13 +2,13 @@
 
 namespace nugiEngine {
   EngineRayTraceDescSet::EngineRayTraceDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, 
-		std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[8], std::vector<VkDescriptorImageInfo> resourcesInfo[4]) 
+		std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[9], std::vector<VkDescriptorImageInfo> resourcesInfo[4]) 
 	{
 		this->createDescriptor(device, descriptorPool, uniformBufferInfo, rayTraceImageInfo, buffersInfo, resourcesInfo);
   }
 
   void EngineRayTraceDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, 
-		std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[8], std::vector<VkDescriptorImageInfo> resourcesInfo[4]) 
+		std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[9], std::vector<VkDescriptorImageInfo> resourcesInfo[4]) 
 	{
     this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(device)
@@ -22,10 +22,11 @@ namespace nugiEngine {
 				.addBinding(7, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(10, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(10, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(11, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(12, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(13, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(14, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 		
 	this->descriptorSets.clear();
@@ -43,10 +44,11 @@ namespace nugiEngine {
 				.writeBuffer(7, &buffersInfo[5])
 				.writeBuffer(8, &buffersInfo[6])
 				.writeBuffer(9, &buffersInfo[7])
-				.writeImage(10, &resourcesInfo[0][i])
-				.writeImage(11, &resourcesInfo[1][i])
-				.writeImage(12, &resourcesInfo[2][i])
-				.writeImage(13, &resourcesInfo[3][i])
+				.writeBuffer(10, &buffersInfo[8])
+				.writeImage(11, &resourcesInfo[0][i])
+				.writeImage(12, &resourcesInfo[1][i])
+				.writeImage(13, &resourcesInfo[2][i])
+				.writeImage(14, &resourcesInfo[3][i])
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
