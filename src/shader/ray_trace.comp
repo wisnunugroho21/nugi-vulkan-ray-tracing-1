@@ -107,10 +107,6 @@ void main() {
 
     HitRecord hittedPointLight = hitLightBvh(curRay, 0.1f, hit.t);
     if (hittedPointLight.isHit) {
-      if (i > 0u) {
-        totalIndirect = totalIndirect * Gfactor(curRay, hittedPointLight);
-      }
-
       totalRadiance = totalRadiance + totalIndirect * lights[hittedPointLight.hitIndex].color;
       break;
     }
@@ -133,5 +129,5 @@ void main() {
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
   }
 
-  imageStore(targetImage, ivec2(imgPosition), vec4(directShadeResult.radiance, directShadeResult.pdf));
+  imageStore(targetImage, ivec2(imgPosition), vec4(totalRadiance, 1.0f));
 }
