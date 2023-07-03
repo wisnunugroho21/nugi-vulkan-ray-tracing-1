@@ -10,9 +10,9 @@ layout(location = 4) in uint transformIndex;
 
 layout(location = 0) out vec3 positionFrag;
 layout(location = 1) out vec3 textCoordFrag;
-layout(location = 2) out vec3 normalFrag;
-layout(location = 3) out vec3 albedoColorFrag;
-layout(location = 4) out vec3 materialFrag;
+layout(location = 2) flat out vec3 normalFrag;
+layout(location = 3) flat out vec3 albedoColorFrag;
+layout(location = 4) flat out vec3 materialFrag;
 
 layout(set = 0, binding = 0) uniform readonly RasterUbo {
 	mat4 projection;

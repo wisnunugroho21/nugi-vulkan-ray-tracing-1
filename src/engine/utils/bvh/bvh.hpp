@@ -15,7 +15,7 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001f);
+  const glm::vec3 eps(0.00001f);
   const uint32_t splitNumber = 11;
 
   // Axis-aligned bounding box.

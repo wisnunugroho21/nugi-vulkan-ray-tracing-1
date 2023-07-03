@@ -4,9 +4,9 @@
 
 layout(location = 0) in vec3 positionFrag;
 layout(location = 1) in vec3 textCoordFrag;
-layout(location = 2) in vec3 normalFrag;
-layout(location = 3) in vec3 albedoColorFrag;
-layout(location = 4) in vec3 materialFrag;
+layout(location = 2) flat in vec3 normalFrag;
+layout(location = 3) flat in vec3 albedoColorFrag;
+layout(location = 4) flat in vec3 materialFrag;
 
 layout(location = 0) out vec4 positionResource;
 layout(location = 1) out vec4 textCoordResource;

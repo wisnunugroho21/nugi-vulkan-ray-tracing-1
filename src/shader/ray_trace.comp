@@ -99,15 +99,15 @@ void main() {
   vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
   for(uint i = 1; i < 50; i++) {
-    HitRecord hit = hitObjectBvh(curRay, 0.1f, FLT_MAX);
+    HitRecord hit = hitObjectBvh(curRay, 1.0f, FLT_MAX);
     if (!hit.isHit) {
       totalRadiance = totalRadiance + totalIndirect * ubo.background;
       break;
     }
 
-    HitRecord hittedPointLight = hitLightBvh(curRay, 0.1f, hit.t);
+    HitRecord hittedPointLight = hitLightBvh(curRay, 1.0f, hit.t);
     if (hittedPointLight.isHit) {
-      totalRadiance = totalRadiance + totalIndirect * lights[hittedPointLight.hitIndex].color;
+      totalRadiance = totalRadiance + totalIndirect * Gfactor(curRay, hittedPointLight) * lights[hittedPointLight.hitIndex].color;
       break;
     }
 
