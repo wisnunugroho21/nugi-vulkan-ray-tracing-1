@@ -31,9 +31,16 @@ namespace nugiEngine {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				this->globalUniforms->writeGlobalData(frameIndex, this->globalUbo);
+				this->rayTraceUniforms->writeGlobalData(frameIndex, this->rayTraceUbo);
+				this->rasterUniform->writeGlobalData(frameIndex, this->rasterUbo);
 
 				auto commandBuffer = this->renderer->beginCommand();
+
+				this->forwardPassSubRenderer->beginRenderPass(commandBuffer, frameIndex);
+				this->forwardPassRender->render(commandBuffer, this->forwardPassDescSet->getDescriptorSets(frameIndex), this->vertexModels);
+				this->forwardPassSubRenderer->endRenderPass(commandBuffer);
+
+				this->forwardPassSubRenderer->transferFrame(commandBuffer, frameIndex);
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
 
 				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), this->randomSeed);
@@ -69,7 +76,7 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		// this->globalUniforms->writeGlobalData(0, this->globalUbo);
+		// this->rayTraceUniforms->writeGlobalData(0, this->globalUbo);
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
@@ -102,7 +109,8 @@ namespace nugiEngine {
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
 		auto lights = std::make_shared<std::vector<PointLight>>();
-		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
+		auto vertices = std::make_shared<std::vector<Vertex>>();
+		auto indices = std::make_shared<std::vector<uint32_t>>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		std::vector<std::shared_ptr<TransformComponent>> transforms{};
@@ -116,14 +124,21 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{-1.0f, 0.0f, 0.0f, 0.0f}, 1u, transformIndex });
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
+		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
+		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
+
+		indices->emplace_back(0u);
+		indices->emplace_back(1u);
+		indices->emplace_back(2u);
+		indices->emplace_back(2u);
+		indices->emplace_back(3u);
+		indices->emplace_back(0u);
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
 
@@ -142,14 +157,21 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{1.0f, 0.0f, 0.0f, 0.0f}, 2u, transformIndex });
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u) });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u) });
+
+		indices->emplace_back(4u);
+		indices->emplace_back(5u);
+		indices->emplace_back(6u);
+		indices->emplace_back(6u);
+		indices->emplace_back(7u);
+		indices->emplace_back(4u);
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
@@ -168,9 +190,21 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 0u, 3u), 0u });
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(3u, 7u, 4u), 0u });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(8u, 9u, 10u) });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(10u, 11u, 8u) });
+
+		indices->emplace_back(8u);
+		indices->emplace_back(9u);
+		indices->emplace_back(10u);
+		indices->emplace_back(10u);
+		indices->emplace_back(11u);
+		indices->emplace_back(8u);
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
@@ -189,9 +223,21 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 0.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, -1.0f, 0.0f, 0.0f}, 0u, transformIndex });
+
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(5u, 1u, 2u), 0u });
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 6u, 5u), 0u });
+		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u) });
+		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(14u, 15u, 12u) });
+
+		indices->emplace_back(12u);
+		indices->emplace_back(13u);
+		indices->emplace_back(14u);
+		indices->emplace_back(14u);
+		indices->emplace_back(15u);
+		indices->emplace_back(12u);
 
 		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
 
@@ -210,9 +256,21 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{0.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 555.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+		vertices->emplace_back(Vertex{ glm::vec4{555.0f, 0.0f, 555.0f, 1.0f}, glm::vec4{0.0f}, glm::vec4{0.0f, 0.0f, -1.0f, 0.0f}, 0u, transformIndex });
+
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(7u, 6u, 2u), 0u });
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 7u), 0u });
+		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u) });
+		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 19u, 16u) });
+
+		indices->emplace_back(16u);
+		indices->emplace_back(17u);
+		indices->emplace_back(18u);
+		indices->emplace_back(18u);
+		indices->emplace_back(19u);
+		indices->emplace_back(16u);
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
 
@@ -248,7 +306,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		lights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), 10.0f, glm::vec3(20.0f) });
+		lights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), 10.0f, glm::vec3(100.0f) });
 
 		// ----------------------------------------------------------------------------
 
@@ -256,95 +314,113 @@ namespace nugiEngine {
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
 		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
-
-		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
+		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices);
+		
 		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-		this->numLights = lights->size();
+		this->numLights = static_cast<uint32_t>(lights->size());
 	}
 
 	void EngineApp::loadQuadModels() {
-		VertexModelData modelData{};
+		auto vertices = std::make_shared<std::vector<Vertex>>();
+		auto indices = std::make_shared<std::vector<uint32_t>>();
 
-		std::vector<Vertex> vertices;
+		Vertex vertex1 { glm::vec4(-1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
+		vertices->emplace_back(vertex1);
 
-		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
-		vertices.emplace_back(vertex1);
+		Vertex vertex2 { glm::vec4(1.0f, -1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
+		vertices->emplace_back(vertex2);
 
-		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
-		vertices.emplace_back(vertex2);
+		Vertex vertex3 { glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
+		vertices->emplace_back(vertex3);
 
-		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
-		vertices.emplace_back(vertex3);
+		Vertex vertex4 { glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f), glm::vec4(0.0f), glm::vec4(0.0f), 0u, 0u };
+		vertices->emplace_back(vertex4);
 
-		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
-		vertices.emplace_back(vertex4);
-
-		modelData.vertices = vertices;
-		modelData.indices = {
+		*indices = {
 			0, 1, 2, 2, 3, 0
 		};
 
-		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
+		this->quadModels = std::make_shared<EngineVertexModel>(this->device, vertices, indices);
 	}
 
-	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
-		RayTraceUbo ubo{};
-
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
+	void EngineApp::updateCamera(uint32_t width, uint32_t height) {
+		glm::vec3 position = glm::vec3(278.0f, 278.0f, -800.0f);
+		glm::vec3 direction = glm::vec3(0.0f, 0.0f, 800.0f);
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
-		
-		float vfov = 40.0f;
+
+		float near = 0.1f;
+		float far = 2000.0f;
+
+		constexpr float theta = glm::radians(40.0f);
+		float tanHalfFovy = glm::tan(theta / 2.0f);
 		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
-		float theta = glm::radians(vfov);
-		float h = glm::tan(theta / 2.0f);
-		float viewportHeight = 2.0f * h;
-		float viewportWidth = aspectRatio * viewportHeight;
-
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::normalize(glm::cross(vup, w));
+		glm::vec3 w = glm::normalize(direction);
+		glm::vec3 u = glm::normalize(glm::cross(w, vup));
 		glm::vec3 v = glm::cross(w, u);
 
-		ubo.origin = glm::vec3(lookFrom);
-		ubo.horizontal = glm::vec3(viewportWidth * u);
-		ubo.vertical = glm::vec3(viewportHeight * v);
-		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
-		ubo.background = glm::vec3(0.0f);
-		ubo.numLights = this->numLights;
+		this->rayTraceUbo.origin = position;
+		this->rayTraceUbo.background = glm::vec3(0.0f);
+		this->rayTraceUbo.numLights = this->numLights;
 
-		return ubo;
+		this->rasterUbo.view = glm::mat4{1.0f};
+		this->rasterUbo.view[0][0] = u.x;
+    this->rasterUbo.view[1][0] = u.y;
+    this->rasterUbo.view[2][0] = u.z;
+    this->rasterUbo.view[0][1] = v.x;
+    this->rasterUbo.view[1][1] = v.y;
+    this->rasterUbo.view[2][1] = v.z;
+    this->rasterUbo.view[0][2] = w.x;
+    this->rasterUbo.view[1][2] = w.y;
+    this->rasterUbo.view[2][2] = w.z;
+    this->rasterUbo.view[3][0] = -glm::dot(u, position);
+    this->rasterUbo.view[3][1] = -glm::dot(v, position);
+    this->rasterUbo.view[3][2] = -glm::dot(w, position);
+
+		this->rasterUbo.projection = glm::mat4{0.0f};
+		this->rasterUbo.projection[0][0] = 1.f / (aspectRatio * tanHalfFovy);
+    this->rasterUbo.projection[1][1] = 1.f / (tanHalfFovy);
+    this->rasterUbo.projection[2][2] = far / (far - near);
+    this->rasterUbo.projection[2][3] = 1.f;
+    this->rasterUbo.projection[3][2] = -(far * near) / (far - near);
 	}
 
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 
-		this->globalUbo = this->updateCamera(width, height);
+		this->rayTraceUniforms = std::make_unique<EngineRayTraceUniform>(this->device);
+		this->rasterUniform = std::make_unique<EngineRasterUniform>(this->device);
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+		this->updateCamera(width, height);
 
 		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
 
-		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->forwardPassSubRenderer = std::make_unique<EngineForwardPassSubRenderer>(this->device, 
+			EngineDevice::MAX_FRAMES_IN_FLIGHT, width, height);
 
-		VkDescriptorBufferInfo buffersInfo[9] { 
+		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, EngineDevice::MAX_FRAMES_IN_FLIGHT);
+
+		VkDescriptorBufferInfo rayTracebuffersInfo[9] { 
 			this->objectModel->getObjectInfo(), 
 			this->objectModel->getBvhInfo(),
 			this->primitiveModel->getPrimitiveInfo(), 
 			this->primitiveModel->getBvhInfo(),
-			this->rayTraceVertexModels->getVertexnfo(),
+			this->vertexModels->getVertexInfo(),
 			this->lightModel->getLightInfo(),
 			this->lightModel->getBvhInfo(),
 			this->materialModel->getMaterialInfo(),
 			this->transformationModel->getTransformationInfo() 
+		};
+
+		VkDescriptorBufferInfo forwardPassbuffersInfo[2] {
+			this->materialModel->getMaterialInfo(),
+			this->transformationModel->getTransformationInfo()
 		};
 
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
@@ -352,15 +428,21 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> texturesInfo{};
-		for (int i = 0; i < this->textures.size(); i++) {
-			texturesInfo.emplace_back(this->textures[i]->getDescriptorInfo());
-		}
+		std::vector<VkDescriptorImageInfo> resourcesInfo[5] = {
+			this->forwardPassSubRenderer->getPositionInfoResources(),
+			this->forwardPassSubRenderer->getTextCoordInfoResources(),
+			this->forwardPassSubRenderer->getNormalInfoResources(),
+			this->forwardPassSubRenderer->getAlbedoColorInfoResources(),
+			this->forwardPassSubRenderer->getMaterialInfoResources()
+		};
 
-		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo, texturesInfo);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
+		this->forwardPassDescSet = std::make_unique<EngineForwardPassDescSet>(this->device, this->renderer->getDescriptorPool(), this->rasterUniform->getBuffersInfo(), forwardPassbuffersInfo);
+		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->rayTraceUniforms->getBuffersInfo(), 
+			this->rayTraceImage->getImagesInfo(), rayTracebuffersInfo, resourcesInfo);
 
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout(), width, height, 1);
+		this->forwardPassRender = std::make_unique<EngineForwardPassRenderSystem>(this->device, this->forwardPassSubRenderer->getRenderPass(), this->forwardPassDescSet->getDescSetLayout());
+		this->samplingRayRender = std::make_unique<EngineSamplingRenderSystem>(this->device, this->swapChainSubRenderer->getRenderPass(), this->samplingDescSet->getDescSetLayout());
 	}
 }

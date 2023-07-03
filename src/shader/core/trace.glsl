@@ -18,12 +18,12 @@ vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
   return dot(r_direction, outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
 }
 
-vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
+/* vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
   float u = (1.0f - uv.x - uv.y) * vertices[triIndices.x].texel.s + uv.x * vertices[triIndices.y].texel.s + uv.y * vertices[triIndices.z].texel.s;
   float v = (1.0f - uv.x - uv.y) * vertices[triIndices.x].texel.t + uv.x * vertices[triIndices.y].texel.t + uv.y * vertices[triIndices.z].texel.t;
 
   return vec2(u, v);
-}
+} */
 
 // ------------- Point Light -------------
 
@@ -55,8 +55,8 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
-  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+  vec3 v0v1 = vertices[triIndices.y].position.xyz - vertices[triIndices.x].position.xyz;
+  vec3 v0v2 = vertices[triIndices.z].position.xyz - vertices[triIndices.x].position.xyz;
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
@@ -66,7 +66,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
     
   float invDet = 1.0f / det;
 
-  vec3 tvec = r.origin - vertices[triIndices.x].position;
+  vec3 tvec = r.origin - vertices[triIndices.x].position.xyz;
   float u = dot(tvec, pvec) * invDet;
   if (u < 0.0f || u > 1.0f) {
     return hit;
@@ -102,10 +102,6 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
 // ------------- Bvh -------------
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
-  if (all(lessThan(boxMin, r.origin)) && all(greaterThan(boxMax, r.origin))) {
-    return true;
-  }
-
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
@@ -147,7 +143,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
       if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
-        hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].indices, hit.uv);
+        // hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].indices, hit.uv);
       }
     }
 
@@ -158,7 +154,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
       if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
-        hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].indices, hit.uv);
+        // hit.uv = getTotalTextureCoordinate(primitives[hit.hitIndex].indices, hit.uv);
       }
     }
 

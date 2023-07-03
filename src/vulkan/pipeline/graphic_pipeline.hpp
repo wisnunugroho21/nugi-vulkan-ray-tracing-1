@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "../device/device.hpp"
+#include "../renderpass/renderpass.hpp"
 #include "../../engine/data/model/vertex_model.hpp"
 
 namespace nugiEngine {
@@ -19,10 +20,11 @@ namespace nugiEngine {
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo{};
 		VkPipelineRasterizationStateCreateInfo rasterizationInfo{};
 		VkPipelineMultisampleStateCreateInfo multisampleInfo{};
-		VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 		VkPipelineColorBlendStateCreateInfo colorBlendInfo{};
 		VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
+
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments{};
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo{};
 	};
 	
@@ -30,7 +32,7 @@ namespace nugiEngine {
 		public:
 			class Builder {
 				public:
-					Builder(EngineDevice& appDevice, VkPipelineLayout pipelineLayout, VkRenderPass renderPass);
+					Builder(EngineDevice& appDevice, std::shared_ptr<EngineRenderPass> renderPass, VkPipelineLayout pipelineLayout);
 
 					std::vector<VkDynamicState> getDynamicStates() const { return this->dynamicStates; }
 					std::vector<VkPipelineShaderStageCreateInfo> getShaderStagesInfo() const { return this->shaderStagesInfo; }
@@ -44,7 +46,6 @@ namespace nugiEngine {
 					Builder setInputAssemblyInfo(VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo);
 					Builder setRasterizationInfo(VkPipelineRasterizationStateCreateInfo rasterizationInfo);
 					Builder setMultisampleInfo(VkPipelineMultisampleStateCreateInfo multisampleInfo);
-					Builder setColorBlendAttachment(VkPipelineColorBlendAttachmentState colorBlendAttachment);
 					Builder setColorBlendInfo(VkPipelineColorBlendStateCreateInfo colorBlendInfo);
 					Builder setDepthStencilInfo(VkPipelineDepthStencilStateCreateInfo depthStencilInfo);
 					Builder setDynamicStateInfo(VkPipelineDynamicStateCreateInfo dynamicStateInfo);

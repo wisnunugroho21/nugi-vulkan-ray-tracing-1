@@ -1,14 +1,25 @@
 #pragma once
 
+#include <vulkan/vulkan.h>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <vector>
 
 namespace nugiEngine {
-  struct RayTraceVertex {
-    alignas(16) glm::vec3 position;
-    alignas(16) glm::vec2 texel;
+  struct Vertex {
+    glm::vec4 position{};
+    glm::vec4 textCoord{};
+    glm::vec4 normal{};
+    uint32_t materialIndex{}; // Because of hybrid rendering, Material Index also hold by Vertex
+    uint32_t transformIndex{}; // Because of hybrid rendering, Transform Index also hold by Vertex
+
+    static std::vector<VkVertexInputBindingDescription> getVertexBindingDescriptions();
+    static std::vector<VkVertexInputAttributeDescription> getVertexAttributeDescriptions();
+
+    bool operator == (const Vertex &other) const;
   };
 
   struct Primitive {
@@ -55,11 +66,13 @@ namespace nugiEngine {
 
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
-    alignas(16) glm::vec3 horizontal;
-    alignas(16) glm::vec3 vertical;
-    alignas(16) glm::vec3 lowerLeftCorner;
     alignas(16) glm::vec3 background;
     uint32_t numLights = 0;
+  };
+
+  struct RasterUbo {
+    glm::mat4 projection{1.0f};
+	  glm::mat4 view{1.0f};
   };
 
   struct RayTracePushConstant {

@@ -10,9 +10,9 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) : appDevice{device}, width{width}, height{height}, nSample{nSample}
+	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, std::shared_ptr<EngineDescriptorSetLayout> descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) : appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayouts->getDescriptorSetLayout());
 		this->createPipeline();
 	}
 
@@ -42,7 +42,7 @@ namespace nugiEngine {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/ray_trace_pbrt.comp.spv")
+			.setDefault("shader/ray_trace.comp.spv")
 			.build();
 	}
 

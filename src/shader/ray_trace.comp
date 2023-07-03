@@ -1,0 +1,133 @@
+#version 460
+
+// ------------- layout -------------
+
+#define SHININESS 64
+#define KEPSILON 0.00001
+
+#include "core/struct.glsl"
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
+
+layout(set = 0, binding = 1) uniform readonly RayTraceUbo {
+  vec3 origin;
+  vec3 background;
+  uint numLights;
+} ubo;
+
+layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+  Object objects[];
+};
+
+layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
+  BvhNode objectBvhNodes[];
+};
+
+layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
+  Primitive primitives[];
+};
+
+layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
+  BvhNode primitiveBvhNodes[];
+};
+
+layout(set = 0, binding = 6) buffer readonly VertexSsbo {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 7) buffer readonly LightSsbo {
+  PointLight lights[];
+};
+
+layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
+  BvhNode lightBvhNodes[];
+};
+
+layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+  Material materials[];
+};
+
+layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
+  Transformation transformations[];
+};
+
+layout(set = 0, binding = 11, rgba32f) uniform readonly image2D positionResource;
+layout(set = 0, binding = 12, rgba32f) uniform readonly image2D textCoordResource;
+layout(set = 0, binding = 13, rgba32f) uniform readonly image2D normalResource;
+layout(set = 0, binding = 14, rgba32f) uniform readonly image2D albedoColorResource;
+layout(set = 0, binding = 15, rgba32f) uniform readonly image2D materialResource;
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+uvec2 imgSize = uvec2(imageSize(targetImage));
+
+#include "core/random.glsl"
+#include "core/trace.glsl"
+#include "core/ggx.glsl"
+#include "core/shape.glsl"
+#include "core/render.glsl"
+#include "core/material.glsl"
+
+// ------------- Main -------------
+
+void main() {
+  uvec2 imgPosition = gl_GlobalInvocationID.xy;
+
+  vec3 position = imageLoad(positionResource, ivec2(imgPosition)).xyz;
+  vec3 normal = imageLoad(normalResource, ivec2(imgPosition)).xyz;
+  vec3 materialParams = imageLoad(materialResource, ivec2(imgPosition)).xyz;
+  vec3 albedoColor = imageLoad(albedoColorResource, ivec2(imgPosition)).xyz;
+
+  ShadeRecord indirectShadeResult, directShadeResult;
+
+  if (materialParams.x >= randomFloat(0)) {
+    indirectShadeResult = indirectGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
+    directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
+  } else {
+    indirectShadeResult = indirectLambertShade(position, normal, albedoColor, 0);
+    directShadeResult = directLambertShade(position, normal, albedoColor, 0);
+  }
+
+  float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+  Ray curRay = indirectShadeResult.nextRay;
+
+  vec3 totalRadiance = directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+  vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+
+  for(uint i = 1; i < 50; i++) {
+    HitRecord hit = hitObjectBvh(curRay, 1.0f, FLT_MAX);
+    if (!hit.isHit) {
+      totalRadiance = totalRadiance + totalIndirect * ubo.background;
+      break;
+    }
+
+    HitRecord hittedPointLight = hitLightBvh(curRay, 1.0f, hit.t);
+    if (hittedPointLight.isHit) {
+      totalRadiance = totalRadiance + totalIndirect * Gfactor(curRay, hittedPointLight) * lights[hittedPointLight.hitIndex].color;
+      break;
+    }
+
+    totalIndirect = totalIndirect / indirectShadeResult.pdf;
+    uint materialIndex = primitives[hit.hitIndex].materialIndex;
+
+    if (materials[materialIndex].metallicness >= randomFloat(i)) {
+      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, i);
+      directShadeResult = directGgxShade(curRay, hit, materialIndex, i);
+    } else {
+      indirectShadeResult = indirectLambertShade(hit, materialIndex, i);
+      directShadeResult = directLambertShade(hit, materialIndex, i);
+    }
+
+    totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+    curRay = indirectShadeResult.nextRay;
+
+    totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+    totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+  }
+
+  imageStore(targetImage, ivec2(imgPosition), vec4(totalRadiance, 1.0f));
+}

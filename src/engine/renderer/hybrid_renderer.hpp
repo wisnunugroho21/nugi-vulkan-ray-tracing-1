@@ -6,7 +6,7 @@
 #include "../../vulkan/buffer/buffer.hpp"
 #include "../../vulkan/descriptor/descriptor.hpp"
 #include "../../vulkan/command/command_buffer.hpp"
-#include "../ray_ubo.hpp"
+#include "../general_struct.hpp"
 
 #include <memory>
 #include <vector>

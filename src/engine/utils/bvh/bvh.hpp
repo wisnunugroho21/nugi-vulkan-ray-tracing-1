@@ -7,7 +7,7 @@
 
 #include "../sort/sort.hpp"
 #include "../transform/transform.hpp"
-#include "../../ray_ubo.hpp"
+#include "../../general_struct.hpp"
 
 #include <vector>
 #include <memory>
@@ -15,7 +15,7 @@
 #include <stack>
 
 namespace nugiEngine {
-  const glm::vec3 eps(0.0001f);
+  const glm::vec3 eps(0.00001f);
   const uint32_t splitNumber = 11;
 
   // Axis-aligned bounding box.
@@ -41,9 +41,9 @@ namespace nugiEngine {
 
   struct PrimitiveBoundBox : BoundBox {
     Primitive &primitive;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
+    std::shared_ptr<std::vector<Vertex>> vertices;
 
-    PrimitiveBoundBox(uint32_t i, Primitive &p, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), primitive{p}, vertices{v} {}
+    PrimitiveBoundBox(uint32_t i, Primitive &p, std::shared_ptr<std::vector<Vertex>> v) : BoundBox(i), primitive{p}, vertices{v} {}
 
     Aabb boundingBox();
   };
@@ -52,12 +52,12 @@ namespace nugiEngine {
     Object &object;
     std::shared_ptr<TransformComponent> transformation;
     std::shared_ptr<std::vector<Primitive>> primitives;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
+    std::shared_ptr<std::vector<Vertex>> vertices;
 
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<RayTraceVertex>> v);
+    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<Vertex>> v);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
