@@ -299,9 +299,9 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0 });
+		materials->emplace_back(Material{ glm::vec3(186.0f, 186.0f, 186.0f), 0.0f, 0.1f, 0.5f, 0 });
+		materials->emplace_back(Material{ glm::vec3(30.0f, 115.0f, 38.0f), 0.0f, 0.1f, 0.5f, 0 });
+		materials->emplace_back(Material{ glm::vec3(167.0f, 13.0f, 13.0f), 0.0f, 0.1f, 0.5f, 0 });
 		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 1 });
 
 		// ----------------------------------------------------------------------------

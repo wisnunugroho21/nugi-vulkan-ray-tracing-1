@@ -21,7 +21,7 @@ namespace nugiEngine {
 		for (uint32_t i = 0; i < imageCount; i++) {
 			auto accumulateImage = std::make_shared<EngineImage>(
 				device, width, height, 
-				1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_B8G8R8A8_UNORM, 
+				1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT, 
 				VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_STORAGE_BIT, 
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
 			);
