@@ -310,19 +310,13 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		auto commandBuffer = std::make_shared<EngineCommandBuffer>(this->device);
-		commandBuffer->beginSingleTimeCommand();
+		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
+		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
+		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
+		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
+		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices);
 
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes, commandBuffer);
-		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials, commandBuffer);
-		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights, commandBuffer);
-		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms, commandBuffer);
-		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices, commandBuffer);
-
-		this->primitiveModel->createBuffers(commandBuffer);
-
-		commandBuffer->endCommand();
-		commandBuffer->submitCommand(this->device.getTransferQueue(0));
+		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 		this->numLights = static_cast<uint32_t>(lights->size());
