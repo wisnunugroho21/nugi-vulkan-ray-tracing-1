@@ -33,8 +33,9 @@ namespace nugiEngine {
       EngineDevice &device,
       VkDeviceSize instanceSize,
       uint32_t instanceCount,
-      VkBufferUsageFlags usageFlags,
-      VkMemoryPropertyFlags memoryPropertyFlags,
+      VkBufferUsageFlags bufferUsage,
+      VmaMemoryUsage memoryUsageFlags,
+      VmaAllocationCreateFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment
     )
       : engineDevice{device},
@@ -46,13 +47,12 @@ namespace nugiEngine {
     this->alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
     this->bufferSize = alignmentSize * instanceCount;
 
-    this->createBuffer(bufferSize, usageFlags, memoryPropertyFlags);
+    this->createBuffer(bufferSize, bufferUsage, memoryUsageFlags, memoryPropertyFlags);
   }
   
   EngineBuffer::~EngineBuffer() {
     this->unmap();
-    vkDestroyBuffer(this->engineDevice.getLogicalDevice(), this->buffer, nullptr);
-    vkFreeMemory(this->engineDevice.getLogicalDevice(), this->memory, nullptr);
+    vmaDestroyBuffer(this->engineDevice.getMemoryAllocator(), this->buffer, this->allocation);
   }
   
   /**
@@ -65,8 +65,7 @@ namespace nugiEngine {
    * @return VkResult of the buffer mapping call
    */
   VkResult EngineBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
-    assert(this->buffer && this->memory && "Called map on buffer before create");
-    return vkMapMemory(this->engineDevice.getLogicalDevice(), this->memory, offset, size, 0, &this->mapped);
+    return vmaMapMemory(this->engineDevice.getMemoryAllocator(), this->allocation, &this->mapped);
   }
   
   /**
@@ -76,7 +75,7 @@ namespace nugiEngine {
    */
   void EngineBuffer::unmap() {
     if (this->mapped) {
-      vkUnmapMemory(this->engineDevice.getLogicalDevice(), this->memory);
+      vmaUnmapMemory(this->engineDevice.getMemoryAllocator(), this->allocation);
       this->mapped = nullptr;
     }
   }
@@ -135,12 +134,7 @@ namespace nugiEngine {
    * @return VkResult of the flush call
    */
   VkResult EngineBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = this->memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
-    return vkFlushMappedMemoryRanges(this->engineDevice.getLogicalDevice(), 1, &mappedRange);
+    return vmaFlushAllocation(this->engineDevice.getMemoryAllocator(), this->allocation, offset, size);
   }
   
   /**
@@ -155,12 +149,7 @@ namespace nugiEngine {
    * @return VkResult of the invalidate call
    */
   VkResult EngineBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
-    VkMappedMemoryRange mappedRange = {};
-    mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-    mappedRange.memory = this->memory;
-    mappedRange.offset = offset;
-    mappedRange.size = size;
-    return vkInvalidateMappedMemoryRanges(this->engineDevice.getLogicalDevice(), 1, &mappedRange);
+    return vmaInvalidateAllocation(this->engineDevice.getMemoryAllocator(), this->allocation, offset, size);
   }
   
   /**
@@ -235,30 +224,20 @@ namespace nugiEngine {
     return this->invalidate(this->alignmentSize, index * this->alignmentSize);
   }
 
-  void EngineBuffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+  void EngineBuffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags memoryPropertyFlags) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
-    bufferInfo.usage = usage;
+    bufferInfo.usage = bufferUsage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(this->engineDevice.getLogicalDevice(), &bufferInfo, nullptr, &this->buffer) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create vertex buffer!");
+    VmaAllocationCreateInfo allocInfo{};
+    allocInfo.usage = memoryUsage;
+    allocInfo.flags = memoryPropertyFlags;
+
+    if (vmaCreateBuffer(this->engineDevice.getMemoryAllocator(), &bufferInfo, &allocInfo, &this->buffer, &this->allocation, &this->allocationInfo) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create buffer!");
     }
-
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(this->engineDevice.getLogicalDevice(), this->buffer, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = this->engineDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(this->engineDevice.getLogicalDevice(), &allocInfo, nullptr, &this->memory) != VK_SUCCESS) {
-      throw std::runtime_error("failed to allocate vertex buffer memory!");
-    }
-
-    vkBindBufferMemory(this->engineDevice.getLogicalDevice(), this->buffer, this->memory, 0);
   }
 
   void EngineBuffer::copyBuffer(VkBuffer srcBuffer, VkDeviceSize size) {

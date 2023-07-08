@@ -56,10 +56,12 @@ namespace nugiEngine {
     this->pickPhysicalDevice();
     this->msaaSamples = this->getMaxUsableFlagsCount();
     this->createLogicalDevice();
+    this->createMemoryAllocator();
     this->createCommandPool();
   }
 
   EngineDevice::~EngineDevice() {
+    vmaDestroyAllocator(this->allocator);
     vkDestroyCommandPool(this->device, this->commandPool, nullptr);
     vkDestroyDevice(this->device, nullptr);
 
@@ -206,6 +208,19 @@ namespace nugiEngine {
       vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, i, &this->presentQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, i, &this->computeQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.transferFamily, i, &this->transferQueue[i]);
+    }
+  }
+
+  void EngineDevice::createMemoryAllocator() {
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+    allocatorCreateInfo.physicalDevice = this->physicalDevice;
+    allocatorCreateInfo.device = this->device;
+    allocatorCreateInfo.instance = this->instance;
+    allocatorCreateInfo.pVulkanFunctions = nullptr;
+
+    if (vmaCreateAllocator(&allocatorCreateInfo, &allocator) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create memory allocator!");
     }
   }
 

@@ -27,7 +27,8 @@ namespace nugiEngine {
 			vertexSize,
 			this->vertextCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
 		};
 
 		stagingBuffer.map();
@@ -38,7 +39,8 @@ namespace nugiEngine {
 			vertexSize,
 			this->vertextCount,
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
 		this->vertexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
@@ -60,7 +62,8 @@ namespace nugiEngine {
 			indexSize,
 			this->indexCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
 		};
 
 		stagingBuffer.map();
@@ -71,7 +74,8 @@ namespace nugiEngine {
 			indexSize,
 			this->indexCount,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
 		this->indexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);

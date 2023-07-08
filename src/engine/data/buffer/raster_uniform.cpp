@@ -33,7 +33,8 @@ namespace nugiEngine {
 				sizeof(RasterUbo),
 				1,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+				VMA_MEMORY_USAGE_AUTO_PREFER_HOST,
+				VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
 			);
 
 			uniformBuffer->map();

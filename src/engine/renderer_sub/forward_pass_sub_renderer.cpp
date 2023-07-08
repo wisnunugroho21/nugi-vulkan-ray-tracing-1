@@ -69,7 +69,8 @@ namespace nugiEngine {
       auto positionResource = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_COLOR_BIT
       );
 
       this->positionResources.push_back(positionResource);
@@ -83,7 +84,8 @@ namespace nugiEngine {
       auto textCoordResource = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_COLOR_BIT
       );
 
       this->textCoordResources.push_back(textCoordResource);
@@ -97,7 +99,8 @@ namespace nugiEngine {
       auto normalResource = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_COLOR_BIT
       );
 
       this->normalResources.push_back(normalResource);
@@ -111,7 +114,8 @@ namespace nugiEngine {
       auto colorImage = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_COLOR_BIT
       );
 
       this->albedoColorResources.push_back(colorImage);
@@ -125,7 +129,8 @@ namespace nugiEngine {
       auto materialResource = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R32G32B32A32_SFLOAT,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_COLOR_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_COLOR_BIT
       );
 
       this->materialResources.push_back(materialResource);
@@ -141,7 +146,8 @@ namespace nugiEngine {
       auto depthImage = std::make_shared<EngineImage>(
         this->device, this->width, this->height, 1, VK_SAMPLE_COUNT_1_BIT, depthFormat,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT
+        VMA_MEMORY_USAGE_AUTO, VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT, 
+        VK_IMAGE_ASPECT_DEPTH_BIT
       );
 
       this->depthImages.push_back(depthImage);
