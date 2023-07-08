@@ -120,25 +120,39 @@ namespace nugiEngine {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
 		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
-		std::vector<VkSemaphore> waitSemaphores = {this->imageAvailableSemaphores[this->currentFrameIndex]};
-		std::vector<VkSemaphore> signalSemaphores = {this->renderFinishedSemaphores[this->currentFrameIndex]};
+		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
+		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
+		if (this->isLoadResouce) {
+			waitSemaphores.emplace_back(this->resourceLoadedSemaphore);
+			waitStages.emplace_back(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+		}
+
 		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		this->isLoadResouce = false;
 	}
 
 	void EngineHybridRenderer::submitRenderCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
 		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
-		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex], this->resourceLoadedSemaphore };
+		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
 		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
+		if (this->isLoadResouce) {
+			waitSemaphores.emplace_back(this->resourceLoadedSemaphore);
+			waitStages.emplace_back(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+		}
+
 		commandBuffer->submitCommand(this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+		this->isLoadResouce = false;
 	}
 
 	void EngineHybridRenderer::submitLoadCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+		this->isLoadResouce = true;
+
 		std::vector<VkSemaphore> signalSemaphores = { this->resourceLoadedSemaphore };
 		commandBuffer->submitCommand(this->appDevice.getTransferQueue(0), {}, {}, signalSemaphores, nullptr);
 	}

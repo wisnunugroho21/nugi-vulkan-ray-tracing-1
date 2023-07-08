@@ -69,6 +69,6 @@ namespace nugiEngine {
 			VkSemaphore resourceLoadedSemaphore;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
-			bool isFrameStarted = false;
+			bool isFrameStarted = false, isLoadResouce = false;
 	};
 }
