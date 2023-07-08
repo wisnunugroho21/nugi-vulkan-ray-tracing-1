@@ -2,6 +2,9 @@
 #include <iostream>
 #include <stdexcept>
 
+#define VMA_IMPLEMENTATION
+#include "vk_mem_alloc.h"
+
 #include "src/engine/app/app.hpp"
 
 int main(int argc, char const *argv[])

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../window/window.hpp"
-
 // std lib headers
 #include <string>
 #include <vector>
+#include <vk_mem_alloc.h>
+
+#include "../window/window.hpp"
 
 namespace nugiEngine {
   struct SwapChainSupportDetails {
@@ -39,28 +40,23 @@ namespace nugiEngine {
 
       EngineDevice(EngineWindow &window);
       ~EngineDevice();
-
-      // Not copyable or movable
-      EngineDevice(const EngineDevice &) = delete;
-      void operator=(const EngineDevice &) = delete;
-      EngineDevice(EngineDevice &&) = delete;
-      EngineDevice &operator=(EngineDevice &&) = delete;
       
-      VkDevice getLogicalDevice() { return this->device; }
-      VkPhysicalDevice getPhysicalDevice() { return this->physicalDevice; }
+      VkDevice getLogicalDevice() const { return this->device; }
+      VkPhysicalDevice getPhysicalDevice() const { return this->physicalDevice; }
 
-      VkCommandPool getCommandPool() { return this->commandPool; }
-      VkSurfaceKHR getSurface() { return this->surface; }
+      VmaAllocator getMemoryAllocator() const { return this->allocator; }
+      VkCommandPool getCommandPool() const { return this->commandPool; }
+      VkSurfaceKHR getSurface() const { return this->surface; }
 
-      VkQueue getGraphicsQueue(uint32_t index) { return this->graphicsQueue[index]; }
-      VkQueue getPresentQueue(uint32_t index) { return this->presentQueue[index]; }
-      VkQueue getComputeQueue(uint32_t index) { return this->computeQueue[index]; }
-      VkQueue getTransferQueue(uint32_t index) { return this->transferQueue[index]; }
+      VkQueue getGraphicsQueue(uint32_t index) const { return this->graphicsQueue[index]; }
+      VkQueue getPresentQueue(uint32_t index) const { return this->presentQueue[index]; }
+      VkQueue getComputeQueue(uint32_t index) const { return this->computeQueue[index]; }
+      VkQueue getTransferQueue(uint32_t index) const { return this->transferQueue[index]; }
 
-      QueueFamilyIndices getFamilyIndices() { return this->familyIndices; }
+      QueueFamilyIndices getFamilyIndices() const { return this->familyIndices; }
       
-      VkPhysicalDeviceProperties getProperties() { return this->properties; }
-      VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
+      VkPhysicalDeviceProperties getProperties() const { return this->properties; }
+      VkSampleCountFlagBits getMSAASamples() const { return this->msaaSamples; }
 
       SwapChainSupportDetails getSwapChainSupport() { return this->querySwapChainSupport(this->physicalDevice); }
       QueueFamilyIndices findPhysicalQueueFamilies() { return this->findQueueFamilies(this->physicalDevice); }
@@ -74,6 +70,7 @@ namespace nugiEngine {
       void createSurface();
       void pickPhysicalDevice();
       void createLogicalDevice();
+      void createMemoryAllocator();
       void createCommandPool();
 
       // helper creation functions
@@ -100,14 +97,14 @@ namespace nugiEngine {
       EngineWindow &window;
       VkSurfaceKHR surface;
 
+      // memory allocator
+      VmaAllocator allocator;
+
       // command pool
       VkCommandPool commandPool;
 
       // queue
-      std::vector<VkQueue> graphicsQueue;
-      std::vector<VkQueue> presentQueue;
-      std::vector<VkQueue> computeQueue;
-      std::vector<VkQueue> transferQueue;
+      std::vector<VkQueue> graphicsQueue, presentQueue, computeQueue, transferQueue;
 
       // Queue Family Index
       QueueFamilyIndices familyIndices;

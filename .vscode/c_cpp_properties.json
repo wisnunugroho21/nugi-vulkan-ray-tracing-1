@@ -9,7 +9,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/Users/nugrohodewantoro/Documents/Libraries/tiny_obj",
-                "/Users/nugrohodewantoro/Documents/Libraries/stb_image"
+                "/Users/nugrohodewantoro/Documents/Libraries/stb_image",
+                "/Users/nugrohodewantoro/Documents/Libraries/vma"
             ],
             "intelliSenseMode": "macos-clang-arm64",
             "compilerPath": "/usr/bin/clang++",
