@@ -3,6 +3,7 @@
 #include <vk_mem_alloc.h>
 
 #include "../device/device.hpp"
+#include "../command/command_buffer.hpp"
  
 namespace nugiEngine {
  

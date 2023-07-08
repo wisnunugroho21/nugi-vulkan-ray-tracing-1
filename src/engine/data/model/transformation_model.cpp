@@ -12,8 +12,8 @@ namespace nugiEngine {
 		this->createBuffers(transformations, commandBuffer);
 	}
 
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
-		this->createBuffers(this->convertToMatrix(transformationComponents));
+	EngineTransformationModel::EngineTransformationModel(EngineDevice& device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
+		this->createBuffers(this->convertToMatrix(transformationComponents), commandBuffer);
 	}
 
 	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {

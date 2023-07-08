@@ -17,7 +17,7 @@ namespace nugiEngine {
 	class EngineTransformationModel {
 		public:
 			EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
-			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents);
+			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
 			EngineTransformationModel(const EngineTransformationModel&) = delete;
 			EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
