@@ -16,7 +16,7 @@ namespace nugiEngine {
 	EngineHybridRenderer::~EngineHybridRenderer() {
 		this->descriptorPool->resetPool();
 
-		vkDestroySemaphore(this->appDevice.getLogicalDevice(), this->resourceLoadedSemaphore, nullptr);
+		vkDestroyFence(this->appDevice.getLogicalDevice(), this->resourceLoadedFence, nullptr);
 		
     for (size_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			vkDestroySemaphore(this->appDevice.getLogicalDevice(), this->renderFinishedSemaphores[i], nullptr);
@@ -80,7 +80,7 @@ namespace nugiEngine {
 		  }
 		}
 
-		if (vkCreateSemaphore(this->appDevice.getLogicalDevice(), &semaphoreInfo, nullptr, &this->resourceLoadedSemaphore) != VK_SUCCESS) {
+		if (vkCreateFence(this->appDevice.getLogicalDevice(), &fenceInfo, nullptr, &this->resourceLoadedFence) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create synchronization objects for a load resource!");
 		}
 	}
@@ -118,43 +118,31 @@ namespace nugiEngine {
 
 	void EngineHybridRenderer::submitRenderCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
+		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence);
 
 		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
 		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-		if (this->isLoadResouce) {
-			waitSemaphores.emplace_back(this->resourceLoadedSemaphore);
-			waitStages.emplace_back(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
-		}
-
 		EngineCommandBuffer::submitCommands(commandBuffers, this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
-		this->isLoadResouce = false;
 	}
 
 	void EngineHybridRenderer::submitRenderCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		assert(this->isFrameStarted && "can't submit command if frame is not in progress");
-		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
+		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence);
 
 		std::vector<VkSemaphore> waitSemaphores = { this->imageAvailableSemaphores[this->currentFrameIndex] };
 		std::vector<VkSemaphore> signalSemaphores = { this->renderFinishedSemaphores[this->currentFrameIndex] };
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
-		if (this->isLoadResouce) {
-			waitSemaphores.emplace_back(this->resourceLoadedSemaphore);
-			waitStages.emplace_back(VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
-		}
-
 		commandBuffer->submitCommand(this->appDevice.getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
-		this->isLoadResouce = false;
 	}
 
 	void EngineHybridRenderer::submitLoadCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
-		this->isLoadResouce = true;
+		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
 
-		std::vector<VkSemaphore> signalSemaphores = { this->resourceLoadedSemaphore };
-		commandBuffer->submitCommand(this->appDevice.getTransferQueue(0), {}, {}, signalSemaphores, nullptr);
+		commandBuffer->submitCommand(this->appDevice.getTransferQueue(0), {}, {}, {}, this->resourceLoadedFence);
+		vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence, false, 3000);
 	}
 
 	bool EngineHybridRenderer::presentFrame() {

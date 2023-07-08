@@ -66,7 +66,7 @@ namespace nugiEngine {
 
 			std::vector<VkSemaphore> imageAvailableSemaphores, renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
-			VkSemaphore resourceLoadedSemaphore;
+			VkFence resourceLoadedFence;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
 			bool isFrameStarted = false, isLoadResouce = false;
