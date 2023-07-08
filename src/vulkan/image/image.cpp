@@ -230,7 +230,7 @@ namespace nugiEngine {
     }
   }
 
-  void EngineImage::generateMipMap() {
+  void EngineImage::generateMipMap(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
     if (!this->isImageCreatedByUs) {
       throw std::runtime_error("cannot generate mipmap if the image is not created by this class => image directly assigned to this class via second constructor");
     }
@@ -243,8 +243,14 @@ namespace nugiEngine {
       throw std::runtime_error("texture image format does not support linear blitting!");
     }
 
-    EngineCommandBuffer commandBuffer{this->appDevice};
-    commandBuffer.beginSingleTimeCommand();
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(this->appDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;  
+    }
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -267,7 +273,7 @@ namespace nugiEngine {
       barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
       vkCmdPipelineBarrier(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
         0, nullptr,
         0, nullptr,
@@ -290,7 +296,7 @@ namespace nugiEngine {
       blit.dstSubresource.layerCount = 1;
 
       vkCmdBlitImage(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         this->image, 
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         this->image, 
@@ -306,7 +312,7 @@ namespace nugiEngine {
       barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
       vkCmdPipelineBarrier(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         VK_PIPELINE_STAGE_TRANSFER_BIT, 
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
         0,
@@ -327,15 +333,17 @@ namespace nugiEngine {
     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
     vkCmdPipelineBarrier(
-      commandBuffer.getCommandBuffer(),
+      commandBuffer->getCommandBuffer(),
       VK_PIPELINE_STAGE_TRANSFER_BIT, 
       VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0,
       0, nullptr,
       0, nullptr,
       1, &barrier);
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->appDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(this->appDevice.getTransferQueue(0));
+    }
   }
 
   VkDescriptorImageInfo EngineImage::getDescriptorInfo(VkImageLayout desiredImageLayout) {

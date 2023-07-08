@@ -25,7 +25,7 @@ namespace nugiEngine {
       uint32_t getBvhSize() const { return static_cast<uint32_t>(this->bvhNodes->size()); }
 
       void addPrimitive(std::shared_ptr<std::vector<Primitive>> primitives, std::shared_ptr<std::vector<Vertex>> vertices);
-      void createBuffers();
+      void createBuffers(std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
       // static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex);
       

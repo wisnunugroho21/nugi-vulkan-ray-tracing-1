@@ -10,12 +10,12 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineVertexModel::EngineVertexModel(EngineDevice &device, std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<std::vector<uint32_t>> indices) : engineDevice{device} {
-		this->createVertexBuffers(vertices);
-		this->createIndexBuffer(indices);
+	EngineVertexModel::EngineVertexModel(EngineDevice &device, std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<std::vector<uint32_t>> indices, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
+		this->createVertexBuffers(vertices, commandBuffer);
+		this->createIndexBuffer(indices, commandBuffer);
 	}
 
-	void EngineVertexModel::createVertexBuffers(std::shared_ptr<std::vector<Vertex>> vertices) {
+	void EngineVertexModel::createVertexBuffers(std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		this->vertextCount = static_cast<uint32_t>(vertices->size());
 		assert(vertextCount >= 3 && "Vertex count must be at least 3");
 
@@ -43,10 +43,10 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->vertexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
+		this->vertexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize, commandBuffer);
 	}
 
-	void EngineVertexModel::createIndexBuffer(std::shared_ptr<std::vector<uint32_t>> indices) { 
+	void EngineVertexModel::createIndexBuffer(std::shared_ptr<std::vector<uint32_t>> indices, std::shared_ptr<EngineCommandBuffer> commandBuffer) { 
 		this->indexCount = static_cast<uint32_t>(indices->size());
 		this->hasIndexBuffer = this->indexCount > 0;
 
@@ -78,7 +78,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->indexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize);
+		this->indexBuffer->copyBuffer(stagingBuffer.getBuffer(), bufferSize, commandBuffer);
 	}
 
 	void EngineVertexModel::bind(std::shared_ptr<EngineCommandBuffer> commandBuffer) {

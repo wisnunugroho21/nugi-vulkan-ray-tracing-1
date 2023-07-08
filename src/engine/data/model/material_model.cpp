@@ -8,11 +8,11 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineMaterialModel::EngineMaterialModel(EngineDevice &device, std::shared_ptr<std::vector<Material>> materials) : engineDevice{device} {
-		this->createBuffers(materials);
+	EngineMaterialModel::EngineMaterialModel(EngineDevice &device, std::shared_ptr<std::vector<Material>> materials, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
+		this->createBuffers(materials, commandBuffer);
 	}
 
-	void EngineMaterialModel::createBuffers(std::shared_ptr<std::vector<Material>> materials) {
+	void EngineMaterialModel::createBuffers(std::shared_ptr<std::vector<Material>> materials, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		auto materialBufferSize = sizeof(Material) * materials->size();
 
 		EngineBuffer materialStagingBuffer {
@@ -36,7 +36,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(materialBufferSize));
+		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(materialBufferSize), commandBuffer);
 	} 
 } // namespace nugiEngine
 

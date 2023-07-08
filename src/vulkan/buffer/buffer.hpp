@@ -22,8 +22,8 @@ class EngineBuffer {
   EngineBuffer& operator=(const EngineBuffer&) = delete;
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags bufferUsage, VmaMemoryUsage memoryUsage, VmaAllocationCreateFlags memoryPropertyFlags);
-  void copyBuffer(VkBuffer srcBuffer, VkDeviceSize size);
-  void copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+  void copyBuffer(VkBuffer srcBuffer, VkDeviceSize size, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
+  void copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
  
   VkResult map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
   void unmap();

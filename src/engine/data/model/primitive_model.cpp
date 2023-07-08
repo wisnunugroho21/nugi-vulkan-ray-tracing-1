@@ -34,7 +34,7 @@ namespace nugiEngine {
 		return createBvh(boundBoxes);
 	}
 
-	void EnginePrimitiveModel::createBuffers() {
+	void EnginePrimitiveModel::createBuffers(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		auto primitiveBufferSize = sizeof(Primitive) * this->primitives->size();
 
 		EngineBuffer primitiveStagingBuffer {
@@ -58,7 +58,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->primitiveBuffer->copyBuffer(primitiveStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(primitiveBufferSize));
+		this->primitiveBuffer->copyBuffer(primitiveStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(primitiveBufferSize), commandBuffer);
 
 		// -------------------------------------------------
 
@@ -85,7 +85,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize), commandBuffer);
 	}
 
 	/* std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {

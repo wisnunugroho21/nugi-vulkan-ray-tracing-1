@@ -8,16 +8,16 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EnginePointLightModel::EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> lights) : engineDevice{device} {
+	EnginePointLightModel::EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 		for (int i = 0; i < lights->size(); i++) {
 			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*lights)[i] }));
 		}
 
-		this->createBuffers(lights, createBvh(boundBoxes));
+		this->createBuffers(lights, createBvh(boundBoxes), commandBuffer);
 	}
 
-	void EnginePointLightModel::createBuffers(std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+	void EnginePointLightModel::createBuffers(std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		auto lightBufferSize = sizeof(PointLight) * lights->size();
 		
 		EngineBuffer lightStagingBuffer {
@@ -41,7 +41,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(lightBufferSize));
+		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(lightBufferSize), commandBuffer);
 
 		// -------------------------------------------------
 
@@ -68,7 +68,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize), commandBuffer);
 	}
     
 } // namespace nugiEngine

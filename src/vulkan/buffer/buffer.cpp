@@ -11,6 +11,7 @@
 // std
 #include <cassert>
 #include <cstring>
+#include <memory>
  
 namespace nugiEngine {
   /**
@@ -240,23 +241,37 @@ namespace nugiEngine {
     }
   }
 
-  void EngineBuffer::copyBuffer(VkBuffer srcBuffer, VkDeviceSize size) {
-    EngineCommandBuffer commandBuffer{this->engineDevice};
-    commandBuffer.beginSingleTimeCommand();
+  void EngineBuffer::copyBuffer(VkBuffer srcBuffer, VkDeviceSize size, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(this->engineDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;  
+    }
 
     VkBufferCopy copyRegion{};
     copyRegion.srcOffset = 0;  // Optional
     copyRegion.dstOffset = 0;  // Optional
     copyRegion.size = size;
-    vkCmdCopyBuffer(commandBuffer.getCommandBuffer(), srcBuffer, this->buffer, 1, &copyRegion);
+    vkCmdCopyBuffer(commandBuffer->getCommandBuffer(), srcBuffer, this->buffer, 1, &copyRegion);
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->engineDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(this->engineDevice.getTransferQueue(0));
+    }
   }
 
-  void EngineBuffer::copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount) {
-    EngineCommandBuffer commandBuffer{this->engineDevice};
-    commandBuffer.beginSingleTimeCommand();
+  void EngineBuffer::copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(this->engineDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;  
+    }
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -272,7 +287,7 @@ namespace nugiEngine {
     region.imageExtent = {width, height, 1};
 
     vkCmdCopyBufferToImage(
-      commandBuffer.getCommandBuffer(),
+      commandBuffer->getCommandBuffer(),
       this->buffer,
       image,
       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -280,8 +295,10 @@ namespace nugiEngine {
       &region
     );
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->engineDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(this->engineDevice.getTransferQueue(0));
+    }
   }
   
  

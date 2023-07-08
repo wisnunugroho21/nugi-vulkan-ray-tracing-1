@@ -15,7 +15,7 @@
 namespace nugiEngine {
 	class EngineVertexModel {
 		public:
-			EngineVertexModel(EngineDevice &device, std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<std::vector<uint32_t>> indices = {});
+			EngineVertexModel(EngineDevice &device, std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<std::vector<uint32_t>> indices, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
 			EngineVertexModel(const EngineVertexModel&) = delete;
 			EngineVertexModel& operator = (const EngineVertexModel&) = delete;
@@ -37,7 +37,7 @@ namespace nugiEngine {
 
 			bool hasIndexBuffer = false;
 
-			void createVertexBuffers(std::shared_ptr<std::vector<Vertex>> vertices);
-			void createIndexBuffer(std::shared_ptr<std::vector<uint32_t>> indices);
+			void createVertexBuffers(std::shared_ptr<std::vector<Vertex>> vertices, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
+			void createIndexBuffer(std::shared_ptr<std::vector<uint32_t>> indices, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 	};
 } // namespace nugiEngine

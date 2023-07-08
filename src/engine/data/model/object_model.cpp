@@ -7,11 +7,11 @@
 #include <tiny_obj_loader.h>
 
 namespace nugiEngine {
-	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
-		this->createBuffers(objects, createBvh(boundBoxes));
+	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
+		this->createBuffers(objects, createBvh(boundBoxes), commandBuffer);
 	}
 
-	void EngineObjectModel::createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+	void EngineObjectModel::createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		auto objectBufferSize = sizeof(Object) * objects->size();
 
 		EngineBuffer objectStagingBuffer {
@@ -35,7 +35,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(objectBufferSize));
+		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(objectBufferSize), commandBuffer);
 
 		// -------------------------------------------------
 
@@ -62,7 +62,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize), commandBuffer);
 	} 
 } // namespace nugiEngine
 

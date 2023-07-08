@@ -16,7 +16,7 @@
 namespace nugiEngine {
 	class EnginePointLightModel {
     public:
-      EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> lights);
+      EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
       VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
@@ -27,6 +27,6 @@ namespace nugiEngine {
       std::shared_ptr<EngineBuffer> lightBuffer;
       std::shared_ptr<EngineBuffer> bvhBuffer;
 
-      void createBuffers(std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes);
+      void createBuffers(std::shared_ptr<std::vector<PointLight>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 	};
 } // namespace nugiEngine

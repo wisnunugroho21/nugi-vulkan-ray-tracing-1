@@ -16,7 +16,7 @@
 namespace nugiEngine {
 	class EngineObjectModel {
     public:
-      EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
+      EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 
       VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
@@ -27,6 +27,6 @@ namespace nugiEngine {
       std::shared_ptr<EngineBuffer> objectBuffer;
       std::shared_ptr<EngineBuffer> bvhBuffer;
 
-      void createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes);
+      void createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
 	};
 } // namespace nugiEngine

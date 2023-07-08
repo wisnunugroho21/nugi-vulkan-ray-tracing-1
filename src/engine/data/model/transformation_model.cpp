@@ -8,8 +8,8 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations) : engineDevice{device} {
-		this->createBuffers(transformations);
+	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
+		this->createBuffers(transformations, commandBuffer);
 	}
 
 	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
@@ -25,7 +25,7 @@ namespace nugiEngine {
 		return newTransforms;
 	}
 
-	void EngineTransformationModel::createBuffers(std::shared_ptr<std::vector<Transformation>> transformations) {
+	void EngineTransformationModel::createBuffers(std::shared_ptr<std::vector<Transformation>> transformations, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		auto transformationBufferSize = sizeof(Transformation) * transformations->size();
 
 		EngineBuffer transformationStagingBuffer {
@@ -49,7 +49,7 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(transformationBufferSize));
+		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(transformationBufferSize), commandBuffer);
 	} 
 } // namespace nugiEngine
 
