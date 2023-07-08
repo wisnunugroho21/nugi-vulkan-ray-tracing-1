@@ -139,7 +139,7 @@ namespace nugiEngine {
 	}
 
 	void EngineHybridRenderer::submitLoadCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
-		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->inFlightFences[this->currentFrameIndex]);
+		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence);
 
 		commandBuffer->submitCommand(this->appDevice.getTransferQueue(0), {}, {}, {}, this->resourceLoadedFence);
 		vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence, false, 3000);
