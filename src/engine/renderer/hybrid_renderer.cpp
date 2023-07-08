@@ -142,7 +142,7 @@ namespace nugiEngine {
 		vkResetFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence);
 
 		commandBuffer->submitCommand(this->appDevice.getTransferQueue(0), {}, {}, {}, this->resourceLoadedFence);
-		vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence, true, 1000000000);
+		vkWaitForFences(this->appDevice.getLogicalDevice(), 1, &this->resourceLoadedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 	}
 
 	bool EngineHybridRenderer::presentFrame() {
