@@ -29,10 +29,17 @@ namespace nugiEngine {
     };
   }
 
-  Aabb LightBoundBox::boundingBox() {
+  Aabb PointLightBoundBox::boundingBox() {
     return Aabb { 
       this->light.position - eps,
       this->light.position + eps
+    };
+  }
+
+  Aabb AreaLightBoundBox::boundingBox() {
+    return Aabb { 
+      glm::min(glm::min(this->light.point0, this->light.point1), this->light.point2) - eps,
+      glm::max(glm::max(this->light.point0, this->light.point1), this->light.point2) + eps
     };
   }
 

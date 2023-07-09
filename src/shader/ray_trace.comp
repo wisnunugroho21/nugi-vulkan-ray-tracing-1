@@ -37,20 +37,24 @@ layout(set = 0, binding = 6) buffer readonly VertexSsbo {
   Vertex vertices[];
 };
 
-layout(set = 0, binding = 7) buffer readonly LightSsbo {
-  PointLight lights[];
-};
-
-layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
-  BvhNode lightBvhNodes[];
-};
-
-layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 7) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 8) buffer readonly TransformationSsbo {
   Transformation transformations[];
+};
+
+/* layout(set = 0, binding = 9) buffer readonly PointLightSsbo {
+  PointLight lights[];
+}; */
+
+layout(set = 0, binding = 9) buffer readonly AreaLightSsbo {
+  AreaLight lights[];
+};
+
+layout(set = 0, binding = 10) buffer readonly LightBvhSsbo {
+  BvhNode lightBvhNodes[];
 };
 
 layout(set = 0, binding = 11, rgba32f) uniform readonly image2D positionResource;

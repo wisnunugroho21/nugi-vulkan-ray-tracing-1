@@ -69,10 +69,18 @@ namespace nugiEngine {
       float findMin(uint32_t index);
   };
 
-  struct LightBoundBox : BoundBox {
+  struct PointLightBoundBox : BoundBox {
     PointLight &light;
 
-    LightBoundBox(int i, PointLight &l) : BoundBox(i), light{l} {}
+    PointLightBoundBox(int i, PointLight &l) : BoundBox(i), light{l} {}
+
+    Aabb boundingBox();
+  };
+
+  struct AreaLightBoundBox : BoundBox {
+    AreaLight &light;
+
+    AreaLightBoundBox(int i, AreaLight &l) : BoundBox(i), light{l} {}
 
     Aabb boundingBox();
   };
