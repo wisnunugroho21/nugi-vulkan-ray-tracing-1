@@ -46,7 +46,6 @@ namespace nugiEngine {
 
 			void submitRenderCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
 			void submitRenderCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
-			void submitLoadCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 
 			bool acquireFrame();
 			bool presentFrame();
@@ -66,7 +65,6 @@ namespace nugiEngine {
 
 			std::vector<VkSemaphore> imageAvailableSemaphores, renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
-			VkFence resourceLoadedFence;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
 			bool isFrameStarted = false, isLoadResouce = false;
