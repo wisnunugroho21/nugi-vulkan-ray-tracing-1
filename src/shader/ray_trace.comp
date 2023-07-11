@@ -86,20 +86,13 @@ void main() {
   vec3 materialParams = imageLoad(materialResource, ivec2(imgPosition)).xyz;
   vec3 albedoColor = imageLoad(albedoColorResource, ivec2(imgPosition)).xyz;
 
-  ShadeRecord indirectShadeResult, directShadeResult;
-
-  if (materialParams.x >= randomFloat(0)) {
-    indirectShadeResult = indirectGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
-    directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
-  } else {
-    indirectShadeResult = indirectLambertShade(position, normal, albedoColor, 0);
-    directShadeResult = directLambertShade(position, normal, albedoColor, 0);
-  }
+  ShadeRecord indirectShadeResult = indirectShade(position - ubo.origin, position, normal, albedoColor, materialParams.x, materialParams.y, materialParams.z, 0);
+  ShadeRecord directShadeResult = directShade(position - ubo.origin, position, normal, albedoColor, materialParams.x, materialParams.y, materialParams.z, 0);
 
   float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
   Ray curRay = indirectShadeResult.nextRay;
 
-  vec3 totalRadiance = directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+  vec3 totalRadiance =   directShadeResult.radiance * directShadeResult.pdf / totalPdf;
   vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
   for(uint i = 1; i < 50; i++) {
@@ -118,13 +111,8 @@ void main() {
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
     uint materialIndex = primitives[hit.hitIndex].materialIndex;
 
-    if (materials[materialIndex].metallicness >= randomFloat(i)) {
-      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, i);
-      directShadeResult = directGgxShade(curRay, hit, materialIndex, i);
-    } else {
-      indirectShadeResult = indirectLambertShade(hit, materialIndex, i);
-      directShadeResult = directLambertShade(hit, materialIndex, i);
-    }
+    indirectShadeResult = indirectShade(curRay, hit, materialIndex, i);
+    directShadeResult = directShade(curRay, hit, materialIndex, i);
 
     totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
     curRay = indirectShadeResult.nextRay;

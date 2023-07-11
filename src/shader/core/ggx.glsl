@@ -1,13 +1,11 @@
 // ------------- GGX Function -------------
 
-float fresnelSchlick(float VoH, float F0) {
+vec3 fresnelSchlick(float VoH, vec3 F0) {
   return F0 + (1.0f - F0) * pow(1.0f - VoH, 5.0f);
 } 
 
 float D_GGX(float NoH, float roughness) {
-  float r = max(roughness, 0.05f);
-  
-  float alpha = r * r;
+  float alpha = roughness * roughness;
   float alpha2 = alpha * alpha;
   
   float b = (NoH * NoH * (alpha2 - 1.0f) + 1.0f);
@@ -30,8 +28,8 @@ float G1_GGX(float cosine, float roughness) {
 }
 
 float G_Smith(float NoV, float NoL, float roughness) {
-  float g1_l = G1_GGX(NoL, roughness);
-  float g1_v = G1_GGX(NoV, roughness);
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
 
   return g1_l * g1_v;
 }
