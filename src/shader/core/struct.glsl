@@ -24,6 +24,15 @@ struct Object {
 struct PointLight {
   vec3 position;
   float radius;
+
+  vec3 color;
+};
+
+struct AreaLight {
+  vec3 point0;
+  vec3 point1;
+  vec3 point2; 
+
   vec3 color;
 };
 

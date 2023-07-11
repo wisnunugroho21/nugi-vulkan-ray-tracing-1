@@ -64,6 +64,14 @@ namespace nugiEngine {
     alignas(16) glm::vec3 color;
   };
 
+  struct AreaLight {
+    alignas(16) glm::vec3 point0;
+    alignas(16) glm::vec3 point1;
+    alignas(16) glm::vec3 point2; 
+
+    alignas(16) glm::vec3 color;
+  };
+
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
     alignas(16) glm::vec3 background;

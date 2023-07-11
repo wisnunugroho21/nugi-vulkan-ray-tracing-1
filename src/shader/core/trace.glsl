@@ -27,7 +27,7 @@ vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
 
 // ------------- Point Light -------------
 
-HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
+HitRecord hitPointLight(PointLight light, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -45,6 +45,55 @@ HitRecord hitLight(PointLight light, Ray r, float tMin, float tMax) {
   hit.t = t;
   hit.point = light.position;
   hit.normal = setFaceNormal(r.direction, lightDirection);
+
+  return hit;
+}
+
+// ------------- Area Light -------------
+HitRecord hitAreaLight(AreaLight light, Ray r, float tMin, float tMax) {
+  HitRecord hit;
+  hit.isHit = false;
+
+  vec3 v0v1 = light.point1 - light.point0;
+  vec3 v0v2 = light.point2 - light.point0;
+  vec3 pvec = cross(r.direction, v0v2);
+  float det = dot(v0v1, pvec);
+  
+  if (abs(det) < KEPSILON) {
+    return hit;
+  }
+    
+  float invDet = 1.0f / det;
+
+  vec3 tvec = r.origin - light.point0;
+  float u = dot(tvec, pvec) * invDet;
+  if (u < 0.0f || u > 1.0f) {
+    return hit;
+  }
+
+  vec3 qvec = cross(tvec, v0v1);
+  float v = dot(r.direction, qvec) * invDet;
+  if (v < 0.0f || u + v > 1.0f) {
+    return hit;
+  }
+  
+  float t = dot(v0v2, qvec) * invDet;
+
+  if (t <= KEPSILON) {
+    return hit;
+  }
+
+  if (t < tMin || t > tMax) {
+    return hit;
+  }
+
+  hit.isHit = true;
+  hit.t = t;
+  hit.point = rayAt(r, t);
+  hit.uv = vec2(u, v);
+
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  hit.normal = setFaceNormal(r.direction, outwardNormal);
 
   return hit;
 }
@@ -228,7 +277,8 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
   return hit;
 }
 
-// ------------- PointLight -------------
+// ------------- Light BVH -------------
+
 HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
@@ -251,7 +301,8 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      // HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      HitRecord tempHit = hitAreaLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -261,7 +312,8 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      // HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      HitRecord tempHit = hitAreaLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
