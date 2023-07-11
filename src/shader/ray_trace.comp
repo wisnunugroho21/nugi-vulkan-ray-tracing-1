@@ -92,7 +92,7 @@ void main() {
   float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
   Ray curRay = indirectShadeResult.nextRay;
 
-  vec3 totalRadiance =   directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+  vec3 totalRadiance = directShadeResult.radiance * directShadeResult.pdf / totalPdf;
   vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
   for(uint i = 1; i < 50; i++) {
