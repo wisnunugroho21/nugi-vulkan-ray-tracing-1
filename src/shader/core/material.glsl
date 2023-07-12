@@ -74,7 +74,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 surf
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = areaLightGenerateRandom(lights[lightIndex], point, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.1f, 1.0f);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
@@ -138,15 +138,9 @@ float lambertBrdfValue() {
 
 ShadeRecord indirectLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint additionalRandomSeed) {
   ShadeRecord scat;
+  
   scat.nextRay.origin = point;
-
-  uint triangleRand = randomUint(0, ubo.numLights + ubo.numLights, additionalRandomSeed);
-
-  if (triangleRand >= ubo.numLights) {
-    scat.nextRay.direction = areaLightGenerateRandom(lights[triangleRand % ubo.numLights], point, additionalRandomSeed);
-  } else {
-    scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
-  }
+  scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
 
   float NoL = max(dot(normal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
@@ -172,7 +166,7 @@ ShadeRecord directLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint 
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
   shadowRay.direction = areaLightGenerateRandom(lights[lightIndex], point, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.1f, 1.0f);
+  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
