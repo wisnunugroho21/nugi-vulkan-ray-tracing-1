@@ -138,9 +138,14 @@ float lambertBrdfValue() {
 
 ShadeRecord indirectLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint additionalRandomSeed) {
   ShadeRecord scat;
-  
   scat.nextRay.origin = point;
-  scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
+
+  if (randomFloat(additionalRandomSeed) > 0.5) {
+    scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
+  } else {
+    uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
+    scat.nextRay.direction = areaLightGenerateRandom(lights[triangleRand], point, additionalRandomSeed);
+  }
 
   float NoL = max(dot(normal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
