@@ -96,11 +96,11 @@ void main() {
     directShadeResult = directLambertShade(position, normal, albedoColor, 0);
   }
 
-  float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+  // float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
   Ray curRay = indirectShadeResult.nextRay;
 
-  vec3 totalRadiance = directShadeResult.radiance * directShadeResult.pdf / totalPdf;
-  vec3 totalIndirect = indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+  vec3 totalRadiance = directShadeResult.radiance; // * directShadeResult.pdf / totalPdf;
+  vec3 totalIndirect = indirectShadeResult.radiance; // * indirectShadeResult.pdf / totalPdf;
 
   for(uint i = 1; i < 50; i++) {
     HitRecord objectHit = hitObjectBvh(curRay, 0.1f, FLT_MAX);
@@ -112,11 +112,10 @@ void main() {
     }
     
     if (lightHit.isHit && (!objectHit.isHit || lightHit.t <= objectHit.t)) {
-      totalRadiance = totalRadiance + totalIndirect * Gfactor(curRay, lightHit) * lights[lightHit.hitIndex].color;
+      totalRadiance = totalRadiance + totalIndirect * lights[lightHit.hitIndex].color;
       break;
     }
 
-    totalIndirect = totalIndirect / indirectShadeResult.pdf;
     uint materialIndex = primitives[objectHit.hitIndex].materialIndex;
 
     if (materials[materialIndex].metallicness >= randomFloat(i)) {
@@ -127,11 +126,11 @@ void main() {
       directShadeResult = directLambertShade(objectHit, materialIndex, i);
     }
 
-    totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+    // totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
     curRay = indirectShadeResult.nextRay;
 
-    totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance * directShadeResult.pdf / totalPdf;
-    totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+    totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance; // * directShadeResult.pdf / totalPdf;
+    totalIndirect = totalIndirect * indirectShadeResult.radiance; // * indirectShadeResult.pdf / totalPdf;
   }
 
   imageStore(targetImage, ivec2(imgPosition), vec4(totalRadiance, 255.0f));
