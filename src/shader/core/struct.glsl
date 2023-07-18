@@ -81,3 +81,5 @@ struct RadianceRecord {
 };
 
 float pi = 3.14159265359;
+float FLT_MAX = 3.402823e+38;
+float FLT_MIN = 1.175494e-38;

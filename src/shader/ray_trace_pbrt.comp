@@ -100,10 +100,11 @@ ShadeRecord indirectGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 mate
 ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 materialColor, uint additionalRandomSeed) {
   ShadeRecord scat;
   scat.nextRay.origin = hit.point;
+  
+  float rand = randomFloat(additionalRandomSeed);
 
-  uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
-
-  if (triangleRand < ubo.numLights) {
+  if (rand <= 0.5f) {
+    uint triangleRand = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
     scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].indices, hit.point, additionalRandomSeed);
   } else {
     scat.nextRay.direction = lambertGenerateRandom(buildOnb(hit.normal), additionalRandomSeed);
@@ -210,38 +211,39 @@ void main() {
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
   for(uint i = 0; i < 50; i++) {
-    HitRecord hit = hitObjectBvh(curRay, 0.001f, 1000000.0f);
-    if (!hit.isHit) {
+    HitRecord objectHit = hitObjectBvh(curRay, 0.001f, FLT_MAX);
+    HitRecord lightHit = hitLightBvh(curRay, 0.001f, FLT_MAX);
+
+    if (!objectHit.isHit && !lightHit.isHit) {
       totalRadiance = totalRadiance + totalIndirect * ubo.background;
       break;
     }
-
-    HitRecord hittedLight = hitLightBvh(curRay, 0.001f, hit.t);
-    if (hittedLight.isHit) {
+    
+    if (lightHit.isHit && (!objectHit.isHit || lightHit.t < objectHit.t)) {
       if (i > 0u) {
-        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight);
+        totalIndirect = totalIndirect * Gfactor(curRay, lightHit);
       }
 
-      totalRadiance = totalRadiance + totalIndirect * lights[hittedLight.hitIndex].color;
+      totalRadiance = totalRadiance + totalIndirect * lights[lightHit.hitIndex].color;
       break;
     }
 
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
-    uint materialIndex = primitives[hit.hitIndex].materialIndex;
+    uint materialIndex = primitives[objectHit.hitIndex].materialIndex;
 
     vec3 materialColor;
     if (materials[materialIndex].textureIndex == 0u) {
       materialColor = materials[materialIndex].baseColor;
     } else {
-      materialColor = texture(textureSampler[materials[materialIndex].textureIndex - 1u], hit.uv).xyz;
+      materialColor = texture(textureSampler[materials[materialIndex].textureIndex - 1u], objectHit.uv).xyz;
     }
 
     if (materials[materialIndex].metallicness >= randomFloat(i)) {
-      indirectShadeResult = indirectGgxShade(curRay, hit, materialIndex, materialColor, i);
-      directShadeResult = directGgxShade(curRay, hit, materialIndex, materialColor, i);
+      indirectShadeResult = indirectGgxShade(curRay, objectHit, materialIndex, materialColor, i);
+      directShadeResult = directGgxShade(curRay, objectHit, materialIndex, materialColor, i);
     } else {
-      indirectShadeResult = indirectLambertShade(curRay, hit, materialIndex, materialColor, i);
-      directShadeResult = directLambertShade(curRay, hit, materialIndex, materialColor, i);
+      indirectShadeResult = indirectLambertShade(curRay, objectHit, materialIndex, materialColor, i);
+      directShadeResult = directLambertShade(curRay, objectHit, materialIndex, materialColor, i);
     }
 
     float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
