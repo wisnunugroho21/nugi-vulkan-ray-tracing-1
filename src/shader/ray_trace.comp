@@ -111,7 +111,7 @@ void main() {
       break;
     }
     
-    if (lightHit.isHit && (!objectHit.isHit || lightHit.t <= objectHit.t)) {
+    if (lightHit.isHit && (!objectHit.isHit || lightHit.t < objectHit.t)) {
       totalRadiance = totalRadiance + totalIndirect * Gfactor(curRay, lightHit) * lights[lightHit.hitIndex].color;
       break;
     }

@@ -140,10 +140,10 @@ ShadeRecord indirectLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uin
   ShadeRecord scat;
   scat.nextRay.origin = point;
 
-  if (randomFloat(additionalRandomSeed) > 0.5) {
+  if (randomFloat(additionalRandomSeed) <= 0.5) {
     scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
   } else {
-    uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
+    uint triangleRand = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
     scat.nextRay.direction = areaLightGenerateRandom(lights[triangleRand], point, additionalRandomSeed);
   }
 
