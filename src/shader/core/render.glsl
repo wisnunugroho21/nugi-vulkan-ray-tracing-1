@@ -20,5 +20,5 @@ float Gfactor(Ray r, HitRecord hittedLight) {
   float sqrDistance = hittedLight.t * hittedLight.t * dot(r.direction, r.direction);
   float NloL = max(dot(hittedLight.normal, -1.0f * normalize(r.direction)), 0.001f);
 
-  return NloL * pointLightArea(lights[hittedLight.hitIndex]) / sqrDistance;
+  return NloL * areaTriangle(lights[hittedLight.hitIndex].indices) / sqrDistance;
 }

@@ -1,17 +1,3 @@
-// ------------- Point Light ------------- 
-
-vec3 pointLightFaceNormal(PointLight light, vec3 rayDirection, vec3 origin) {
-  vec3 outwardNormal = normalize(light.position - origin);
-  return setFaceNormal(rayDirection, outwardNormal);
-}
-
-float pointLightArea(PointLight light) {
-  return 4 * pi * light.radius * light.radius;
-}
-
-vec3 pointLightGenerateRandom(PointLight light, vec3 origin) {
-  return light.position - origin;
-}
 
 // ------------- Triangle -------------
 

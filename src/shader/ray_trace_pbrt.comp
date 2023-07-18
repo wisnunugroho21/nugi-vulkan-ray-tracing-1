@@ -42,7 +42,7 @@ layout(set = 0, binding = 7) buffer readonly VertexSsbo {
 };
 
 layout(set = 0, binding = 8) buffer readonly LightSsbo {
-  PointLight lights[];
+  Light lights[];
 };
 
 layout(set = 0, binding = 9) buffer readonly LightBvhSsbo {
@@ -104,7 +104,7 @@ ShadeRecord indirectLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 
   uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
 
   if (triangleRand < ubo.numLights) {
-    scat.nextRay.direction = pointLightGenerateRandom(lights[triangleRand], hit.point);
+    scat.nextRay.direction = triangleGenerateRandom(lights[triangleRand].indices, hit.point, additionalRandomSeed);
   } else {
     scat.nextRay.direction = lambertGenerateRandom(buildOnb(hit.normal), additionalRandomSeed);
   }
@@ -128,14 +128,14 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materi
   shadowRay.origin = hit.point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = pointLightGenerateRandom(lights[lightIndex], hit.point);
+  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedPointLightFaceNormal = pointLightFaceNormal(lights[lightIndex], unitLightDirection, shadowRay.origin);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
-    float NloL = max(dot(hittedPointLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
+    float NloL = max(dot(hittedLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
     float NoL = max(dot(hit.normal, unitLightDirection), 0.001f);    
 
     vec3 unitViewDirection = normalize(r.direction);
@@ -149,7 +149,7 @@ ShadeRecord directGgxShade(Ray r, HitRecord hit, uint materialIndex, vec3 materi
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, materials[materialIndex].roughness);
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = pointLightArea(lights[lightIndex]);
+    float area = areaTriangle(lights[lightIndex].indices);
 
     scat.pdf = ggxPdfValue(NoH, NoL, materials[materialIndex].roughness);
     scat.radiance = partialIntegrand(materialColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
@@ -168,18 +168,18 @@ ShadeRecord directLambertShade(Ray r, HitRecord hit, uint materialIndex, vec3 ma
   shadowRay.origin = hit.point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = pointLightGenerateRandom(lights[lightIndex], hit.point);
+  shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hit.point, additionalRandomSeed);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedPointLightFaceNormal = pointLightFaceNormal(lights[lightIndex], unitLightDirection, shadowRay.origin);
+    vec3 hittedLightFaceNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
-    float NloL = max(dot(hittedPointLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
+    float NloL = max(dot(hittedLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
     float NoL = max(dot(hit.normal, unitLightDirection), 0.001f);    
 
     float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = pointLightArea(lights[lightIndex]);
+    float area = areaTriangle(lights[lightIndex].indices);
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
@@ -216,13 +216,13 @@ void main() {
       break;
     }
 
-    HitRecord hittedPointLight = hitLightBvh(curRay, 0.001f, hit.t);
-    if (hittedPointLight.isHit) {
+    HitRecord hittedLight = hitLightBvh(curRay, 0.001f, hit.t);
+    if (hittedLight.isHit) {
       if (i > 0u) {
-        totalIndirect = totalIndirect * Gfactor(curRay, hittedPointLight);
+        totalIndirect = totalIndirect * Gfactor(curRay, hittedLight);
       }
 
-      totalRadiance = totalRadiance + totalIndirect * lights[hittedPointLight.hitIndex].color;
+      totalRadiance = totalRadiance + totalIndirect * lights[hittedLight.hitIndex].color;
       break;
     }
 

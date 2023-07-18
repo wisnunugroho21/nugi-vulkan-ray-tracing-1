@@ -101,7 +101,7 @@ namespace nugiEngine {
 
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
-		auto lights = std::make_shared<std::vector<PointLight>>();
+		auto lights = std::make_shared<std::vector<Light>>();
 		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
@@ -248,13 +248,19 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		lights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), 10.0f, glm::vec3(20.0f) });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+
+		lights->emplace_back(Light{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
+		lights->emplace_back(Light{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
 
 		// ----------------------------------------------------------------------------
 
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, lights);
+		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights, vertices);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
 
