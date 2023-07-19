@@ -40,12 +40,14 @@ vec3 randomCosineDirection(uint additionalRandomSeed) {
   float r1 = randomFloat(additionalRandomSeed);
   float r2 = randomFloat(additionalRandomSeed + 1);
 
-  float theta = acos(sqrt(r1));
+  float cosTheta = sqrt(r1);
+  float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+  
   float phi = 2 * pi * r2;
 
-  float x = cos(phi) * sin(theta);
-  float y = sin(phi) * sin(theta);
-  float z = cos(theta);
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
 
   return vec3(x, y, z);
 }
