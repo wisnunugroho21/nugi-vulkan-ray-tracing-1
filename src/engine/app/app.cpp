@@ -109,6 +109,7 @@ namespace nugiEngine {
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
 		auto pointlights = std::make_shared<std::vector<PointLight>>();
+		auto arealights = std::make_shared<std::vector<AreaLight>>();
 		auto vertices = std::make_shared<std::vector<Vertex>>();
 		auto indices = std::make_shared<std::vector<uint32_t>>();
 
@@ -306,20 +307,23 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		pointlights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), glm::vec3(100.0f) });
+		// pointlights->emplace_back(PointLight{ glm::vec3(277.5f, 275.0f, 277.5f), 10.0f, glm::vec3(100.0f) });
+
+		arealights->emplace_back(AreaLight{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3(100.0f) });
+		arealights->emplace_back(AreaLight{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3(100.0f) });
 
 		// ----------------------------------------------------------------------------
 
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, pointlights);
+		this->lightModel = std::make_unique<EnginePointLightModel>(this->device, pointlights, arealights);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->vertexModels = std::make_unique<EngineVertexModel>(this->device, vertices, indices);
 
 		this->primitiveModel->createBuffers();
 
 		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-		this->numLights = static_cast<uint32_t>(pointlights->size());
+		this->numLights = static_cast<uint32_t>(arealights->size());
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -414,7 +418,7 @@ namespace nugiEngine {
 			this->vertexModels->getVertexInfo(),
 			this->materialModel->getMaterialInfo(),
 			this->transformationModel->getTransformationInfo(),
-			this->lightModel->getPointLightInfo(),
+			this->lightModel->getAreaLightInfo(),
 			this->lightModel->getBvhInfo()
 		};
 

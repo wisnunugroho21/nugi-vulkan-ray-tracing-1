@@ -9,21 +9,24 @@
 
 namespace nugiEngine {
 	EnginePointLightModel::EnginePointLightModel(EngineDevice &device, std::shared_ptr<std::vector<PointLight>> pointLights, 
-		std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} 
-	{
+		std::shared_ptr<std::vector<AreaLight>> areaLights, std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
 
-		for (int i = 0; i < pointLights->size(); i++) {
+		/* for (int i = 0; i < pointLights->size(); i++) {
 			boundBoxes.push_back(std::make_shared<PointLightBoundBox>(PointLightBoundBox{ i + 1, (*pointLights)[i] }));
+		} */
+
+		for (int i = 0; i < areaLights->size(); i++) {
+			boundBoxes.push_back(std::make_shared<AreaLightBoundBox>(AreaLightBoundBox{ i + 1, (*areaLights)[i] }));
 		}
 
-		this->createBuffers(pointLights, createBvh(boundBoxes), commandBuffer);
+		this->createBuffers(pointLights, areaLights, createBvh(boundBoxes), commandBuffer);
 	}
 
-	void EnginePointLightModel::createBuffers(std::shared_ptr<std::vector<PointLight>> pointLights, std::shared_ptr<std::vector<BvhNode>> bvhNodes, 
-		std::shared_ptr<EngineCommandBuffer> commandBuffer) 
+	void EnginePointLightModel::createBuffers(std::shared_ptr<std::vector<PointLight>> pointLights, std::shared_ptr<std::vector<AreaLight>> areaLights, 
+		std::shared_ptr<std::vector<BvhNode>> bvhNodes, std::shared_ptr<EngineCommandBuffer> commandBuffer) 
 	{
-		auto pointLightBufferSize = sizeof(PointLight) * pointLights->size();
+		/* auto pointLightBufferSize = sizeof(PointLight) * pointLights->size();
 		
 		EngineBuffer pointLightStagingBuffer {
 			this->engineDevice,
@@ -46,7 +49,34 @@ namespace nugiEngine {
 			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
 		);
 
-		this->pointLightBuffer->copyBuffer(pointLightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(pointLightBufferSize), commandBuffer);
+		this->pointLightBuffer->copyBuffer(pointLightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(pointLightBufferSize), commandBuffer); */
+
+		// ---
+
+		auto areaLightBufferSize = sizeof(AreaLight) * areaLights->size();
+		
+		EngineBuffer areaLightStagingBuffer {
+			this->engineDevice,
+			static_cast<VkDeviceSize>(areaLightBufferSize),
+			1,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT
+		};
+
+		areaLightStagingBuffer.map();
+		areaLightStagingBuffer.writeToBuffer(areaLights->data());
+
+		this->areaLightBuffer = std::make_shared<EngineBuffer>(
+			this->engineDevice,
+			static_cast<VkDeviceSize>(areaLightBufferSize),
+			1,
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VMA_MEMORY_USAGE_AUTO,
+			VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT
+		);
+
+		this->areaLightBuffer->copyBuffer(areaLightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(areaLightBufferSize), commandBuffer);
 
 		// -------------------------------------------------
 
