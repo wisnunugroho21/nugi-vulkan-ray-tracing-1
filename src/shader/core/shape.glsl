@@ -6,10 +6,10 @@ vec3 pointLightFaceNormal(PointLight light, vec3 rayDirection, vec3 origin) {
 }
 
 float pointLightArea(PointLight light) {
-  return 4 * pi * light.radius * light.radius;
+  return 1.0f;
 }
 
-vec3 pointLightGenerateRandom(PointLight light, vec3 origin) {
+vec3 pointLightRandomDirection(PointLight light, vec3 origin) {
   return light.position - origin;
 }
 
@@ -23,7 +23,7 @@ vec3 areaLightFaceNormal(AreaLight light, vec3 rayDirection) {
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
-float areaAreaLight(AreaLight light) {
+float areaLightArea(AreaLight light) {
   vec3 v0v1 = light.point1 - light.point0;
   vec3 v0v2 = light.point2 - light.point0;
 
@@ -31,7 +31,7 @@ float areaAreaLight(AreaLight light) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-vec3 areaLightGenerateRandom(AreaLight light, vec3 origin, uint additionalRandomSeed) {
+vec3 areaLightRandomDirection(AreaLight light, vec3 origin, uint additionalRandomSeed) {
   vec3 a = light.point1 - light.point0;
   vec3 b = light.point2 - light.point0;
 
@@ -57,7 +57,7 @@ vec3 triangleFaceNormal(uvec3 triIndices, vec3 rayDirection) {
   return setFaceNormal(rayDirection, outwardNormal);
 }
 
-float areaTriangle(uvec3 triIndices) {
+float triangleArea(uvec3 triIndices) {
   vec3 v0v1 = vertices[triIndices.y].position.xyz - vertices[triIndices.x].position.xyz;
   vec3 v0v2 = vertices[triIndices.z].position.xyz - vertices[triIndices.x].position.xyz;
 
@@ -65,7 +65,7 @@ float areaTriangle(uvec3 triIndices) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-vec3 triangleGenerateRandom(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
+vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
   vec3 a = vertices[triIndices.y].position.xyz - vertices[triIndices.x].position.xyz;
   vec3 b = vertices[triIndices.z].position.xyz - vertices[triIndices.x].position.xyz;
 

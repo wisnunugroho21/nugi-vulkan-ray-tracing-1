@@ -45,12 +45,8 @@ layout(set = 0, binding = 8) buffer readonly TransformationSsbo {
   Transformation transformations[];
 };
 
-/* layout(set = 0, binding = 9) buffer readonly PointLightSsbo {
+layout(set = 0, binding = 9) buffer readonly PointLightSsbo {
   PointLight lights[];
-}; */
-
-layout(set = 0, binding = 9) buffer readonly AreaLightSsbo {
-  AreaLight lights[];
 };
 
 layout(set = 0, binding = 10) buffer readonly LightBvhSsbo {
