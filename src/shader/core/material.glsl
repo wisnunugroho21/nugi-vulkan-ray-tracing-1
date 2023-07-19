@@ -17,7 +17,7 @@ vec3 randomGGX(float roughness, uint additionalRandomSeed) {
   return vec3(x, y, z);
 }
 
-vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
+vec3 ggxRandomDirection(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
   vec3 source = randomGGX(roughness, additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
@@ -42,7 +42,7 @@ ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 su
   float f0 = 0.16 * (fresnelReflect * fresnelReflect);
 
   vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, normal));
-  scat.nextRay.direction = ggxGenerateRandom(globalOnb, roughness, additionalRandomSeed);
+  scat.nextRay.direction = ggxRandomDirection(globalOnb, roughness, additionalRandomSeed);
 
   vec3 H = normalize(scat.nextRay.direction - rayDirection); // half vector
 
@@ -54,7 +54,7 @@ ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 su
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, roughness);
 
   scat.pdf = ggxPdfValue(NoH, NoL, roughness);
-  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL);
+  scat.radiance = integrandOverHemisphere(surfaceColor, brdf, NoL, scat.pdf);
   
   return scat;
 }
@@ -73,31 +73,27 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 point, vec3 normal, vec3 surf
   shadowRay.origin = point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = areaLightGenerateRandom(lights[lightIndex], point, additionalRandomSeed);
+  shadowRay.direction = pointLightRandomDirection(lights[lightIndex], point);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.01f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedPointLightFaceNormal = areaLightFaceNormal(lights[lightIndex], unitLightDirection);
-
-    float NloL = max(dot(hittedPointLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
-    float NoL = max(dot(normal, unitLightDirection), 0.001f);    
+    vec3 hittedPointLightFaceNormal = pointLightFaceNormal(lights[lightIndex], unitLightDirection, point);
 
     vec3 unitViewDirection = normalize(rayDirection);
     vec3 H = normalize(shadowRay.direction - rayDirection); // half vector
 
     float f0 = 0.16 * (fresnelReflect * fresnelReflect);
     
+    float NoL = max(dot(normal, unitLightDirection), 0.001f);
     float NoV = max(dot(normal, -1.0f * unitViewDirection), 0.001f);
     float NoH = max(dot(normal, H), 0.001f);
     float VoH = max(dot(unitViewDirection, H), 0.001f);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, roughness);
-    float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaAreaLight(lights[lightIndex]);
 
     scat.pdf = ggxPdfValue(NoH, NoL, roughness);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = integrandOverHemisphere(surfaceColor, brdf, NoL, scat.pdf) * lights[lightIndex].color;
   }  
 
   return scat;
@@ -113,17 +109,17 @@ vec3 randomCosineDirection(uint additionalRandomSeed) {
   float r1 = randomFloat(additionalRandomSeed);
   float r2 = randomFloat(additionalRandomSeed + 1);
 
-  float phi = 2 * 3.14159265359 * r1;
-  float cosTheta = sqrt(r2);
-  
-  float x = cos(phi) * cosTheta;
-  float y = sin(phi) * cosTheta;
-  float z = sqrt(1 - r2);
+  float theta = acos(sqrt(r1));
+  float phi = 2 * pi * r2;
+
+  float x = cos(phi) * sin(theta);
+  float y = sin(phi) * sin(theta);
+  float z = cos(theta);
 
   return vec3(x, y, z);
 }
 
-vec3 lambertGenerateRandom(vec3[3] globalOnb, uint additionalRandomSeed) {
+vec3 lambertRandomDirection(vec3[3] globalOnb, uint additionalRandomSeed) {
   vec3 source = randomCosineDirection(additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
@@ -140,18 +136,18 @@ ShadeRecord indirectLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uin
   ShadeRecord scat;
   scat.nextRay.origin = point;
 
-  if (randomFloat(additionalRandomSeed) > 0.5) {
-    scat.nextRay.direction = lambertGenerateRandom(buildOnb(normal), additionalRandomSeed);
+  if (randomFloat(additionalRandomSeed) <= 0.5) {
+    scat.nextRay.direction = lambertRandomDirection(buildOnb(normal), additionalRandomSeed);
   } else {
-    uint triangleRand = randomUint(0, ubo.numLights, additionalRandomSeed);
-    scat.nextRay.direction = areaLightGenerateRandom(lights[triangleRand], point, additionalRandomSeed);
+    uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
+    scat.nextRay.direction = pointLightRandomDirection(lights[lightIndex], point);
   }
 
   float NoL = max(dot(normal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
 
   scat.pdf = lambertPdfValue(NoL);
-  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+  scat.radiance = integrandOverHemisphere(surfaceColor, brdf, NoL, scat.pdf);
   
   return scat;
 }
@@ -170,22 +166,18 @@ ShadeRecord directLambertShade(vec3 point, vec3 normal, vec3 surfaceColor, uint 
   shadowRay.origin = point;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
-  shadowRay.direction = areaLightGenerateRandom(lights[lightIndex], point, additionalRandomSeed);
+  shadowRay.direction = pointLightRandomDirection(lights[lightIndex], point);
   HitRecord occludedHit = hitObjectBvh(shadowRay, 0.01f, 1.0f);
 
   if (!occludedHit.isHit) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 hittedPointLightFaceNormal = areaLightFaceNormal(lights[lightIndex], unitLightDirection);
+    vec3 hittedPointLightFaceNormal = pointLightFaceNormal(lights[lightIndex], unitLightDirection, point);
 
-    float NloL = max(dot(hittedPointLightFaceNormal, -1.0f * unitLightDirection), 0.001f);
-    float NoL = max(dot(normal, unitLightDirection), 0.001f);    
-
-    float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaAreaLight(lights[lightIndex]);
+    float NoL = max(dot(normal, unitLightDirection), 0.001f);
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = integrandOverHemisphere(surfaceColor, brdf, NoL, scat.pdf) * lights[lightIndex].color;
   }  
 
   return scat;

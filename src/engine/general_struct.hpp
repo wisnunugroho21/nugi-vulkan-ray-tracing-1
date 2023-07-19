@@ -60,7 +60,6 @@ namespace nugiEngine {
 
   struct PointLight {
     alignas(16) glm::vec3 position;
-    alignas(4) float radius;
     alignas(16) glm::vec3 color;
   };
 

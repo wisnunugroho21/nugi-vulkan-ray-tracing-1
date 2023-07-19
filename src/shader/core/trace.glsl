@@ -301,8 +301,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
     if (lightIndex >= 1u) {
-      // HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
-      HitRecord tempHit = hitAreaLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -312,8 +311,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
     if (lightIndex >= 1u) {
-      // HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
-      HitRecord tempHit = hitAreaLight(lights[lightIndex - 1u], r, tMin, hit.t);
+      HitRecord tempHit = hitPointLight(lights[lightIndex - 1u], r, tMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
