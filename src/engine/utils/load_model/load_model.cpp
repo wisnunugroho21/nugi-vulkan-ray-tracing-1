@@ -9,7 +9,7 @@ namespace nugiEngine
 		tinyobj::attrib_t attrib{};
 		std::vector<tinyobj::shape_t> shapes{};
 		std::vector<tinyobj::material_t> materials{};
-		std::unordered_map<RayTraceVertex, uint32_t> uniqueVertices{};
+		// std::unordered_map<RayTraceVertex, uint32_t> uniqueVertices{};
 		std::string warn, err;
 
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {

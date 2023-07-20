@@ -2,10 +2,6 @@
 
 #include <cstring>
 #include <iostream>
-#include <unordered_map>
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
 
 namespace nugiEngine {
 	EnginePrimitiveModel::EnginePrimitiveModel(EngineDevice &device) : engineDevice{device} {
