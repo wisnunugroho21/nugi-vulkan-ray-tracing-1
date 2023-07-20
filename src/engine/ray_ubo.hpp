@@ -9,6 +9,10 @@ namespace nugiEngine {
   struct RayTraceVertex {
     alignas(16) glm::vec3 position;
     alignas(16) glm::vec2 texel;
+
+    bool operator == (const RayTraceVertex &other) const {
+			return this->position == other.position && this->texel == other.texel;
+		}
   };
 
   struct Primitive {

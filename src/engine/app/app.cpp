@@ -224,23 +224,6 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(300.0f, 200.0f, 200.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
-		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
-
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
-
-		auto flatVasePrimitives = this->primitiveModel->createPrimitivesFromFile(this->device, "models/viking_room.obj", 3u);
-		this->primitiveModel->addPrimitive(flatVasePrimitives);
-
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], flatVasePrimitives, transforms[transformIndex] }));
-		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
-
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
-
-		// ----------------------------------------------------------------------------
-
 		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0 });
 		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0 });
 		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0 });
@@ -255,6 +238,28 @@ namespace nugiEngine {
 
 		lights->emplace_back(Light{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
 		lights->emplace_back(Light{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
+
+		// ----------------------------------------------------------------------------
+
+		// Object
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(300.0f, 200.0f, 200.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
+		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
+
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+
+		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, vertices->size());
+		for (auto &&vertex : *loadedModel.vertices) {
+			vertices->emplace_back(vertex);
+		}
+
+		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
+
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], loadedModel.primitives, transforms[transformIndex], vertices }));
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
+
+		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
@@ -276,16 +281,16 @@ namespace nugiEngine {
 
 		std::vector<Vertex> vertices;
 
-		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex1 { glm::vec3(-1.0f, -1.0f, 0.0f) };
 		vertices.emplace_back(vertex1);
 
-		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex2 { glm::vec3(1.0f, -1.0f, 0.0f) };
 		vertices.emplace_back(vertex2);
 
-		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex3 { glm::vec3(1.0f, 1.0f, 0.0f) };
 		vertices.emplace_back(vertex3);
 
-		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), glm::vec2(0.0f) };
+		Vertex vertex4 { glm::vec3(-1.0f, 1.0f, 0.0f) };
 		vertices.emplace_back(vertex4);
 
 		modelData.vertices = vertices;
