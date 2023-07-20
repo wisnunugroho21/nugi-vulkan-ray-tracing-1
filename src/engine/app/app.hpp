@@ -73,7 +73,8 @@ namespace nugiEngine {
 			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
 
-			std::vector<std::unique_ptr<EngineTexture>> textures{};
+			std::vector<std::unique_ptr<EngineTexture>> colorTextures{};
+			std::vector<std::unique_ptr<EngineTexture>> normalTextures{};
 
 			uint32_t randomSeed = 0;
 			uint32_t numLights = 0;

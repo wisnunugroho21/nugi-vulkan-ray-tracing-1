@@ -35,10 +35,14 @@ struct BvhNode {
 
 struct Material {
   vec3 baseColor;
+  vec3 baseNormal;
+
 	float metallicness;
   float roughness;
   float fresnelReflect;
-  uint textureIndex;
+
+  uint colorTextureIndex;
+  uint normalTextureIndex;
 };
 
 struct Transformation {
@@ -66,18 +70,18 @@ struct HitRecord {
 
   float t;
   vec3 point;
+
+  vec3 color;
   vec3 normal;
-  vec2 uv;
+  float metallicness;
+  float roughness;
+  float fresnelReflect;
 };
 
 struct ShadeRecord {
   vec3 radiance;  
   Ray nextRay;
   float pdf;
-};
-
-struct RadianceRecord {
-  float colorIrradiance;
 };
 
 float pi = 3.14159265359;

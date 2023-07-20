@@ -224,10 +224,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 1 });
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
+		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1, 0 });
 
 		// ----------------------------------------------------------------------------
 
@@ -272,7 +272,9 @@ namespace nugiEngine {
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
 
-		this->textures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+
 		this->numLights = lights->size();
 	}
 
@@ -363,9 +365,13 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> texturesInfo{};
-		for (int i = 0; i < this->textures.size(); i++) {
-			texturesInfo.emplace_back(this->textures[i]->getDescriptorInfo());
+		std::vector<VkDescriptorImageInfo> texturesInfo[2];
+		for (int i = 0; i < this->colorTextures.size(); i++) {
+			texturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
+		}
+
+		for (int i = 0; i < this->normalTextures.size(); i++) {
+			texturesInfo[1].emplace_back(this->normalTextures[i]->getDescriptorInfo());
 		}
 
 		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo, texturesInfo);
