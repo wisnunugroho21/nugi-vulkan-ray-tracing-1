@@ -1,4 +1,5 @@
-#include "../../ray_ubo.hpp"
+#include "../ray_ubo.hpp"
+#include "../search/search.hpp"
 
 #include <string>
 #include <memory>
