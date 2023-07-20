@@ -80,7 +80,8 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
     vec3 outwardNormal = normalize(cross(v0v1, v0v2));
     hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
   } else {
-    hit.color = texture(normalTextureSampler[materials[materialIndex].normalTextureIndex - 1u], uv).xyz;
+    vec3 outwardNormal = texture(normalTextureSampler[materials[materialIndex].normalTextureIndex - 1u], uv).xyz;
+    hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * outwardNormal);
   }
 
   hit.metallicness = materials[materialIndex].metallicness;
