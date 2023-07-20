@@ -87,29 +87,15 @@ namespace nugiEngine
 				uint32_t index1 = uniqueVertices[vertex1];
 				uint32_t index2 = uniqueVertices[vertex2]; */
 
-				uint32_t index0 = getIndex(vertices, vertex0);
-				if (index0 == -1) {
-					index0 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex0);
-				} else {
-					index0 += offsetIndex;
-				}
+				uint32_t index0 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex0);
 
-				uint32_t index1 = getIndex(vertices, vertex1);
-				if (index1 == -1) {
-					index1 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex1);
-				} else {
-					index1 += offsetIndex;
-				}
+				uint32_t index1 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex1);
 
-				uint32_t index2 = getIndex(vertices, vertex2);
-				if (index2 == -1) {
-					index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex1);
-				} else {
-					index2 += offsetIndex;
-				}
+				uint32_t index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex2);
+				
 
 				primitives->emplace_back(Primitive{
 					glm::uvec3{ index0, index1, index2 },
