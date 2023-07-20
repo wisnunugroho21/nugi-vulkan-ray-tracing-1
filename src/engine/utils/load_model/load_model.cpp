@@ -88,27 +88,27 @@ namespace nugiEngine
 				uint32_t index2 = uniqueVertices[vertex2]; */
 
 				uint32_t index0 = getIndex(vertices, vertex0);
-				if (index0 == 0u) {
+				if (index0 == -1) {
 					index0 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
 					vertices->emplace_back(vertex0);
 				} else {
-					index0 += offsetIndex - 1u;
+					index0 += offsetIndex;
 				}
 
 				uint32_t index1 = getIndex(vertices, vertex1);
-				if (index1 == 0u) {
+				if (index1 == -1) {
 					index1 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
 					vertices->emplace_back(vertex1);
 				} else {
-					index1 += offsetIndex - 1u;
+					index1 += offsetIndex;
 				}
 
 				uint32_t index2 = getIndex(vertices, vertex2);
-				if (index2 == 0u) {
+				if (index2 == -1) {
 					index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
 					vertices->emplace_back(vertex1);
 				} else {
-					index2 += offsetIndex - 1u;
+					index2 += offsetIndex;
 				}
 
 				primitives->emplace_back(Primitive{
