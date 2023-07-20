@@ -68,7 +68,7 @@ namespace nugiEngine
 					attrib.texcoords[2 * textCoordIndex2 + 1]
 				};
 
-				if (uniqueVertices.count(vertex0) == 0) {
+				/* if (uniqueVertices.count(vertex0) == 0) {
 					uniqueVertices[vertex0] = static_cast<uint32_t>(vertices->size()) + offsetIndex;
 					vertices->emplace_back(vertex0);
 				}
@@ -85,7 +85,17 @@ namespace nugiEngine
 
 				uint32_t index0 = uniqueVertices[vertex0];
 				uint32_t index1 = uniqueVertices[vertex1];
-				uint32_t index2 = uniqueVertices[vertex2];
+				uint32_t index2 = uniqueVertices[vertex2]; */
+
+				uint32_t index0 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex0);
+
+				uint32_t index1 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex1);
+
+				uint32_t index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
+				vertices->emplace_back(vertex2);
+				
 
 				primitives->emplace_back(Primitive{
 					glm::uvec3{ index0, index1, index2 },
