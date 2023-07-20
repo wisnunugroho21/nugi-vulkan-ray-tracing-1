@@ -2,23 +2,23 @@
 #include <algorithm>
 
 template <typename T> 
-const int getIndex(std::vector<T>& vec, const T& element) {
-  std::vector<T>::iterator itr = std::find(vec.begin(), vec.end(), element);
+const uint32_t getIndex(std::vector<T>& vec, const T& element) {
+  auto itr = std::find(vec.begin(), vec.end(), element);
   
   if (itr != vec.end()) {
-    return static_cast<int>(std::distance(vec.begin(), itr));
+    return static_cast<uint32_t>(std::distance(vec.begin(), itr)) + 1u;
   }
 
-  return -1;
+  return 0u;
 }
 
 template <typename T> 
-const int getIndex(std::shared_ptr<std::vector<T>> vec, const T& element) {
-  std::vector<T>::iterator itr = std::find(vec->begin(), vec->end(), element);
+const uint32_t getIndex(std::shared_ptr<std::vector<T>> vec, const T& element) {
+  auto itr = std::find(vec->begin(), vec->end(), element);
   
   if (itr != vec->end()) {
-    return static_cast<int>(std::distance(vec->begin(), itr));
+    return static_cast<uint32_t>(std::distance(vec->begin(), itr)) + 1u;
   }
 
-  return -1;
+  return 0u;
 }
