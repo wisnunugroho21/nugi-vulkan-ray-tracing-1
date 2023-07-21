@@ -19,10 +19,7 @@ vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
 }
 
 vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
-  float u = (1.0f - uv.x - uv.y) * vertices[triIndices.x].texel.s + uv.x * vertices[triIndices.y].texel.s + uv.y * vertices[triIndices.z].texel.s;
-  float v = (1.0f - uv.x - uv.y) * vertices[triIndices.x].texel.t + uv.x * vertices[triIndices.y].texel.t + uv.y * vertices[triIndices.z].texel.t;
-
-  return vec2(u, v);
+  return (1.0f - uv.x - uv.y) * vertices[triIndices.x].texel + uv.x * vertices[triIndices.y].texel + uv.y * vertices[triIndices.z].texel;
 }
 
 // ------------- Triangle -------------
