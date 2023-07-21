@@ -73,18 +73,18 @@ namespace nugiEngine
 		uint32_t index2 = uniqueVertices[vertex2]; */
 
 		uint32_t index0 = static_cast<uint32_t>(outVertices->size()) + offsetIndex;
-		(*outVertices)[triangleIndex + 0] = vertex0;
+		outVertices->emplace_back(vertex0);
 
 		uint32_t index1 = static_cast<uint32_t>(outVertices->size()) + offsetIndex;
-		(*outVertices)[triangleIndex + 1] = vertex1;
+		outVertices->emplace_back(vertex1);
 
 		uint32_t index2 = static_cast<uint32_t>(outVertices->size()) + offsetIndex;
-		(*outVertices)[triangleIndex + 2] = vertex2;
+		outVertices->emplace_back(vertex2);
 
-		(*outPrimitives)[triangleIndex] = {
+		outPrimitives->emplace_back(Primitive{
 			glm::uvec3{ index0, index1, index2 },
 			materialIndex
-		};
+		});
 	}
 
   LoadedModel loadModelFromFile(const std::string &filePath, uint32_t materialIndex, uint32_t offsetIndex) {
@@ -97,19 +97,9 @@ namespace nugiEngine
 		if (!tinyobj::LoadObj(attrib.get(), shapes.get(), materials.get(), &warn, &err, filePath.c_str())) {
 			throw std::runtime_error(warn + err);
 		}
-
-		uint32_t totalPrimitive = 0;
-		uint32_t totalVertex = 0;
-
-		for (uint32_t i = 0; i < (*shapes).size(); i++) {
-			uint32_t numTriangle = static_cast<uint32_t>((*shapes)[i].mesh.indices.size()) / 3;
-
-			totalPrimitive += numTriangle;
-			totalVertex += numTriangle * 3;
-		}
 		
-		auto primitives = std::make_shared<std::vector<Primitive>>(totalPrimitive);
-		auto vertices = std::make_shared<std::vector<RayTraceVertex>>(totalVertex);
+		auto primitives = std::make_shared<std::vector<Primitive>>();
+		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
 
 		std::vector<std::thread> threads;
 
@@ -125,6 +115,7 @@ namespace nugiEngine
 		for (auto &&thread : threads) {
 			thread.join();
 		}
+		
 
 		return LoadedModel{ primitives, vertices };
 	}
