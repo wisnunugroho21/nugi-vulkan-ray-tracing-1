@@ -55,17 +55,17 @@ namespace nugiEngine
 
 				vertex0.texel = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex0 + 0],
-					attrib.texcoords[2 * textCoordIndex0 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex0 + 1]
 				};
 
 				vertex1.texel = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex1 + 0],
-					attrib.texcoords[2 * textCoordIndex1 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex1 + 1]
 				};
 
 				vertex2.texel = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex2 + 0],
-					attrib.texcoords[2 * textCoordIndex2 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex2 + 1]
 				};
 
 				/* if (uniqueVertices.count(vertex0) == 0) {
@@ -95,7 +95,6 @@ namespace nugiEngine
 
 				uint32_t index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
 				vertices->emplace_back(vertex2);
-				
 
 				primitives->emplace_back(Primitive{
 					glm::uvec3{ index0, index1, index2 },

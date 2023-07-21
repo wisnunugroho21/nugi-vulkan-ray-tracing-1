@@ -68,7 +68,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   hit.t = t;
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
 
-  vec2 uv = getTotalTextureCoordinate(primitives[hit.hitIndex].indices, vec2(u, v));
+  vec2 uv = getTotalTextureCoordinate(triIndices, vec2(u, v));
 
   if (materials[materialIndex].colorTextureIndex == 0u) {
     hit.color = materials[materialIndex].baseColor;
