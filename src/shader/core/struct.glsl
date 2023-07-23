@@ -77,8 +77,12 @@ struct HitRecord {
 
   float t;
   vec3 point;
+
+  vec3 color;
   vec3 normal;
-  vec2 uv;
+  float metallicness;
+  float roughness;
+  float fresnelReflect;
 };
 
 struct ShadeRecord {

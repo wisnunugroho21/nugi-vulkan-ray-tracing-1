@@ -85,11 +85,11 @@ void main() {
   ShadeRecord indirectShadeResult, directShadeResult;
 
   if (materialParams.x >= randomFloat(0)) {
-    indirectShadeResult = indirectGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
-    directShadeResult = directGgxShade(position - ubo.origin, position, normal, albedoColor, materialParams.y, materialParams.z, 0);
+    indirectShadeResult = indirectGgxShade(position - ubo.origin, position, albedoColor, normal, materialParams.y, materialParams.z, 0);
+    directShadeResult = directGgxShade(position - ubo.origin, position, albedoColor, normal, materialParams.y, materialParams.z, 0);
   } else {
-    indirectShadeResult = indirectLambertShade(position, normal, albedoColor, 0);
-    directShadeResult = directLambertShade(position, normal, albedoColor, 0);
+    indirectShadeResult = indirectLambertShade(position, albedoColor, normal, 0);
+    directShadeResult = directLambertShade(position, albedoColor, normal, 0);
   }
 
   float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
@@ -116,11 +116,11 @@ void main() {
     uint materialIndex = primitives[objectHit.hitIndex].materialIndex;
 
     if (materials[materialIndex].metallicness >= randomFloat(i)) {
-      indirectShadeResult = indirectGgxShade(curRay, objectHit, materialIndex, i);
-      directShadeResult = directGgxShade(curRay, objectHit, materialIndex, i);
+      indirectShadeResult = indirectGgxShade(curRay, objectHit, i);
+      directShadeResult = directGgxShade(curRay, objectHit, i);
     } else {
-      indirectShadeResult = indirectLambertShade(objectHit, materialIndex, i);
-      directShadeResult = directLambertShade(objectHit, materialIndex, i);
+      indirectShadeResult = indirectLambertShade(objectHit, i);
+      directShadeResult = directLambertShade(objectHit, i);
     }
 
     totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;

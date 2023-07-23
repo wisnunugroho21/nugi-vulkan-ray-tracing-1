@@ -15,7 +15,7 @@ vec3[3] buildOnb(vec3 normal) {
 }
 
 vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
-  return dot(r_direction, outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
+  return dot(normalize(r_direction), outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
 }
 
 /* vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
@@ -31,12 +31,14 @@ HitRecord hitPointLight(PointLight light, Ray r, float tMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
-  vec3 lightDirection = normalize(light.position - r.origin);
-  if (dot(lightDirection, normalize(r.direction)) < 1.0f) {
+  vec3 lightDirection = light.position - r.origin;
+  vec3 lightNormal = normalize(lightDirection);
+
+  if (dot(normalize(r.direction), lightNormal) < 1.0f) {
     return hit;
   }
 
-  float t = (light.position - r.origin).x / r.direction.x; // Only works if dot(lightDir, rayDir) == 1, otherwise use => length(lightDirection / r.direction);
+  float t = length(lightDirection / r.direction);
   if (t < tMin || t > tMax) {
     return hit;
   }
@@ -44,7 +46,7 @@ HitRecord hitPointLight(PointLight light, Ray r, float tMin, float tMax) {
   hit.isHit = true;
   hit.t = t;
   hit.point = light.position;
-  hit.normal = setFaceNormal(r.direction, lightDirection);
+  hit.normal = setFaceNormal(r.direction, lightNormal);
 
   return hit;
 }
@@ -90,7 +92,6 @@ HitRecord hitAreaLight(AreaLight light, Ray r, float tMin, float tMax) {
   hit.isHit = true;
   hit.t = t;
   hit.point = rayAt(r, t);
-  hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   hit.normal = setFaceNormal(r.direction, outwardNormal);
@@ -100,7 +101,7 @@ HitRecord hitAreaLight(AreaLight light, Ray r, float tMin, float tMax) {
 
 // ------------- Triangle -------------
 
-HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint transformIndex) {
+HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint transformIndex, uint materialIndex) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -140,10 +141,14 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   hit.isHit = true;
   hit.t = t;
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
-  hit.uv = vec2(u, v);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
   hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
+
+  hit.color = materials[materialIndex].baseColor;
+  hit.metallicness = materials[materialIndex].metallicness;
+  hit.roughness = materials[materialIndex].roughness;
+  hit.fresnelReflect = materials[materialIndex].fresnelReflect;
 
   return hit;
 }
@@ -187,7 +192,8 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
 
     uint primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftObjIndex;
     if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, tMin, hit.t, transformIndex);
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, 
+        tMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -198,7 +204,8 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
 
     primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightObjIndex;    
     if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, tMin, hit.t, transformIndex);
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, 
+        tMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
