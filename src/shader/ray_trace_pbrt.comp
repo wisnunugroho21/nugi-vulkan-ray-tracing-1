@@ -232,11 +232,6 @@ void main() {
     HitRecord objectHit = hitObjectBvh(curRay, 0.001f, FLT_MAX);
     HitRecord lightHit = hitLightBvh(curRay, 0.001f, FLT_MAX);
 
-    if (!objectHit.isHit && !lightHit.isHit) {
-      totalRadiance = totalRadiance + totalIndirect * ubo.background;
-      break;
-    }
-    
     if (lightHit.isHit && (!objectHit.isHit || lightHit.t < objectHit.t)) {
       if (i > 0u) {
         totalIndirect = totalIndirect * Gfactor(curRay, lightHit);
@@ -247,6 +242,11 @@ void main() {
     }
 
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
+
+    if (!objectHit.isHit && !lightHit.isHit) {
+      totalRadiance = totalRadiance + totalIndirect * ubo.background;
+      break;
+    }
 
     if (objectHit.metallicness >= randomFloat(i)) {
       indirectShadeResult = indirectGgxShade(curRay, objectHit, i);
